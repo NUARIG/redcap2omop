@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_11_10_125426) do
+ActiveRecord::Schema.define(version: 2020_11_12_153947) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -376,6 +376,24 @@ ActiveRecord::Schema.define(version: 2020_11_10_125426) do
     t.integer "period_type_concept_id", null: false
   end
 
+  create_table "omop_columns", force: :cascade do |t|
+    t.integer "omop_table_id", null: false
+    t.string "name", null: false
+    t.string "data_type", null: false
+    t.string "map_type", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "deleted_at"
+  end
+
+  create_table "omop_tables", force: :cascade do |t|
+    t.string "domain"
+    t.string "name", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "deleted_at"
+  end
+
   create_table "payer_plan_period", id: false, force: :cascade do |t|
     t.integer "payer_plan_period_id", null: false
     t.integer "person_id", null: false
@@ -448,6 +466,86 @@ ActiveRecord::Schema.define(version: 2020_11_10_125426) do
     t.integer "specialty_source_concept_id"
     t.string "gender_source_value", limit: 50
     t.integer "gender_source_concept_id"
+  end
+
+  create_table "redcap_data_dictionaries", force: :cascade do |t|
+    t.integer "redcap_project_id", null: false
+    t.integer "version", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "deleted_at"
+  end
+
+  create_table "redcap_projects", force: :cascade do |t|
+    t.integer "project_id", null: false
+    t.string "name", null: false
+    t.string "api_token", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "deleted_at"
+  end
+
+  create_table "redcap_variable_child_maps", force: :cascade do |t|
+    t.integer "redcap_variable_id", null: false
+    t.integer "parentable_id", null: false
+    t.string "parentable_type", null: false
+    t.integer "concept_id"
+    t.integer "omop_column_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "deleted_at"
+  end
+
+  create_table "redcap_variable_choice_maps", force: :cascade do |t|
+    t.integer "redcap_variable_choice_id", null: false
+    t.integer "concept_id"
+    t.integer "omop_column_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "deleted_at"
+  end
+
+  create_table "redcap_variable_choices", force: :cascade do |t|
+    t.integer "redcap_variable_id", null: false
+    t.string "choice_code_raw", null: false
+    t.string "choice_code_concept_code"
+    t.string "choice_description", null: false
+    t.string "vocabulary_id_raw"
+    t.string "vocabulary_id"
+    t.string "map_choice"
+    t.string "choice_code_value_as_concept_code"
+    t.string "value_as_vocabualry_id"
+    t.decimal "ordinal_position", null: false
+    t.boolean "curated", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "deleted_at"
+  end
+
+  create_table "redcap_variable_maps", force: :cascade do |t|
+    t.integer "redcap_variable_id", null: false
+    t.integer "concept_id"
+    t.integer "omop_column_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "deleted_at"
+  end
+
+  create_table "redcap_variables", force: :cascade do |t|
+    t.integer "redcap_data_dictionary_id", null: false
+    t.string "name", null: false
+    t.string "form_name", null: false
+    t.string "field_type", null: false
+    t.string "field_type_normalized", null: false
+    t.text "field_label", null: false
+    t.text "choices"
+    t.string "text_validation_type"
+    t.string "field_annotation"
+    t.decimal "ordinal_position"
+    t.boolean "curated"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "deleted_at"
   end
 
   create_table "relationship", id: false, force: :cascade do |t|
