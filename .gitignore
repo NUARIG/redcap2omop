@@ -40,6 +40,7 @@
 yarn-debug.log*
 .yarn-integrity
 
+config/secrets.yml
 db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/*.csv
 db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/*.json
 db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/OMOP CDM vocabulary load - PostgreSQL.sql
