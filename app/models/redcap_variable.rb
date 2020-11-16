@@ -22,4 +22,27 @@ class RedcapVariable < ApplicationRecord
       self.field_type
     end
   end
+
+  def self.map_redcap_variable_choice(redcap_variable_name, redcap_export_tmp)
+    redcap_variable = RedcapVariable.where(name: redcap_variable_name).first
+    if redcap_variable.checkbox?
+      mapped_choices = []
+      redcap_variable.redcap_variable_choices.each do |redcap_variable_choice|
+        mapped_choices << { chosen: redcap_export_tmp.attributes["#{redcap_variable_name}___#{}#{redcap_variable_choice.choice_code_raw}"], redcap_choice_code: redcap_variable_choice.choice_code_raw, omop_concept_id: redcap_variable_choice.redcap_variable_choice_map.concept_id }
+      end
+      mapped_choice = mapped_choices.detect { |mapped_choice| mapped_choice[:chosen] == '1' }
+      mapped_choice[:omop_concept_id]
+    elsif redcap_variable.choice?
+      redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_code_raw: redcap_export_tmp.attributes[redcap_variable_name]).first
+      redcap_variable_choice.redcap_variable_choice_map.concept_id
+    end
+  end
+
+  def choice?
+    self.field_type_normalized == 'choice'
+  end
+
+  def checkbox?
+    self.field_type == 'checkbox'
+  end
 end
