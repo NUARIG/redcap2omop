@@ -17,25 +17,3 @@ class CreateRedcapVariables < ActiveRecord::Migration[6.0]
     end
   end
 end
-# create_table "redcap_variables", force: :cascade do |t|
-#   t.string "name", null: false
-#   t.string "form_name", null: false
-#   t.string "field_type", null: false
-#   t.text "field_label", null: false
-#   t.text "choices"
-#   t.string "text_validation_type"
-#   t.string "text_validation_min"
-#   t.string "text_validation_max"
-#   t.string "required_field"
-#   t.string "field_annotation"
-#   t.string "map_variable"
-#   t.text "map_target"
-#   t.text "map_questions"
-#   t.text "map_comments"
-#   t.text "date_comments"
-#   t.datetime "deleted_at"
-#   t.datetime "created_at", precision: 6, null: false
-#   t.datetime "updated_at", precision: 6, null: false
-#   t.decimal "ordinal_position"
-#   t.boolean "curated"
-# end
