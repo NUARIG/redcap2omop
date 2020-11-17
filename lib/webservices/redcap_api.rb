@@ -79,6 +79,18 @@ module Webservices
       api_response[:response]
     end
 
+    def events
+      response = nil
+      parameters = {
+        token: @api_token,
+        content: 'event',
+        format: 'json',
+        returnFormat: 'json'
+      }
+      api_response = redcap_api_request_wrapper(parameters)
+      api_response[:response]
+    end
+
     def redcap_api_request(options, parse_response = true)
       payload = {
         token: @api_token

@@ -476,6 +476,27 @@ ActiveRecord::Schema.define(version: 2020_11_12_153947) do
     t.datetime "deleted_at"
   end
 
+  create_table "redcap_event_maps", force: :cascade do |t|
+    t.integer "redcap_event_id", null: false
+    t.integer "concept_id"
+    t.integer "omop_column_id"
+    t.datetime "deleted_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "redcap_events", force: :cascade do |t|
+    t.string "event_name", null: false
+    t.integer "arm_num", null: false
+    t.integer "day_offset", null: false
+    t.integer "offset_min", null: false
+    t.integer "offset_max", null: false
+    t.string "unique_event_name", null: false
+    t.string "custom_event_label"
+    t.datetime "deleted_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
   create_table "redcap_projects", force: :cascade do |t|
     t.integer "project_id", null: false
     t.string "name", null: false
