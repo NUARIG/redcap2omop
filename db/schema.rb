@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_11_13_062502) do
+ActiveRecord::Schema.define(version: 2020_11_17_113950) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -512,6 +512,7 @@ ActiveRecord::Schema.define(version: 2020_11_13_062502) do
     t.string "moca"
     t.string "mood"
     t.string "test_calc"
+    t.string "clock_position_of_wound"
     t.string "visit_data_complete"
     t.string "m_d"
     t.string "mri_coordinator"

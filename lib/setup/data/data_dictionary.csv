@@ -11,5 +11,8 @@ v_coordinator,visit_information,,text,"Coordinator Name",,,,,,,,,,,,,
 blah1,visit_data,,descriptive,"The date of visit associated with these measurements is [phone_follow_up_arm_1][v_d][1]",,,,,,,,,,,,,
 moca,visit_data,,text,"MOCA Score",,,integer,,,,,,,,,,
 mood,visit_data,,slider,Mood,"Sad | Meh | Happy",,,,,,,,RH,,,,
+test_calc,visit_data,,calc,"TEST CALC FIELD
+Added this because we will have many calc fields to pull",sum([moca]+[mood]),,,,,,,,,,,,
+clock_position_of_wound,visit_data,,dropdown,"Tunneling clock position of Wound","1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock",,,,,,,,,,,,
 m_d,mri_information,,text,"Date of MRI",,,date_ymd,,,,,,,,,,
 mri_coordinator,mri_information,,text,"MRI Tech",,,,,,,,,,,,,
