@@ -1,6 +1,7 @@
 class CreateRedcapEvents < ActiveRecord::Migration[6.0]
   def change
     create_table :redcap_events do |t|
+      t.integer :redcap_data_dictionary_id, null: false
       t.string :event_name,                 null: false
       t.integer :arm_num,                   null: false
       t.integer :day_offset,                null: false

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_11_12_153947) do
+ActiveRecord::Schema.define(version: 2020_11_17_160645) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -476,7 +476,8 @@ ActiveRecord::Schema.define(version: 2020_11_12_153947) do
     t.datetime "deleted_at"
   end
 
-  create_table "redcap_event_maps", force: :cascade do |t|
+  create_table "redcap_event_map_dependents", force: :cascade do |t|
+    t.integer "redcap_variable_id", null: false
     t.integer "redcap_event_id", null: false
     t.integer "concept_id"
     t.integer "omop_column_id"
@@ -485,7 +486,16 @@ ActiveRecord::Schema.define(version: 2020_11_12_153947) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  create_table "redcap_event_maps", force: :cascade do |t|
+    t.integer "redcap_event_id", null: false
+    t.integer "concept_id"
+    t.datetime "deleted_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "redcap_events", force: :cascade do |t|
+    t.integer "redcap_data_dictionary_id", null: false
     t.string "event_name", null: false
     t.integer "arm_num", null: false
     t.integer "day_offset", null: false

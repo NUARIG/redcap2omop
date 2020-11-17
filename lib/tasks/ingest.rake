@@ -1,49 +1,26 @@
+require 'webservices/redcap_api'
+
 #bundle exec rake ingest:data_dictionary
 #bundle exec rake ingest:omop_tables
 #bundle exec rake ingest:maps
 namespace :ingest do
   desc "Data dictionary"
   task(data_dictionary: :environment) do |t, args|
-    RedcapProject.delete_all
-    RedcapDataDictionary.delete_all
-    RedcapVariable.delete_all
-    RedcapVariableChoice.delete_all
-    redcap_project = RedcapProject.where(project_id: 1, name:'test', api_token: 'test').first_or_create
-    redcap_data_dictionary = RedcapDataDictionary.where(redcap_project_id: redcap_project.id, version: 1).first_or_create
+    # RedcapProject.delete_all
+    # redcap_project = RedcapProject.where(project_id: 1, name:'test', api_token: 'test').first_or_create
 
-    redcap_variables_from_file = CSV.new(File.open('lib/setup/data/data_dictionary.csv'), headers: true, col_sep: ",", return_headers: false,  quote_char: "\"")
-    redcap_variables_from_file.each do |redcap_variable_from_file|
-      redcap_variable = RedcapVariable.new(redcap_data_dictionary_id: redcap_data_dictionary.id)
-      redcap_variable.name = redcap_variable_from_file['Variable / Field Name']
-      redcap_variable.form_name = redcap_variable_from_file['Form Name']
-      redcap_variable.field_type = redcap_variable_from_file['Field Type']
-      redcap_variable.text_validation_type = redcap_variable_from_file['Text Validation Type OR Show Slider Number']
-      redcap_variable.field_type_normalized = redcap_variable.normalize_field_type
-      redcap_variable.field_label = redcap_variable_from_file['Field Label']
-      redcap_variable.choices = redcap_variable_from_file['Choices, Calculations, OR Slider Labels']
-      redcap_variable.field_annotation = redcap_variable_from_file['Field Annotation']
-      # redcap_variable.ordinal_position
-      # redcap_variable.curated
+    # RedcapDataDictionary.delete_all
+    # RedcapEvent.delete_all
+    # RedcapVariable.delete_all
+    # RedcapVariableChoice.delete_all
+    ActiveRecord::Base.transaction do
+      RedcapProject.all.each do |redcap_project|
+        redcap_webservice = Webservices::RedcapApi.new(api_token: redcap_project.api_token)
 
-      if redcap_variable.choices.present?
-        redcap_variable.choices.split('|').each_with_index do |choice, i|
-          choice_code, delimiter, choice_description = choice.partition(',')
-          if choice_code.present?
-            choice_code.strip!
-          end
-
-          if choice_description.present?
-            choice_description.strip!
-          end
-
-          if redcap_variable.field_annotation.present?
-            redcap_variable.field_annotation.strip!
-          end
-
-          redcap_variable.redcap_variable_choices.build(choice_code_raw: choice_code.try(:strip), choice_description: choice_description.try(:strip), vocabulary_id_raw: redcap_variable.field_annotation.try(:strip), ordinal_position: i, curated: false)
-        end
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        load_redcap_events(redcap_webservice, redcap_data_dictionary)
+        load_redcap_variables(redcap_webservice, redcap_data_dictionary)
       end
-      redcap_variable.save!
     end
   end
 
@@ -262,6 +239,50 @@ namespace :ingest do
     other_redcap_variable = RedcapVariable.where(name: 'v_coordinator').first
     omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+  end
+
+  def load_redcap_events(redcap_webservice, redcap_data_dictionary)
+    redcap_webservice.events.each do |event|
+      event[:redcap_data_dictionary] = redcap_data_dictionary
+      RedcapEvent.create!(event)
+    end
+  end
+
+  def load_redcap_variables(redcap_webservice, redcap_data_dictionary)
+    metadata  = redcap_webservice.metadata
+    metadata.each do |metadata_variable|
+      redcap_variable = RedcapVariable.new(redcap_data_dictionary_id: redcap_data_dictionary.id)
+      redcap_variable.name                  = metadata_variable['field_name']
+      redcap_variable.form_name             = metadata_variable['form_name']
+      redcap_variable.field_type            = metadata_variable['field_type']
+      redcap_variable.text_validation_type  = metadata_variable['text_validation_type_or_show_slider_number']
+      redcap_variable.field_type_normalized = redcap_variable.normalize_field_type
+      redcap_variable.field_label           = metadata_variable['field_label']
+      redcap_variable.choices               = metadata_variable['select_choices_or_calculations']
+      redcap_variable.field_annotation      = metadata_variable['field_annotation']
+      # redcap_variable.ordinal_position
+      # redcap_variable.curated
+
+      if redcap_variable.choices.present?
+        redcap_variable.choices.split('|').each_with_index do |choice, i|
+          choice_code, delimiter, choice_description = choice.partition(',')
+          if choice_code.present?
+            choice_code.strip!
+          end
+
+          if choice_description.present?
+            choice_description.strip!
+          end
+
+          if redcap_variable.field_annotation.present?
+            redcap_variable.field_annotation.strip!
+          end
+
+          redcap_variable.redcap_variable_choices.build(choice_code_raw: choice_code.try(:strip), choice_description: choice_description.try(:strip), vocabulary_id_raw: redcap_variable.field_annotation.try(:strip), ordinal_position: i, curated: false)
+        end
+      end
+      redcap_variable.save!
+    end
   end
 end
 

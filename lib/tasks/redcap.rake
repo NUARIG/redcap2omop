@@ -11,13 +11,6 @@ namespace :redcap do
     load_redcap_records(records)
   end
 
-  desc 'Load events'
-  task load_events: :environment do
-    redcap_webservice = Webservices::RedcapApi.new
-    events            = redcap_webservice.events
-    events.map{|redcap_event| RedcapEvent.create!(redcap_event)}
-  end
-
   private
   def refresh_redcap_export_table(field_names)
     version = Time.now.strftime('%Y%m%d%H%M%S')

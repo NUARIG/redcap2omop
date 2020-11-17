@@ -4,8 +4,8 @@ module Webservices
   class RedcapApi
     attr_accessor :api_token, :api_url
 
-    def initialize
-      @api_token  = Rails.application.secrets[:redcap][:api_token]
+    def initialize(api_token:)
+      @api_token  = api_token
       @api_url    = Rails.application.secrets[:redcap][:api_url]
       @verify_ssl = Rails.application.secrets[:redcap][:verify_ssl] if Rails.env.development? || Rails.env.test?
       @verify_ssl ||= true
@@ -84,6 +84,18 @@ module Webservices
       parameters = {
         token: @api_token,
         content: 'event',
+        format: 'json',
+        returnFormat: 'json'
+      }
+      api_response = redcap_api_request_wrapper(parameters)
+      api_response[:response]
+    end
+
+    def metadata
+      response = nil
+      parameters = {
+        token: @api_token,
+        content: 'metadata',
         format: 'json',
         returnFormat: 'json'
       }
