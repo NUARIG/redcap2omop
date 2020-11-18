@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_11_17_113950) do
+ActiveRecord::Schema.define(version: 2020_11_17_160645) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -488,35 +488,34 @@ ActiveRecord::Schema.define(version: 2020_11_17_113950) do
     t.datetime "deleted_at"
   end
 
-  create_table "redcap_export_tmps", force: :cascade do |t|
-    t.string "record_id"
-    t.string "redcap_event_name"
-    t.string "redcap_repeat_instrument"
-    t.string "redcap_repeat_instance"
-    t.string "first_name"
-    t.string "last_name"
-    t.string "dob"
-    t.string "gender"
-    t.string "race___1"
-    t.string "race___2"
-    t.string "race___3"
-    t.string "race___4"
-    t.string "race___5"
-    t.string "race___6"
-    t.string "race___99"
-    t.string "ethnicity"
-    t.string "demographics_complete"
-    t.string "v_d"
-    t.string "v_coordinator"
-    t.string "visit_information_complete"
-    t.string "moca"
-    t.string "mood"
-    t.string "test_calc"
-    t.string "clock_position_of_wound"
-    t.string "visit_data_complete"
-    t.string "m_d"
-    t.string "mri_coordinator"
-    t.string "mri_information_complete"
+  create_table "redcap_event_map_dependents", force: :cascade do |t|
+    t.integer "redcap_variable_id", null: false
+    t.integer "redcap_event_id", null: false
+    t.integer "concept_id"
+    t.integer "omop_column_id"
+    t.datetime "deleted_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "redcap_event_maps", force: :cascade do |t|
+    t.integer "redcap_event_id", null: false
+    t.integer "concept_id"
+    t.datetime "deleted_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "redcap_events", force: :cascade do |t|
+    t.integer "redcap_data_dictionary_id", null: false
+    t.string "event_name", null: false
+    t.integer "arm_num", null: false
+    t.integer "day_offset", null: false
+    t.integer "offset_min", null: false
+    t.integer "offset_max", null: false
+    t.string "unique_event_name", null: false
+    t.string "custom_event_label"
+    t.datetime "deleted_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
@@ -525,6 +524,7 @@ ActiveRecord::Schema.define(version: 2020_11_17_113950) do
     t.integer "project_id", null: false
     t.string "name", null: false
     t.string "api_token", null: false
+    t.string "export_table_name", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.datetime "deleted_at"

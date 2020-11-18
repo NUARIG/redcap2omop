@@ -1,54 +1,41 @@
-# bundle exec rake ingest:data_dictionary
-# bundle exec rake ingest:omop_tables
-# bundle exec rake ingest:maps
-# bundle exec rake redcap:reload_exported_data
-# bundle exec rake ingest:redcap2omop
+require 'webservices/redcap_api'
+
+#bundle exec rake ingest:data_dictionary
+#bundle exec rake ingest:omop_tables
+#bundle exec rake ingest:maps
+#bundle exec rake ingest:data
+#bundle exec rake ingest:redcap2omop
 namespace :ingest do
   desc "Data dictionary"
   task(data_dictionary: :environment) do |t, args|
-    RedcapProject.delete_all
-    RedcapDataDictionary.delete_all
-    RedcapVariable.delete_all
-    RedcapVariableChoice.delete_all
-    redcap_project = RedcapProject.where(project_id: 1, name:'test', api_token: 'test').first_or_create
-    redcap_data_dictionary = RedcapDataDictionary.where(redcap_project_id: redcap_project.id, version: 1).first_or_create
+    # RedcapProject.delete_all
+    # redcap_project = RedcapProject.where(project_id: 1, name:'test', api_token: 'test').first_or_create
 
-    redcap_variables_from_file = CSV.new(File.open('lib/setup/data/data_dictionary.csv'), headers: true, col_sep: ",", return_headers: false,  quote_char: "\"")
-    redcap_variables_from_file.each do |redcap_variable_from_file|
-      redcap_variable = RedcapVariable.new(redcap_data_dictionary_id: redcap_data_dictionary.id)
-      redcap_variable.name = redcap_variable_from_file['Variable / Field Name']
-      redcap_variable.form_name = redcap_variable_from_file['Form Name']
-      redcap_variable.field_type = redcap_variable_from_file['Field Type']
-      redcap_variable.text_validation_type = redcap_variable_from_file['Text Validation Type OR Show Slider Number']
-      redcap_variable.field_type_normalized = redcap_variable.normalize_field_type
-      redcap_variable.field_label = redcap_variable_from_file['Field Label']
-      redcap_variable.choices = redcap_variable_from_file['Choices, Calculations, OR Slider Labels']
-      redcap_variable.field_annotation = redcap_variable_from_file['Field Annotation']
-      # redcap_variable.ordinal_position
-      # redcap_variable.curated
-      if redcap_variable.choices.present?
-        redcap_variable.choices.split('|').each_with_index do |choice, i|
+    # RedcapDataDictionary.delete_all
+    # RedcapEvent.delete_all
+    # RedcapVariable.delete_all
+    # RedcapVariableChoice.delete_all
+    RedcapProject.all.each do |redcap_project|
+      ActiveRecord::Base.transaction do
+        redcap_webservice = Webservices::RedcapApi.new(api_token: redcap_project.api_token)
 
-          if choice.include?(',')
-            choice_code, delimiter, choice_description = choice.partition(',')
-            if choice_code.present?
-              choice_code.strip!
-            end
-
-            if choice_description.present?
-              choice_description.strip!
-            end
-
-            if redcap_variable.field_annotation.present?
-              redcap_variable.field_annotation.strip!
-            end
-            redcap_variable.redcap_variable_choices.build(choice_code_raw: choice_code.try(:strip), choice_description: choice_description.try(:strip), vocabulary_id_raw: redcap_variable.field_annotation.try(:strip), ordinal_position: i, curated: false)
-          else
-            redcap_variable.redcap_variable_choices.build(choice_code_raw: choice.try(:strip), choice_description: choice.try(:strip), vocabulary_id_raw: redcap_variable.field_annotation.try(:strip), ordinal_position: i, curated: false)
-          end
-        end
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        load_redcap_events(redcap_webservice, redcap_data_dictionary)
+        load_redcap_variables(redcap_webservice, redcap_data_dictionary)
       end
-      redcap_variable.save!
+    end
+  end
+
+  desc "Load REDCap records"
+  task(data: :environment) do |t, args|
+    RedcapProject.all.each do |redcap_project|
+      ActiveRecord::Base.transaction do
+        redcap_webservice = Webservices::RedcapApi.new(api_token: redcap_project.api_token)
+        records     = redcap_webservice.records
+        field_names = records.first.keys
+        refresh_redcap_export_table(redcap_project.export_table_name, field_names)
+        load_redcap_records(redcap_project.export_table_name, records)
+      end
     end
   end
 
@@ -323,6 +310,7 @@ namespace :ingest do
 
   desc "REDCap2OMOP"
   task(redcap2omop: :environment) do |t, args|
+    project = RedcapProject.first
     Person.delete_all
     Provider.delete_all
     Observation.delete_all
@@ -338,52 +326,54 @@ namespace :ingest do
       provider_redcap2omop_map[redcap_variable_map.omop_column.name] = redcap_variable_map.redcap_variable.name
     end
 
-    RedcapExportTmp.all.each do |redcap_export_tmp|
+    redcap_records = ActiveRecord::Base.connection.select_all("select * from #{RedcapProject.first.export_table_name}").to_a
+
+    redcap_records.each do |redcap_export_tmp|
       #person
-      if redcap_export_tmp.attributes[person_redcap2omop_map['birth_datetime']].present?
+      if redcap_export_tmp[person_redcap2omop_map['birth_datetime']].present?
         person = Person.new
         person.person_id = Person.next_person_id
 
         puts 'redcap: gender_concept_id'
-        puts redcap_export_tmp.attributes[person_redcap2omop_map['gender_concept_id']]
+        puts redcap_export_tmp[person_redcap2omop_map['gender_concept_id']]
         puts 'omop: gender_concept_id'
         redcap_variable = RedcapVariable.where(name: person_redcap2omop_map['gender_concept_id']).first
         puts redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
         person.gender_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
 
         puts 'redcap: birth_datetime'
-        puts redcap_export_tmp.attributes[person_redcap2omop_map['birth_datetime']]
-        puts DateTime.parse(redcap_export_tmp.attributes[person_redcap2omop_map['birth_datetime']])
-        person.birth_datetime = DateTime.parse(redcap_export_tmp.attributes[person_redcap2omop_map['birth_datetime']])
+        puts redcap_export_tmp[person_redcap2omop_map['birth_datetime']]
+        puts DateTime.parse(redcap_export_tmp[person_redcap2omop_map['birth_datetime']])
+        person.birth_datetime = DateTime.parse(redcap_export_tmp[person_redcap2omop_map['birth_datetime']])
 
         puts 'redcap: race_concept_id'
-        puts redcap_export_tmp.attributes[person_redcap2omop_map['race_concept_id']]
+        puts redcap_export_tmp[person_redcap2omop_map['race_concept_id']]
         puts 'omop: race_concept_id'
         redcap_variable = RedcapVariable.where(name: person_redcap2omop_map['race_concept_id']).first
         puts redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
         person.race_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
 
         puts 'redcap: ethnicity_concept_id'
-        puts redcap_export_tmp.attributes[person_redcap2omop_map['ethnicity_concept_id']]
+        puts redcap_export_tmp[person_redcap2omop_map['ethnicity_concept_id']]
         puts 'omop: ethnicity_concept_id'
         redcap_variable = RedcapVariable.where(name: person_redcap2omop_map['ethnicity_concept_id']).first
         puts redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
         person.ethnicity_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
 
-        puts redcap_export_tmp.attributes[person_redcap2omop_map['person_source_value']]
-        person.person_source_value = redcap_export_tmp.attributes[person_redcap2omop_map['person_source_value']]
+        puts redcap_export_tmp[person_redcap2omop_map['person_source_value']]
+        person.person_source_value = redcap_export_tmp[person_redcap2omop_map['person_source_value']]
         person.save!
       end
 
       #provider
-      if redcap_export_tmp.attributes[provider_redcap2omop_map['provider_source_value']].present?
-        puts redcap_export_tmp.attributes[provider_redcap2omop_map['provider_source_value']]
-        provider = Provider.where(provider_source_value: redcap_export_tmp.attributes[provider_redcap2omop_map['provider_source_value']]).first
+      if redcap_export_tmp[provider_redcap2omop_map['provider_source_value']].present?
+        puts redcap_export_tmp[provider_redcap2omop_map['provider_source_value']]
+        provider = Provider.where(provider_source_value: redcap_export_tmp[provider_redcap2omop_map['provider_source_value']]).first
         if !provider.present?
           provider = Provider.new
           provider.provider_id = Provider.next_provider_id
-          provider.provider_source_value = redcap_export_tmp.attributes[provider_redcap2omop_map['provider_source_value']]
-          provider.provider_name = redcap_export_tmp.attributes[provider_redcap2omop_map['provider_name']]
+          provider.provider_source_value = redcap_export_tmp[provider_redcap2omop_map['provider_source_value']]
+          provider.provider_name = redcap_export_tmp[provider_redcap2omop_map['provider_name']]
           provider.save!
         end
       end
@@ -391,24 +381,22 @@ namespace :ingest do
 
     #domain_redcap_variable
     domain_redcap_variable_maps = redcap_variables_maps_in_omop_domains
-    RedcapExportTmp.all.each do |redcap_export_tmp|
-      puts 'redcap_export_tmp.id'
-      puts redcap_export_tmp.id
+    redcap_records.each do |redcap_export_tmp|
       domain_redcap_variable_maps.each do |domain_redcap_variable_map|
-        if redcap_export_tmp.attributes[domain_redcap_variable_map.redcap_variable.name].present?
-          puts 'we got you'
-          puts domain_redcap_variable_map.redcap_variable.name
+        if redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name].present?
+          # puts 'we got you'
+          # puts domain_redcap_variable_map.redcap_variable.name
           case domain_redcap_variable_map.concept.domain_id
           when 'Observation', 'Measurement'
             observation = Observation.new
             observation.observation_id = Observation.next_observation_id
-            person = Person.where(person_source_value: redcap_export_tmp.attributes[person_redcap2omop_map['person_source_value']]).first
+            person = Person.where(person_source_value: redcap_export_tmp[person_redcap2omop_map['person_source_value']]).first
             observation.person_id = person.person_id
             observation.observation_concept_id = domain_redcap_variable_map.concept.concept_id
             observation.observation_type_concept_id = RedcapProject.first.type_concept.concept_id
             case domain_redcap_variable_map.redcap_variable.field_type_normalized
             when 'integer'
-              observation.value_as_number = redcap_export_tmp.attributes[domain_redcap_variable_map.redcap_variable.name].to_i
+              observation.value_as_number = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name].to_i
             else 'choice'
               puts domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
               observation.value_as_concept_id = domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
@@ -416,29 +404,30 @@ namespace :ingest do
 
             domain_redcap_variable_map.redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
               # puts redcap_variable_child_map.redcap_variable.name
-              if redcap_export_tmp.attributes[redcap_variable_child_map.redcap_variable.name].present?
-                # puts redcap_export_tmp.attributes[redcap_variable_child_map.redcap_variable.name]
-                value = redcap_export_tmp.attributes[redcap_variable_child_map.redcap_variable.name]
+              if redcap_export_tmp[redcap_variable_child_map.redcap_variable.name].present?
+                # puts redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]
+                value = redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]
                 if redcap_variable_child_map.omop_column.name == 'provider_id'
-                  value = Provider.where(provider_source_value: redcap_export_tmp.attributes[redcap_variable_child_map.redcap_variable.name]).first.provider_id
+                  value = Provider.where(provider_source_value: redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]).first.provider_id
                 end
                 observation.write_attribute(redcap_variable_child_map.omop_column.name, value)
               else
                 puts 'not in the same row'
-                other_redcap_export_tmps =  RedcapExportTmp.where("redcap_event_name = ? AND redcap_repeat_instrument = ''", redcap_export_tmp.redcap_event_name)
+                # other_redcap_export_tmps =  RedcapExportTmp.where("redcap_event_name = ? AND redcap_repeat_instrument = ''", redcap_export_tmp.redcap_event_name)
+                other_redcap_export_tmps =  redcap_records.select{|record| record['redcap_event_name'] == redcap_export_tmp['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}
                 if other_redcap_export_tmps.size == 1
                   other_redcap_export_tmp = other_redcap_export_tmps.first
-                  if other_redcap_export_tmp.attributes[redcap_variable_child_map.redcap_variable.name].present?
-                    value = other_redcap_export_tmp.attributes[redcap_variable_child_map.redcap_variable.name]
+                  if other_redcap_export_tmp[redcap_variable_child_map.redcap_variable.name].present?
+                    value = other_redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]
                     if redcap_variable_child_map.omop_column.name == 'provider_id'
-                      value = Provider.where(provider_source_value: other_redcap_export_tmp.attributes[redcap_variable_child_map.redcap_variable.name]).first.provider_id
+                      value = Provider.where(provider_source_value: other_redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]).first.provider_id
                     end
 
                     observation.write_attribute(redcap_variable_child_map.omop_column.name, value)
                   end
                 else
-                  puts 'missed the event row'
-                  puts other_redcap_export_tmps.size
+                  # puts 'missed the event row'
+                  # puts other_redcap_export_tmps.size
                 end
               end
             end
@@ -449,12 +438,80 @@ namespace :ingest do
       end
     end
   end
-end
 
-def redcap_variables_by_omop_table(omop_table)
-  RedcapVariableMap.joins(omop_column: :omop_table).where("omop_tables.name = ?", omop_table)
-end
+  def redcap_variables_by_omop_table(omop_table)
+    RedcapVariableMap.joins(omop_column: :omop_table).where("omop_tables.name = ?", omop_table)
+  end
 
-def redcap_variables_maps_in_omop_domains
-  RedcapVariableMap.joins(:concept)
+  def redcap_variables_maps_in_omop_domains
+    RedcapVariableMap.joins(:concept)
+  end
+
+  def load_redcap_events(redcap_webservice, redcap_data_dictionary)
+    redcap_webservice.events.each do |event|
+      event[:redcap_data_dictionary] = redcap_data_dictionary
+      RedcapEvent.create!(event)
+    end
+  end
+
+  def load_redcap_variables(redcap_webservice, redcap_data_dictionary)
+    metadata  = redcap_webservice.metadata
+    metadata.each do |metadata_variable|
+      redcap_variable = RedcapVariable.new(redcap_data_dictionary_id: redcap_data_dictionary.id)
+      redcap_variable.name                  = metadata_variable['field_name']
+      redcap_variable.form_name             = metadata_variable['form_name']
+      redcap_variable.field_type            = metadata_variable['field_type']
+      redcap_variable.text_validation_type  = metadata_variable['text_validation_type_or_show_slider_number']
+      redcap_variable.field_type_normalized = redcap_variable.normalize_field_type
+      redcap_variable.field_label           = metadata_variable['field_label']
+      redcap_variable.choices               = metadata_variable['select_choices_or_calculations']
+      redcap_variable.field_annotation      = metadata_variable['field_annotation']
+      # redcap_variable.ordinal_position
+      # redcap_variable.curated
+
+      if redcap_variable.choices.present?
+        redcap_variable.choices.split('|').each_with_index do |choice, i|
+          choice_code, delimiter, choice_description = choice.partition(',')
+          if choice_code.present?
+            choice_code.strip!
+          end
+
+          if choice_description.present?
+            choice_description.strip!
+          end
+
+          if redcap_variable.field_annotation.present?
+            redcap_variable.field_annotation.strip!
+          end
+
+          redcap_variable.redcap_variable_choices.build(choice_code_raw: choice_code.try(:strip), choice_description: choice_description.try(:strip), vocabulary_id_raw: redcap_variable.field_annotation.try(:strip), ordinal_position: i, curated: false)
+        end
+      end
+      redcap_variable.save!
+    end
+  end
+
+  def refresh_redcap_export_table(export_table_name, field_names)
+    sql = generate_create_redcap_export_table_sql(export_table_name, field_names)
+    ActiveRecord::Base.connection.execute "DROP TABLE IF EXISTS #{export_table_name}"
+    ActiveRecord::Base.connection.execute sql
+  end
+
+  def generate_create_redcap_export_table_sql(export_table_name, field_names)
+    sql = "CREATE TABLE #{export_table_name}"
+    sql_fields = []
+    field_names.each do |field_name|
+      sql_fields << "#{field_name} VARCHAR(255)"
+    end
+    sql << " (#{sql_fields.join(',')})"
+  end
+
+  def load_redcap_records(export_table_name, records)
+    records.each do |record|
+      values = record.values.map{ |v| ActiveRecord::Base.connection.quote(v)}.join(',')
+      ActiveRecord::Base.connection.exec_insert(
+        "INSERT INTO #{export_table_name} (#{record.keys.join(',')}) VALUES (#{values})"
+      )
+    end
+  end
 end

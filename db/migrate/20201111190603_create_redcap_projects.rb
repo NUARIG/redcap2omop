@@ -4,6 +4,7 @@ class CreateRedcapProjects < ActiveRecord::Migration[6.0]
       t.integer :project_id,  null: false
       t.string  :name,        null: false
       t.string  :api_token,   null: false
+      t.string :export_table_name, null: false
       t.timestamps
       t.datetime :deleted_at, null: true
     end
