@@ -5,6 +5,7 @@ require 'webservices/redcap_api'
 #bundle exec rake ingest:maps
 #bundle exec rake ingest:data
 #bundle exec rake ingest:redcap2omop
+
 namespace :ingest do
   desc "Data dictionary"
   task(data_dictionary: :environment) do |t, args|
@@ -22,19 +23,6 @@ namespace :ingest do
         redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
         load_redcap_events(redcap_webservice, redcap_data_dictionary)
         load_redcap_variables(redcap_webservice, redcap_data_dictionary)
-      end
-    end
-  end
-
-  desc "Load REDCap records"
-  task(data: :environment) do |t, args|
-    RedcapProject.all.each do |redcap_project|
-      ActiveRecord::Base.transaction do
-        redcap_webservice = Webservices::RedcapApi.new(api_token: redcap_project.api_token)
-        records     = redcap_webservice.records
-        field_names = records.first.keys
-        refresh_redcap_export_table(redcap_project.export_table_name, field_names)
-        load_redcap_records(redcap_project.export_table_name, records)
       end
     end
   end
@@ -306,6 +294,19 @@ namespace :ingest do
     omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
+  end
+
+  desc "Load REDCap records"
+  task(data: :environment) do |t, args|
+    RedcapProject.all.each do |redcap_project|
+      ActiveRecord::Base.transaction do
+        redcap_webservice = Webservices::RedcapApi.new(api_token: redcap_project.api_token)
+        records     = redcap_webservice.records
+        field_names = records.first.keys
+        refresh_redcap_export_table(redcap_project.export_table_name, field_names)
+        load_redcap_records(redcap_project.export_table_name, records)
+      end
+    end
   end
 
   desc "REDCap2OMOP"
