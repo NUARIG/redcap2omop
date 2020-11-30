@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_11_17_160645) do
+ActiveRecord::Schema.define(version: 2020_11_30_144509) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -149,6 +149,293 @@ ActiveRecord::Schema.define(version: 2020_11_17_160645) do
     t.integer "condition_source_concept_id"
     t.string "condition_status_source_value", limit: 50
     t.integer "condition_status_concept_id"
+  end
+
+  create_table "core_records_tmp", id: false, force: :cascade do |t|
+    t.string "global_id", limit: 255
+    t.string "redcap_event_name", limit: 255
+    t.string "redcap_repeat_instrument", limit: 255
+    t.string "redcap_repeat_instance", limit: 255
+    t.string "nacc_id", limit: 255
+    t.string "first_name", limit: 255
+    t.string "last_name", limit: 255
+    t.string "dob", limit: 255
+    t.string "stub_complete", limit: 255
+    t.string "formver", limit: 255
+    t.string "adcid", limit: 255
+    t.string "visitmo", limit: 255
+    t.string "visitday", limit: 255
+    t.string "visityr", limit: 255
+    t.string "visitnum", limit: 255
+    t.string "initials", limit: 255
+    t.string "header_complete", limit: 255
+    t.string "ptid", limit: 255
+    t.string "formdate_ivp_a1", limit: 255
+    t.string "visitnum_ivp_a1", limit: 255
+    t.string "initials_ivp_a1", limit: 255
+    t.string "reason", limit: 255
+    t.string "refersc", limit: 255
+    t.string "learned", limit: 255
+    t.string "prestat", limit: 255
+    t.string "prespart", limit: 255
+    t.string "source", limit: 255
+    t.string "birthmo", limit: 255
+    t.string "birthyr", limit: 255
+    t.string "sex", limit: 255
+    t.string "hispanic", limit: 255
+    t.string "hispor", limit: 255
+    t.string "hisporx", limit: 255
+    t.string "race", limit: 255
+    t.string "racex", limit: 255
+    t.string "racesec", limit: 255
+    t.string "racesecx", limit: 255
+    t.string "raceter", limit: 255
+    t.string "raceterx", limit: 255
+    t.string "primlang", limit: 255
+    t.string "primlanx", limit: 255
+    t.string "educ", limit: 255
+    t.string "mc_subject_profession", limit: 255
+    t.string "maristat", limit: 255
+    t.string "livsitua", limit: 255
+    t.string "independ", limit: 255
+    t.string "residenc", limit: 255
+    t.string "zip", limit: 255
+    t.string "handed", limit: 255
+    t.string "mc_ivp_subject_driving", limit: 255
+    t.string "mc_ivp_stop_driving", limit: 255
+    t.string "mc_ivp_car_accident", limit: 255
+    t.string "ivp_a1_complete", limit: 255
+    t.string "formdate_ivp_z1x", limit: 255
+    t.string "visitnum_ivp_z1x", limit: 255
+    t.string "check_initials", limit: 255
+    t.string "langa1", limit: 255
+    t.string "a2sub", limit: 255
+    t.string "a2not", limit: 255
+    t.string "langa2", limit: 255
+    t.string "a3sub", limit: 255
+    t.string "a3not", limit: 255
+    t.string "langa3", limit: 255
+    t.string "a4sub", limit: 255
+    t.string "a4not", limit: 255
+    t.string "langa4", limit: 255
+    t.string "langa5", limit: 255
+    t.string "b1sub", limit: 255
+    t.string "b1not", limit: 255
+    t.string "langb1", limit: 255
+    t.string "langb4", limit: 255
+    t.string "b5sub", limit: 255
+    t.string "b5not", limit: 255
+    t.string "langb5", limit: 255
+    t.string "b6sub", limit: 255
+    t.string "b6not", limit: 255
+    t.string "langb6", limit: 255
+    t.string "b7sub", limit: 255
+    t.string "b7not", limit: 255
+    t.string "langb7", limit: 255
+    t.string "langb8", limit: 255
+    t.string "langb9", limit: 255
+    t.string "langc2", limit: 255
+    t.string "langd1", limit: 255
+    t.string "langd2", limit: 255
+    t.string "ftda3afs", limit: 255
+    t.string "ftda3afr", limit: 255
+    t.string "langa3a", limit: 255
+    t.string "langb3f", limit: 255
+    t.string "langb9f", limit: 255
+    t.string "langc1f", limit: 255
+    t.string "langc2f", limit: 255
+    t.string "langc3f", limit: 255
+    t.string "ftdc4fs", limit: 255
+    t.string "ftdc4fr", limit: 255
+    t.string "langc4f", limit: 255
+    t.string "ftdc5fs", limit: 255
+    t.string "ftdc5fr", limit: 255
+    t.string "langc5f", limit: 255
+    t.string "ftdc6fs", limit: 255
+    t.string "ftdc6fr", limit: 255
+    t.string "langc6f", limit: 255
+    t.string "lange2f", limit: 255
+    t.string "lange3f", limit: 255
+    t.string "clssub", limit: 255
+    t.string "langcls", limit: 255
+    t.string "ivp_z1x_complete", limit: 255
+    t.string "visitform_ivp_notes", limit: 255
+    t.string "visitnum_ivp_notes", limit: 255
+    t.string "initials_ivp_notes", limit: 255
+    t.string "ivp_partic_flag", limit: 255
+    t.string "ivp_partic_flag_reason___0", limit: 255
+    t.string "ivp_partic_flag_reason___1", limit: 255
+    t.string "ivp_partic_flag_reason___2", limit: 255
+    t.string "ivp_partic_flag_reason___3", limit: 255
+    t.string "ivp_partic_flag_reason___4", limit: 255
+    t.string "ivp_partic_flag_reason___5", limit: 255
+    t.string "ivp_partic_flag_reason___6", limit: 255
+    t.string "ivp_partic_flag_notes", limit: 255
+    t.string "ivp_concerns_yn", limit: 255
+    t.string "ivp_concerns_contact", limit: 255
+    t.string "ivp_visit_notes", limit: 255
+    t.string "ivp_visit_notes_complete", limit: 255
+    t.string "formdate_fvp_a1", limit: 255
+    t.string "visitnum_fvp_a1", limit: 255
+    t.string "initials_fvp_a1", limit: 255
+    t.string "fu_birthmo", limit: 255
+    t.string "fu_birthyr", limit: 255
+    t.string "fu_maristat", limit: 255
+    t.string "fu_sex", limit: 255
+    t.string "fu_livsitua", limit: 255
+    t.string "fu_independ", limit: 255
+    t.string "fu_residenc", limit: 255
+    t.string "fu_zip", limit: 255
+    t.string "mc_fvp_subject_driving", limit: 255
+    t.string "mc_fvp_stop_driving", limit: 255
+    t.string "mc_fvp_car_accident", limit: 255
+    t.string "fvp_a1_complete", limit: 255
+    t.string "formdate_fvp_z1x", limit: 255
+    t.string "visitnum_fvp_z1x", limit: 255
+    t.string "fu_check_initials", limit: 255
+    t.string "fu_langa1", limit: 255
+    t.string "fu_a2sub", limit: 255
+    t.string "fu_a2not", limit: 255
+    t.string "fu_langa2", limit: 255
+    t.string "fu_a3sub", limit: 255
+    t.string "fu_a3not", limit: 255
+    t.string "fu_langa3", limit: 255
+    t.string "fu_a4sub", limit: 255
+    t.string "fu_a4not", limit: 255
+    t.string "fu_langa4", limit: 255
+    t.string "fu_b1sub", limit: 255
+    t.string "fu_b1not", limit: 255
+    t.string "fu_langb1", limit: 255
+    t.string "fu_langb4", limit: 255
+    t.string "fu_b5sub", limit: 255
+    t.string "fu_b5not", limit: 255
+    t.string "fu_langb5", limit: 255
+    t.string "fu_b6sub", limit: 255
+    t.string "fu_b6not", limit: 255
+    t.string "fu_langb6", limit: 255
+    t.string "fu_b7sub", limit: 255
+    t.string "fu_b7not", limit: 255
+    t.string "fu_langb7", limit: 255
+    t.string "fu_langb8", limit: 255
+    t.string "fu_langb9", limit: 255
+    t.string "fu_langc1", limit: 255
+    t.string "fu_langc2", limit: 255
+    t.string "fu_langd1", limit: 255
+    t.string "fu_langd2", limit: 255
+    t.string "fu_ftda3afs", limit: 255
+    t.string "fu_ftda3afr", limit: 255
+    t.string "fu_langa3a", limit: 255
+    t.string "fu_langb3f", limit: 255
+    t.string "fu_langb9f", limit: 255
+    t.string "fu_langc1f", limit: 255
+    t.string "fu_langc2f", limit: 255
+    t.string "fu_langc3f", limit: 255
+    t.string "fu_ftdc4fs", limit: 255
+    t.string "fu_ftdc4fr", limit: 255
+    t.string "fu_langc4f", limit: 255
+    t.string "fu_ftdc5fs", limit: 255
+    t.string "fu_ftdc5fr", limit: 255
+    t.string "fu_langc5f", limit: 255
+    t.string "fu_ftdc6fs", limit: 255
+    t.string "fu_ftdc6fr", limit: 255
+    t.string "fu_langc6f", limit: 255
+    t.string "fu_lange2f", limit: 255
+    t.string "fu_lange3f", limit: 255
+    t.string "fu_clssub", limit: 255
+    t.string "fu_langcls", limit: 255
+    t.string "fvp_z1x_complete", limit: 255
+    t.string "formdate_fvp_notes", limit: 255
+    t.string "visitnum_fvp_notes", limit: 255
+    t.string "initials_fvp_notes", limit: 255
+    t.string "fvp_partic_flag", limit: 255
+    t.string "fvp_partic_flag_reason___0", limit: 255
+    t.string "fvp_partic_flag_reason___1", limit: 255
+    t.string "fvp_partic_flag_reason___2", limit: 255
+    t.string "fvp_partic_flag_reason___3", limit: 255
+    t.string "fvp_partic_flag_reason___4", limit: 255
+    t.string "fvp_partic_flag_reason___5", limit: 255
+    t.string "fvp_partic_flag_reason___6", limit: 255
+    t.string "fvp_partic_flag_notes", limit: 255
+    t.string "fvp_concerns_yn", limit: 255
+    t.string "fvp_concerns_contact", limit: 255
+    t.string "fvp_visit_notes", limit: 255
+    t.string "fvp_visit_notes_complete", limit: 255
+    t.string "formdate_tvp_t1", limit: 255
+    t.string "visitnum_tvp_t1", limit: 255
+    t.string "initials_tvp_t1", limit: 255
+    t.string "telcog", limit: 255
+    t.string "telill", limit: 255
+    t.string "telhome", limit: 255
+    t.string "telrefu", limit: 255
+    t.string "telcov", limit: 255
+    t.string "telothr", limit: 255
+    t.string "telothrx", limit: 255
+    t.string "telmod", limit: 255
+    t.string "telinper", limit: 255
+    t.string "telmile", limit: 255
+    t.string "tvp_t1_complete", limit: 255
+    t.string "formdate_tvp_a1", limit: 255
+    t.string "visitnum_tvp_a1", limit: 255
+    t.string "initials_tvp_a1", limit: 255
+    t.string "tele_birthmo", limit: 255
+    t.string "tele_birthyr", limit: 255
+    t.string "tele_maristat", limit: 255
+    t.string "tele_sex", limit: 255
+    t.string "tele_livsitua", limit: 255
+    t.string "tele_independ", limit: 255
+    t.string "tele_residenc", limit: 255
+    t.string "tele_zip", limit: 255
+    t.string "mc_tvp_subject_driving", limit: 255
+    t.string "mc_tvp_stop_driving", limit: 255
+    t.string "mc_tvp_car_accident", limit: 255
+    t.string "tvp_a1_complete", limit: 255
+    t.string "formdate_tvp_z1x", limit: 255
+    t.string "visitnum_tvp_z1x", limit: 255
+    t.string "tele_check_initials", limit: 255
+    t.string "tele_langt1", limit: 255
+    t.string "tele_langa1", limit: 255
+    t.string "tele_langa2", limit: 255
+    t.string "tele_a3sub", limit: 255
+    t.string "tele_a3not", limit: 255
+    t.string "tele_langa3", limit: 255
+    t.string "tele_a4sub", limit: 255
+    t.string "tele_a4not", limit: 255
+    t.string "tele_langa4", limit: 255
+    t.string "tele_langb4", limit: 255
+    t.string "tele_b5sub", limit: 255
+    t.string "tele_b5not", limit: 255
+    t.string "tele_langb5", limit: 255
+    t.string "tele_b6sub", limit: 255
+    t.string "tele_b6not", limit: 255
+    t.string "tele_langb6", limit: 255
+    t.string "tele_b7sub", limit: 255
+    t.string "tele_b7not", limit: 255
+    t.string "tele_langb7", limit: 255
+    t.string "tele_langb9", limit: 255
+    t.string "tele_c2sub", limit: 255
+    t.string "tele_c2not", limit: 255
+    t.string "tele_langc2", limit: 255
+    t.string "tele_langd1", limit: 255
+    t.string "tele_langd2", limit: 255
+    t.string "tele_clssub", limit: 255
+    t.string "tele_langcls", limit: 255
+    t.string "tvp_z1x_checklist_complete", limit: 255
+    t.string "formdate_tvp_notes", limit: 255
+    t.string "visitnum_tvp_notes", limit: 255
+    t.string "initials_tvp_notes", limit: 255
+    t.string "tvp_partic_flag", limit: 255
+    t.string "tvp_partic_flag_reason___0", limit: 255
+    t.string "tvp_partic_flag_reason___1", limit: 255
+    t.string "tvp_partic_flag_reason___2", limit: 255
+    t.string "tvp_partic_flag_reason___3", limit: 255
+    t.string "tvp_partic_flag_reason___4", limit: 255
+    t.string "tvp_partic_flag_reason___5", limit: 255
+    t.string "tvp_partic_flag_reason___6", limit: 255
+    t.string "tvp_partic_flag_notes", limit: 255
+    t.string "tvp_concerns_yn", limit: 255
+    t.string "tvp_concerns_contact", limit: 255
+    t.string "tvp_visit_notes", limit: 255
+    t.string "tvp_visit_notes_complete", limit: 255
   end
 
   create_table "cost", id: false, force: :cascade do |t|
@@ -591,6 +878,7 @@ ActiveRecord::Schema.define(version: 2020_11_17_160645) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.datetime "deleted_at"
+    t.string "field_type_curated"
   end
 
   create_table "relationship", primary_key: "relationship_id", id: :string, limit: 20, force: :cascade do |t|
@@ -634,6 +922,37 @@ ActiveRecord::Schema.define(version: 2020_11_17_160645) do
     t.string "unit_source_value", limit: 50
     t.string "anatomic_site_source_value", limit: 50
     t.string "disease_status_source_value", limit: 50
+  end
+
+  create_table "test_records_tmp", id: false, force: :cascade do |t|
+    t.string "record_id", limit: 255
+    t.string "redcap_event_name", limit: 255
+    t.string "redcap_repeat_instrument", limit: 255
+    t.string "redcap_repeat_instance", limit: 255
+    t.string "first_name", limit: 255
+    t.string "last_name", limit: 255
+    t.string "dob", limit: 255
+    t.string "gender", limit: 255
+    t.string "race___1", limit: 255
+    t.string "race___2", limit: 255
+    t.string "race___3", limit: 255
+    t.string "race___4", limit: 255
+    t.string "race___5", limit: 255
+    t.string "race___6", limit: 255
+    t.string "race___99", limit: 255
+    t.string "ethnicity", limit: 255
+    t.string "demographics_complete", limit: 255
+    t.string "v_d", limit: 255
+    t.string "v_coordinator", limit: 255
+    t.string "visit_information_complete", limit: 255
+    t.string "moca", limit: 255
+    t.string "mood", limit: 255
+    t.string "test_calc", limit: 255
+    t.string "clock_position_of_wound", limit: 255
+    t.string "visit_data_complete", limit: 255
+    t.string "m_d", limit: 255
+    t.string "mri_coordinator", limit: 255
+    t.string "mri_information_complete", limit: 255
   end
 
   create_table "visit_detail", id: false, force: :cascade do |t|

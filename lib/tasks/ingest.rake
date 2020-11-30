@@ -1,20 +1,31 @@
 require 'webservices/redcap_api'
 
-#bundle exec rake ingest:data_dictionary
-#bundle exec rake ingest:omop_tables
-#bundle exec rake ingest:maps
-#bundle exec rake ingest:data
-#bundle exec rake ingest:redcap2omop
+# bundle exec rake data:truncate_omop_clinical_data_tables
+# bundle exec rake ingest:data_dictionary
+# bundle exec rake ingest:omop_tables
+  # bundle exec rake ingest:maps
+# bundle exec rake ingest:maps_neurofiles
+# bundle exec rake ingest:data
+# bundle exec rake ingest:redcap2omop
+
 namespace :ingest do
   desc "Data dictionary"
   task(data_dictionary: :environment) do |t, args|
     # RedcapProject.delete_all
     # redcap_project = RedcapProject.where(project_id: 1, name:'test', api_token: 'test').first_or_create
+    # redcap_project = RedcapProject.where(project_id: 5840, name:'core', api_token: '?').first_or_create
 
     # RedcapDataDictionary.delete_all
+    # RedcapEventMapDependent.delete_all
+    # RedcapEventMap.delete_all
     # RedcapEvent.delete_all
-    # RedcapVariable.delete_all
+    # RedcapVariableChildMap.delete_all
+    # RedcapVariableChoiceMap.delete_all
     # RedcapVariableChoice.delete_all
+    # RedcapVariable.delete_all
+    # RedcapVariableMap.delete_all
+    # RedcapVariableChoice.delete_all
+    # RedcapVariable.delete_all
     RedcapProject.all.each do |redcap_project|
       ActiveRecord::Base.transaction do
         redcap_webservice = Webservices::RedcapApi.new(api_token: redcap_project.api_token)
@@ -22,19 +33,6 @@ namespace :ingest do
         redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
         load_redcap_events(redcap_webservice, redcap_data_dictionary)
         load_redcap_variables(redcap_webservice, redcap_data_dictionary)
-      end
-    end
-  end
-
-  desc "Load REDCap records"
-  task(data: :environment) do |t, args|
-    RedcapProject.all.each do |redcap_project|
-      ActiveRecord::Base.transaction do
-        redcap_webservice = Webservices::RedcapApi.new(api_token: redcap_project.api_token)
-        records     = redcap_webservice.records
-        field_names = records.first.keys
-        refresh_redcap_export_table(redcap_project.export_table_name, field_names)
-        load_redcap_records(redcap_project.export_table_name, records)
       end
     end
   end
@@ -142,6 +140,165 @@ namespace :ingest do
     end
   end
 
+  desc "Maps neurofiless"
+  task(maps_neurofiles: :environment) do |t, args|
+    RedcapVariableMap.delete_all
+    RedcapVariableChoiceMap.delete_all
+    RedcapVariableChildMap.delete_all
+
+    #patient
+    redcap_variable = RedcapVariable.where(name: 'global_id').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'person' AND omop_columns.name = 'person_source_value'").first
+    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'sex').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'person' AND omop_columns.name = 'gender_concept_id'").first
+    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '2 Female').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Gender', concept_code: 'F').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '1 Male').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Gender', concept_code: 'M').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable = RedcapVariable.where(name: 'birthyr').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'person' AND omop_columns.name = 'year_of_birth'").first
+    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.save!
+
+    # redcap_variable = RedcapVariable.where(name: 'dob').first
+    # omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'person' AND omop_columns.name = 'birth_datetime'").first
+    # redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    # redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'race').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'person' AND omop_columns.name = 'race_concept_id'").first
+    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '3 American Indian or Alaska Native').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Race', concept_code: '1').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '5 Asian').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Race', concept_code: '2').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '2 Black or African American').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Race', concept_code: '3').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '4 Native Hawaiian or other Pacific Islander').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Race', concept_code: '4').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '1 White').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Race', concept_code: '5').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '99 Unknown').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '50 Other (specify)').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.save!
+
+    redcap_variable = RedcapVariable.where(name: 'hispanic').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'person' AND omop_columns.name = 'ethnicity_concept_id'").first
+    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '1 Yes').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Ethnicity', concept_code: 'Hispanic').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '0 No (If No, SKIP TO QUESTION 9)').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Ethnicity', concept_code: 'Not Hispanic').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown (If Unknown, SKIP TO QUESTION 9)').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.save!
+
+    #provider
+    redcap_variable = RedcapVariable.where(name: 'initials_ivp_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'initials_ivp_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
+    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.save!
+
+    #primlang
+    redcap_variable = RedcapVariable.where(name: 'primlang').first
+    redcap_variable.redcap_variable_maps.build(concept_id: Concept.where(domain_id: 'Observation', concept_code: 'Language_SpokenWrittenLanguage', standard_concept: 'S').first.concept_id)
+    redcap_variable.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "1 English").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Observation', concept_code: 'SpokenWrittenLanguage_EnglishUnitedStates', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "2 Spanish").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Observation', concept_code: 'SpokenWrittenLanguage_SpanishSpain', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "3 Mandarin").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Observation', concept_code: 'SpokenWrittenLanguage_ChineseHongKong', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "4 Cantonese").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Observation', concept_code: 'SpokenWrittenLanguage_ChineseHongKong', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "5 Russian").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Observation', concept_code: 'SpokenWrittenLanguage_RussianRussia', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "6 Japanese").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Observation', concept_code: 'SpokenWrittenLanguage_Japanese').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '8 Other primary language (specify)').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.save!
+
+    other_redcap_variable = RedcapVariable.where(name: 'formdate_ivp_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    #educ
+    redcap_variable = RedcapVariable.where(name: 'educ').first
+    redcap_variable.field_type_curated = 'integer'
+    redcap_variable.redcap_variable_maps.build(concept_id: Concept.where(domain_id: 'Observation', concept_code: '82590-1', standard_concept: 'S').first.concept_id)
+    redcap_variable.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '99').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.save!
+
+    other_redcap_variable = RedcapVariable.where(name: 'formdate_ivp_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    other_redcap_variable = RedcapVariable.where(name: 'initials_ivp_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+  end
+
   desc "Maps"
   task(maps: :environment) do |t, args|
     RedcapVariableMap.delete_all
@@ -241,7 +398,6 @@ namespace :ingest do
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
     redcap_variable.save!
 
-
     #moca
     redcap_variable = RedcapVariable.where(name: 'moca').first
     redcap_variable.redcap_variable_maps.build(concept_id: Concept.where(domain_id: 'Observation', concept_code: '72172-0').first.concept_id)
@@ -308,6 +464,19 @@ namespace :ingest do
     redcap_variable.save!
   end
 
+  desc "Load REDCap records"
+  task(data: :environment) do |t, args|
+    RedcapProject.all.each do |redcap_project|
+      ActiveRecord::Base.transaction do
+        redcap_webservice = Webservices::RedcapApi.new(api_token: redcap_project.api_token)
+        records     = redcap_webservice.records
+        field_names = records.first.keys
+        refresh_redcap_export_table(redcap_project.export_table_name, field_names)
+        load_redcap_records(redcap_project.export_table_name, records)
+      end
+    end
+  end
+
   desc "REDCap2OMOP"
   task(redcap2omop: :environment) do |t, args|
     project = RedcapProject.first
@@ -330,7 +499,7 @@ namespace :ingest do
 
     redcap_records.each do |redcap_export_tmp|
       #person
-      if redcap_export_tmp[person_redcap2omop_map['birth_datetime']].present?
+      if redcap_export_tmp[person_redcap2omop_map['birth_datetime']].present? || redcap_export_tmp[person_redcap2omop_map['year_of_birth']].present?
         person = Person.new
         person.person_id = Person.next_person_id
 
@@ -338,31 +507,51 @@ namespace :ingest do
         puts redcap_export_tmp[person_redcap2omop_map['gender_concept_id']]
         puts 'omop: gender_concept_id'
         redcap_variable = RedcapVariable.where(name: person_redcap2omop_map['gender_concept_id']).first
-        puts redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
-        person.gender_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+        if redcap_variable
+          gender_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+          if gender_concept_id.present?
+            person.gender_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+          end
+        end
 
-        puts 'redcap: birth_datetime'
-        puts redcap_export_tmp[person_redcap2omop_map['birth_datetime']]
-        puts DateTime.parse(redcap_export_tmp[person_redcap2omop_map['birth_datetime']])
-        person.birth_datetime = DateTime.parse(redcap_export_tmp[person_redcap2omop_map['birth_datetime']])
+        if redcap_export_tmp[person_redcap2omop_map['birth_datetime']].present?
+          puts 'redcap: birth_datetime'
+          puts redcap_export_tmp[person_redcap2omop_map['birth_datetime']]
+          puts DateTime.parse(redcap_export_tmp[person_redcap2omop_map['birth_datetime']])
+          person.birth_datetime = DateTime.parse(redcap_export_tmp[person_redcap2omop_map['birth_datetime']])
+        end
+
+        if redcap_export_tmp[person_redcap2omop_map['year_of_birth']].present?
+          puts 'redcap: year_of_birth'
+          puts redcap_export_tmp[person_redcap2omop_map['birth_year']]
+          puts redcap_export_tmp[person_redcap2omop_map['year_of_birth']]
+          person.year_of_birth = redcap_export_tmp[person_redcap2omop_map['year_of_birth']]
+        end
 
         puts 'redcap: race_concept_id'
         puts redcap_export_tmp[person_redcap2omop_map['race_concept_id']]
         puts 'omop: race_concept_id'
         redcap_variable = RedcapVariable.where(name: person_redcap2omop_map['race_concept_id']).first
-        puts redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
-        person.race_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+        if redcap_variable.present?
+          puts redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+          person.race_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+        end
 
         puts 'redcap: ethnicity_concept_id'
         puts redcap_export_tmp[person_redcap2omop_map['ethnicity_concept_id']]
         puts 'omop: ethnicity_concept_id'
         redcap_variable = RedcapVariable.where(name: person_redcap2omop_map['ethnicity_concept_id']).first
-        puts redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
-        person.ethnicity_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+        if redcap_variable.present?
+          puts redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+          person.ethnicity_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+        end
 
         puts redcap_export_tmp[person_redcap2omop_map['person_source_value']]
         person.person_source_value = redcap_export_tmp[person_redcap2omop_map['person_source_value']]
-        person.save!
+
+        if person.valid?
+          person.save!
+        end
       end
 
       #provider
@@ -391,48 +580,54 @@ namespace :ingest do
             observation = Observation.new
             observation.observation_id = Observation.next_observation_id
             person = Person.where(person_source_value: redcap_export_tmp[person_redcap2omop_map['person_source_value']]).first
-            observation.person_id = person.person_id
-            observation.observation_concept_id = domain_redcap_variable_map.concept.concept_id
-            observation.observation_type_concept_id = RedcapProject.first.type_concept.concept_id
-            case domain_redcap_variable_map.redcap_variable.field_type_normalized
-            when 'integer'
-              observation.value_as_number = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name].to_i
-            else 'choice'
-              puts domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
-              observation.value_as_concept_id = domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
-            end
-
-            domain_redcap_variable_map.redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
-              # puts redcap_variable_child_map.redcap_variable.name
-              if redcap_export_tmp[redcap_variable_child_map.redcap_variable.name].present?
-                # puts redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]
-                value = redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]
-                if redcap_variable_child_map.omop_column.name == 'provider_id'
-                  value = Provider.where(provider_source_value: redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]).first.provider_id
-                end
-                observation.write_attribute(redcap_variable_child_map.omop_column.name, value)
-              else
-                puts 'not in the same row'
-                # other_redcap_export_tmps =  RedcapExportTmp.where("redcap_event_name = ? AND redcap_repeat_instrument = ''", redcap_export_tmp.redcap_event_name)
-                other_redcap_export_tmps =  redcap_records.select{|record| record['redcap_event_name'] == redcap_export_tmp['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}
-                if other_redcap_export_tmps.size == 1
-                  other_redcap_export_tmp = other_redcap_export_tmps.first
-                  if other_redcap_export_tmp[redcap_variable_child_map.redcap_variable.name].present?
-                    value = other_redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]
-                    if redcap_variable_child_map.omop_column.name == 'provider_id'
-                      value = Provider.where(provider_source_value: other_redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]).first.provider_id
-                    end
-
-                    observation.write_attribute(redcap_variable_child_map.omop_column.name, value)
-                  end
+            if person.present?
+              observation.person_id = person.person_id
+              observation.observation_concept_id = domain_redcap_variable_map.concept.concept_id
+              observation.observation_type_concept_id = RedcapProject.first.type_concept.concept_id
+              case domain_redcap_variable_map.redcap_variable.determine_field_type
+              when 'integer'
+                value_as_concept_id = domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+                if value_as_concept_id.present?
+                  observation.value_as_concept_id = value_as_concept_id
                 else
-                  # puts 'missed the event row'
-                  # puts other_redcap_export_tmps.size
+                  observation.value_as_number = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name].to_i
+                end
+              else 'choice'
+                puts domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+                observation.value_as_concept_id = domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+              end
+
+              domain_redcap_variable_map.redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
+                # puts redcap_variable_child_map.redcap_variable.name
+                if redcap_export_tmp[redcap_variable_child_map.redcap_variable.name].present?
+                  # puts redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]
+                  value = redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]
+                  if redcap_variable_child_map.omop_column.name == 'provider_id'
+                    value = Provider.where(provider_source_value: redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]).first.provider_id
+                  end
+                  observation.write_attribute(redcap_variable_child_map.omop_column.name, value)
+                else
+                  puts 'not in the same row'
+                  other_redcap_export_tmps =  redcap_records.select{|record| record['redcap_event_name'] == redcap_export_tmp['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}
+                  if other_redcap_export_tmps.size == 1
+                    other_redcap_export_tmp = other_redcap_export_tmps.first
+                    if other_redcap_export_tmp[redcap_variable_child_map.redcap_variable.name].present?
+                      value = other_redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]
+                      if redcap_variable_child_map.omop_column.name == 'provider_id'
+                        value = Provider.where(provider_source_value: other_redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]).first.provider_id
+                      end
+
+                      observation.write_attribute(redcap_variable_child_map.omop_column.name, value)
+                    end
+                  else
+                    # puts 'missed the event row'
+                    # puts other_redcap_export_tmps.size
+                  end
                 end
               end
+              puts observation.inspect
+              observation.save!
             end
-            puts observation.inspect
-            observation.save!
           end
         end
       end

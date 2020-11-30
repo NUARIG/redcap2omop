@@ -2,6 +2,8 @@ class Person < ApplicationRecord
   self.table_name = 'person'
   self.primary_key = 'person_id'
 
+  validates_presence_of :gender_concept_id, :year_of_birth, :race_concept_id, :ethnicity_concept_id
+
   before_save :set_birth_fields
 
   def self.next_person_id
