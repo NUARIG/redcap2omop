@@ -33,6 +33,10 @@ class RedcapVariable < ApplicationRecord
     self.field_type == 'checkbox'
   end
 
+  def integer?
+    self.field_type_curated == 'integer'  || self.field_type_normalized == 'integer'
+  end
+
   def map_redcap_variable_choice(redcap_export_tmp)
     if self.checkbox?
       mapped_choices = []
@@ -43,7 +47,20 @@ class RedcapVariable < ApplicationRecord
       mapped_choice[:omop_concept_id]
     elsif self.choice?
       redcap_variable_choice = self.redcap_variable_choices.where(choice_code_raw: redcap_export_tmp[self.name]).first
+      if redcap_variable_choice.present?
+        redcap_variable_choice.redcap_variable_choice_map.concept_id
+      end
+    elsif self.integer?
+      redcap_variable_choice = self.redcap_variable_choices.where(choice_code_raw: redcap_export_tmp[self.name]).first
       redcap_variable_choice.redcap_variable_choice_map.concept_id
+    end
+  end
+
+  def determine_field_type
+    if self.field_type_curated
+      self.field_type_curated
+    else
+      self.field_type_normalized
     end
   end
 end
