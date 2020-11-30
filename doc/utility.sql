@@ -20,6 +20,7 @@ from person
 select c1.concept_name
       , o.value_as_number
       , o.value_as_concept_id
+      , o.value_as_string
       , c2.concept_name
 from observation o join concept c1 on o.observation_concept_id = c1.concept_id
                    left join concept c2 on o.value_as_concept_id = c2.concept_id

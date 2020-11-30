@@ -297,6 +297,21 @@ namespace :ingest do
     omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
+
+    #mc_subject_profession
+    redcap_variable = RedcapVariable.where(name: 'mc_subject_profession').first
+    redcap_variable.redcap_variable_maps.build(concept_id: Concept.where(domain_id: 'Observation', concept_code: '14679004', standard_concept: 'S').first.concept_id)
+    redcap_variable.save!
+
+    other_redcap_variable = RedcapVariable.where(name: 'formdate_ivp_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    other_redcap_variable = RedcapVariable.where(name: 'initials_ivp_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
   end
 
   desc "Maps"
@@ -592,9 +607,11 @@ namespace :ingest do
                 else
                   observation.value_as_number = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name].to_i
                 end
-              else 'choice'
+              when 'choice'
                 puts domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
                 observation.value_as_concept_id = domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+              when 'text'
+                observation.value_as_string = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
               end
 
               domain_redcap_variable_map.redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
