@@ -7,7 +7,6 @@ require 'webservices/redcap_api'
 # bundle exec rake ingest:maps_neurofiles
 # bundle exec rake ingest:data
 # bundle exec rake ingest:redcap2omop
-
 namespace :ingest do
   desc "Data dictionary"
   task(data_dictionary: :environment) do |t, args|
@@ -15,17 +14,18 @@ namespace :ingest do
     # redcap_project = RedcapProject.where(project_id: 1, name:'test', api_token: 'test').first_or_create
     # redcap_project = RedcapProject.where(project_id: 5840, name:'core', api_token: '?').first_or_create
 
-    # RedcapDataDictionary.delete_all
-    # RedcapEventMapDependent.delete_all
-    # RedcapEventMap.delete_all
-    # RedcapEvent.delete_all
-    # RedcapVariableChildMap.delete_all
-    # RedcapVariableChoiceMap.delete_all
-    # RedcapVariableChoice.delete_all
-    # RedcapVariable.delete_all
-    # RedcapVariableMap.delete_all
-    # RedcapVariableChoice.delete_all
-    # RedcapVariable.delete_all
+    RedcapDataDictionary.delete_all
+    RedcapEventMapDependent.delete_all
+    RedcapEventMap.delete_all
+    RedcapEvent.delete_all
+    RedcapVariableChildMap.delete_all
+    RedcapVariableChoiceMap.delete_all
+    RedcapVariableChoice.delete_all
+    RedcapVariable.delete_all
+    RedcapVariableMap.delete_all
+    RedcapVariableChoice.delete_all
+    RedcapVariable.delete_all
+
     RedcapProject.all.each do |redcap_project|
       ActiveRecord::Base.transaction do
         redcap_webservice = Webservices::RedcapApi.new(api_token: redcap_project.api_token)
@@ -278,6 +278,11 @@ namespace :ingest do
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
 
+    other_redcap_variable = RedcapVariable.where(name: 'initials_ivp_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
     #educ
     redcap_variable = RedcapVariable.where(name: 'educ').first
     redcap_variable.field_type_curated = 'integer'
@@ -302,6 +307,80 @@ namespace :ingest do
     redcap_variable = RedcapVariable.where(name: 'mc_subject_profession').first
     redcap_variable.redcap_variable_maps.build(concept_id: Concept.where(domain_id: 'Observation', concept_code: '14679004', standard_concept: 'S').first.concept_id)
     redcap_variable.save!
+
+    other_redcap_variable = RedcapVariable.where(name: 'formdate_ivp_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    other_redcap_variable = RedcapVariable.where(name: 'initials_ivp_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    #maristat
+    redcap_variable = RedcapVariable.where(name: 'maristat').first
+    redcap_variable.redcap_variable_maps.build(concept_id: Concept.where(domain_id: 'Observation', concept_code: '45404-1', standard_concept: 'S').first.concept_id)
+    redcap_variable.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "1 Married").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA48-4', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "2 Widowed").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA49-2', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "3 Divorced").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA51-8', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "4 Separated").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4288-2', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "5 Never married (or marriage was annulled)").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA47-6', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "6 Living as married/domestic partner").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Observation', vocabulary_id: 'PPI', concept_code: 'CurrentMaritalStatus_LivingWithPartner').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.save!
+
+    other_redcap_variable = RedcapVariable.where(name: 'formdate_ivp_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    other_redcap_variable = RedcapVariable.where(name: 'initials_ivp_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    #handed
+    redcap_variable = RedcapVariable.where(name: 'handed').first
+    redcap_variable.redcap_variable_maps.build(concept_id: Concept.where(domain_id: 'Observation', vocabulary_id: 'SNOMED', concept_code: '57427004', standard_concept: 'S').first.concept_id)
+    redcap_variable.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "1 Left-handed").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '87683000', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "2 Right-handed").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '46669005', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "3 Ambidextrous").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '46669005', standard_concept: 'S').first.concept_id)
+    redcap_variable_choice.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.save!
 
     other_redcap_variable = RedcapVariable.where(name: 'formdate_ivp_a1').first
     omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
