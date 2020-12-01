@@ -10,6 +10,10 @@ class RedcapProject < ApplicationRecord
   end
 
   def set_export_table_name
-    self.export_table_name ||= "#{self.name.parameterize.underscore}_records_tmp"
+    self.export_table_name ||= "redcap_records_tmp_#{self.unique_identifier}"
+  end
+
+  def unique_identifier
+    self.id
   end
 end
