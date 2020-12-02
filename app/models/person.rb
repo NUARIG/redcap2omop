@@ -4,7 +4,7 @@ class Person < ApplicationRecord
 
   validates_presence_of :gender_concept_id, :year_of_birth, :race_concept_id, :ethnicity_concept_id
 
-  before_save :set_birth_fields
+  before_validation :set_birth_fields
 
   def self.next_person_id
     person_id = Person.maximum(:person_id)
