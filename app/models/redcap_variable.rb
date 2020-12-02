@@ -4,6 +4,7 @@ class RedcapVariable < ApplicationRecord
   has_many :redcap_variable_choices
   has_many :redcap_variable_maps
   has_many :redcap_variable_child_maps, as: :parentable
+  has_many :redcap_source_links, as: :redcap_source
 
   def normalize_field_type
     normalized_field_type = case self.field_type

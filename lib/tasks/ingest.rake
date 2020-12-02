@@ -692,8 +692,8 @@ namespace :ingest do
               when 'text'
                 observation.value_as_string = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
               end
-
-              domain_redcap_variable_map.redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
+              redcap_variable = domain_redcap_variable_map.redcap_variable
+              redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
                 # puts redcap_variable_child_map.redcap_variable.name
                 if redcap_export_tmp[redcap_variable_child_map.redcap_variable.name].present?
                   # puts redcap_export_tmp[redcap_variable_child_map.redcap_variable.name]
@@ -722,6 +722,7 @@ namespace :ingest do
                 end
               end
               puts observation.inspect
+              observation.build_redcap_source_link(redcap_source: redcap_variable)
               observation.save!
             end
           end
