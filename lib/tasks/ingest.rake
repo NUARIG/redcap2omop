@@ -577,6 +577,7 @@ namespace :ingest do
     Person.delete_all
     Provider.delete_all
     Observation.delete_all
+    RedcapSourceLink.delete_all
     person_redcap2omop_map = {}
 
     redcap_variables_by_omop_table('person').each do |redcap_variable_map|

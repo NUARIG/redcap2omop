@@ -17,16 +17,17 @@ order by  redcap_event_name, redcap_export_tmps.id, v_d
 select *
 from person
 
+
 select  c1.concept_name
       , o.value_as_number
       , o.value_as_concept_id
       , o.value_as_string
       , c2.concept_name
+	  , rv.*
 from observation o left join concept c1 on o.observation_concept_id = c1.concept_id
                    left join concept c2 on o.value_as_concept_id = c2.concept_id
-
-
-
+        				   join redcap_source_links rsl on o.observation_id = rsl.redcap_sourced_id
+        				   join redcap_variables rv on rv.id = rsl.redcap_source_id
 
 SELECT *
 FROM public.core_records_tmp
