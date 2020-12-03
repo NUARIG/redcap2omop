@@ -855,12 +855,12 @@ namespace :ingest do
     redcap_variable.save!
 
     #provider
-    redcap_variable = redcap_variables.where(name: 'net_id_ps').first
+    redcap_variable = redcap_variables.where(name: 'netid_1').first
     omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
     redcap_variable.save!
 
-    redcap_variable = redcap_variables.where(name: 'net_id_ps').first
+    redcap_variable = redcap_variables.where(name: 'netid_1').first
     omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
     redcap_variable.save!
@@ -907,7 +907,7 @@ namespace :ingest do
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
 
-    other_redcap_variable = redcap_variables.where(name: 'net_id_ps').first
+    other_redcap_variable = redcap_variables.where(name: 'netid_1').first
     omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
@@ -922,7 +922,7 @@ namespace :ingest do
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
 
-    other_redcap_variable = redcap_variables.where(name: 'net_id_ps').first
+    other_redcap_variable = redcap_variables.where(name: 'netid_1').first
     omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
@@ -942,7 +942,7 @@ namespace :ingest do
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
 
-    other_redcap_variable = redcap_variables.where(name: 'net_id_ps').first
+    other_redcap_variable = redcap_variables.where(name: 'netid_1').first
     omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
@@ -957,7 +957,7 @@ namespace :ingest do
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
 
-    other_redcap_variable = redcap_variables.where(name: 'net_id_ps').first
+    other_redcap_variable = redcap_variables.where(name: 'netid_1').first
     omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
@@ -1000,7 +1000,7 @@ namespace :ingest do
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
 
-    other_redcap_variable = redcap_variables.where(name: 'net_id_ps').first
+    other_redcap_variable = redcap_variables.where(name: 'netid_1').first
     omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
@@ -1015,7 +1015,7 @@ namespace :ingest do
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
 
-    other_redcap_variable = redcap_variables.where(name: 'net_id_ps').first
+    other_redcap_variable = redcap_variables.where(name: 'netid_1').first
     omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
