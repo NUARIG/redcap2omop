@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_11_17_160645) do
+ActiveRecord::Schema.define(version: 2020_12_01_220655) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -530,6 +530,15 @@ ActiveRecord::Schema.define(version: 2020_11_17_160645) do
     t.datetime "deleted_at"
   end
 
+  create_table "redcap_source_links", force: :cascade do |t|
+    t.string "redcap_source_type"
+    t.integer "redcap_source_id"
+    t.string "redcap_sourced_type"
+    t.integer "redcap_sourced_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "redcap_variable_child_maps", force: :cascade do |t|
     t.integer "redcap_variable_id", null: false
     t.integer "parentable_id", null: false
@@ -591,6 +600,7 @@ ActiveRecord::Schema.define(version: 2020_11_17_160645) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.datetime "deleted_at"
+    t.string "field_type_curated"
   end
 
   create_table "relationship", primary_key: "relationship_id", id: :string, limit: 20, force: :cascade do |t|
@@ -634,6 +644,37 @@ ActiveRecord::Schema.define(version: 2020_11_17_160645) do
     t.string "unit_source_value", limit: 50
     t.string "anatomic_site_source_value", limit: 50
     t.string "disease_status_source_value", limit: 50
+  end
+
+  create_table "test_records_tmp", id: false, force: :cascade do |t|
+    t.string "record_id", limit: 255
+    t.string "redcap_event_name", limit: 255
+    t.string "redcap_repeat_instrument", limit: 255
+    t.string "redcap_repeat_instance", limit: 255
+    t.string "first_name", limit: 255
+    t.string "last_name", limit: 255
+    t.string "dob", limit: 255
+    t.string "gender", limit: 255
+    t.string "race___1", limit: 255
+    t.string "race___2", limit: 255
+    t.string "race___3", limit: 255
+    t.string "race___4", limit: 255
+    t.string "race___5", limit: 255
+    t.string "race___6", limit: 255
+    t.string "race___99", limit: 255
+    t.string "ethnicity", limit: 255
+    t.string "demographics_complete", limit: 255
+    t.string "v_d", limit: 255
+    t.string "v_coordinator", limit: 255
+    t.string "visit_information_complete", limit: 255
+    t.string "moca", limit: 255
+    t.string "mood", limit: 255
+    t.string "test_calc", limit: 255
+    t.string "clock_position_of_wound", limit: 255
+    t.string "visit_data_complete", limit: 255
+    t.string "m_d", limit: 255
+    t.string "mri_coordinator", limit: 255
+    t.string "mri_information_complete", limit: 255
   end
 
   create_table "visit_detail", id: false, force: :cascade do |t|
