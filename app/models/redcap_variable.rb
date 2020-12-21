@@ -55,7 +55,7 @@ class RedcapVariable < ApplicationRecord
       end
     elsif self.integer?
       redcap_variable_choice = self.redcap_variable_choices.where(choice_code_raw: redcap_export_tmp[self.name]).first
-      if redcap_variable_choice.redcap_variable_choice_map
+      if redcap_variable_choice && redcap_variable_choice.redcap_variable_choice_map
         redcap_variable_choice.redcap_variable_choice_map.concept_id
       end
     end
