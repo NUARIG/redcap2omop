@@ -6,6 +6,7 @@ require 'webservices/redcap_api'
 # bundle exec rake ingest:maps
   # bundle exec rake ingest:maps_neurofiles
 # bundle exec rake ingest:data
+# bundle exec rake ingest:insert_people
 # bundle exec rake ingest:redcap2omop
 namespace :ingest do
   desc "Data dictionary"
@@ -373,13 +374,28 @@ namespace :ingest do
     end
   end
 
+  desc "Insert people"
+  task(insert_people: :environment) do |t, args|
+    person = Person.new
+    person.person_id = Person.next_person_id
+    person.gender_concept_id = 0
+    person.birth_datetime = DateTime.parse('1976-10-14')
+    person.race_concept_id = 0
+    person.ethnicity_concept_id = 0
+    person.person_source_value = 'abc123'
+    person.save!
+  end
+
   desc "REDCap2OMOP"
   task(redcap2omop: :environment) do |t, args|
-    # redcap_project = RedcapProject.where(name: 'REDCap2SQL -- sandbox 2 - Longitudinal').first
-    # redcap_project.route_to_observation = false
-    # redcap_project.save!
+    redcap_project = RedcapProject.where(name: 'REDCap2SQL -- sandbox 2 - Longitudinal').first
+    redcap_project.route_to_observation = false
+    redcap_project.insert_person = true
+    redcap_project.save!
 
-    Person.delete_all
+    if redcap_project.insert_person
+      Person.delete_all
+    end
     Provider.delete_all
     Observation.delete_all
     RedcapSourceLink.delete_all
@@ -401,67 +417,69 @@ namespace :ingest do
       redcap_records = ActiveRecord::Base.connection.select_all("select * from #{redcap_project.export_table_name}").to_a
 
       redcap_records.each do |redcap_export_tmp|
-        #person
-        if redcap_export_tmp[person_redcap2omop_map['birth_datetime']].present? || redcap_export_tmp[person_redcap2omop_map['year_of_birth']].present?
-          puts redcap_export_tmp[person_redcap2omop_map['person_source_value']]
-          person = Person.where(person_source_value: redcap_export_tmp[person_redcap2omop_map['person_source_value']]).first
+        if redcap_project.insert_person
+          #person
+          if redcap_export_tmp[person_redcap2omop_map['birth_datetime']].present? || redcap_export_tmp[person_redcap2omop_map['year_of_birth']].present?
+            puts redcap_export_tmp[person_redcap2omop_map['person_source_value']]
+            person = Person.where(person_source_value: redcap_export_tmp[person_redcap2omop_map['person_source_value']]).first
 
-          unless person.present?
-            person = Person.new
-            person.person_id = Person.next_person_id
+            unless person.present?
+              person = Person.new
+              person.person_id = Person.next_person_id
 
-            person.person_source_value = redcap_export_tmp[person_redcap2omop_map['person_source_value']]
-            puts 'redcap: gender_concept_id'
-            puts redcap_export_tmp[person_redcap2omop_map['gender_concept_id']]
-            puts 'omop: gender_concept_id'
-            redcap_variable = RedcapVariable.where(name: person_redcap2omop_map['gender_concept_id'], redcap_data_dictionary_id: redcap_data_dictionary.id).first
-            if redcap_variable
-              gender_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
-              if gender_concept_id.present?
-                person.gender_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+              person.person_source_value = redcap_export_tmp[person_redcap2omop_map['person_source_value']]
+              puts 'redcap: gender_concept_id'
+              puts redcap_export_tmp[person_redcap2omop_map['gender_concept_id']]
+              puts 'omop: gender_concept_id'
+              redcap_variable = RedcapVariable.where(name: person_redcap2omop_map['gender_concept_id'], redcap_data_dictionary_id: redcap_data_dictionary.id).first
+              if redcap_variable
+                gender_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+                if gender_concept_id.present?
+                  person.gender_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+                end
               end
-            end
 
-            if redcap_export_tmp[person_redcap2omop_map['birth_datetime']].present?
-              puts 'redcap: birth_datetime'
-              puts redcap_export_tmp[person_redcap2omop_map['birth_datetime']]
-              puts DateTime.parse(redcap_export_tmp[person_redcap2omop_map['birth_datetime']])
-              person.birth_datetime = DateTime.parse(redcap_export_tmp[person_redcap2omop_map['birth_datetime']])
-            end
+              if redcap_export_tmp[person_redcap2omop_map['birth_datetime']].present?
+                puts 'redcap: birth_datetime'
+                puts redcap_export_tmp[person_redcap2omop_map['birth_datetime']]
+                puts DateTime.parse(redcap_export_tmp[person_redcap2omop_map['birth_datetime']])
+                person.birth_datetime = DateTime.parse(redcap_export_tmp[person_redcap2omop_map['birth_datetime']])
+              end
 
-            if redcap_export_tmp[person_redcap2omop_map['year_of_birth']].present?
-              puts 'redcap: year_of_birth'
-              puts redcap_export_tmp[person_redcap2omop_map['birth_year']]
-              puts redcap_export_tmp[person_redcap2omop_map['year_of_birth']]
-              person.year_of_birth = redcap_export_tmp[person_redcap2omop_map['year_of_birth']]
-            end
+              if redcap_export_tmp[person_redcap2omop_map['year_of_birth']].present?
+                puts 'redcap: year_of_birth'
+                puts redcap_export_tmp[person_redcap2omop_map['birth_year']]
+                puts redcap_export_tmp[person_redcap2omop_map['year_of_birth']]
+                person.year_of_birth = redcap_export_tmp[person_redcap2omop_map['year_of_birth']]
+              end
 
-            puts 'redcap: race_concept_id'
-            puts redcap_export_tmp[person_redcap2omop_map['race_concept_id']]
-            puts 'omop: race_concept_id'
-            redcap_variable = RedcapVariable.where(name: person_redcap2omop_map['race_concept_id'], redcap_data_dictionary_id: redcap_data_dictionary.id).first
-            if redcap_variable.present?
-              puts redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
-              person.race_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
-            end
+              puts 'redcap: race_concept_id'
+              puts redcap_export_tmp[person_redcap2omop_map['race_concept_id']]
+              puts 'omop: race_concept_id'
+              redcap_variable = RedcapVariable.where(name: person_redcap2omop_map['race_concept_id'], redcap_data_dictionary_id: redcap_data_dictionary.id).first
+              if redcap_variable.present?
+                puts redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+                person.race_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+              end
 
-            puts 'redcap: ethnicity_concept_id'
-            puts redcap_export_tmp[person_redcap2omop_map['ethnicity_concept_id']]
-            puts 'omop: ethnicity_concept_id'
-            redcap_variable = RedcapVariable.where(name: person_redcap2omop_map['ethnicity_concept_id'], redcap_data_dictionary_id: redcap_data_dictionary.id).first
-            if redcap_variable.present?
-              puts redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
-              person.ethnicity_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
-            end
+              puts 'redcap: ethnicity_concept_id'
+              puts redcap_export_tmp[person_redcap2omop_map['ethnicity_concept_id']]
+              puts 'omop: ethnicity_concept_id'
+              redcap_variable = RedcapVariable.where(name: person_redcap2omop_map['ethnicity_concept_id'], redcap_data_dictionary_id: redcap_data_dictionary.id).first
+              if redcap_variable.present?
+                puts redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+                person.ethnicity_concept_id = redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+              end
 
-            if person.valid?
-              puts 'we are creating this person'
-              puts redcap_export_tmp[person_redcap2omop_map['person_source_value']]
-              person.save!
-            else
-              puts 'we are not creating this person'
-              puts redcap_export_tmp[person_redcap2omop_map['person_source_value']]
-              puts person.errors.full_messages
+              if person.valid?
+                puts 'we are creating this person'
+                puts redcap_export_tmp[person_redcap2omop_map['person_source_value']]
+                person.save!
+              else
+                puts 'we are not creating this person'
+                puts redcap_export_tmp[person_redcap2omop_map['person_source_value']]
+                puts person.errors.full_messages
+              end
             end
           end
         end
@@ -575,7 +593,8 @@ namespace :ingest do
                     puts domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
                     measurement.value_as_concept_id = domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
                   when 'text'
-                    measurement.value_as_string = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
+                    #do nothing
+                    #no measurement.value_as_string column
                   end
                   redcap_variable = domain_redcap_variable_map.redcap_variable
                   redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
