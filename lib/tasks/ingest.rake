@@ -6,7 +6,7 @@ require 'webservices/redcap_api'
 # bundle exec rake ingest:maps
   # bundle exec rake ingest:maps_neurofiles
 # bundle exec rake ingest:data
-# bundle exec rake ingest:insert_people
+  # bundle exec rake ingest:insert_people
 # bundle exec rake ingest:redcap2omop
 namespace :ingest do
   desc "Data dictionary"
@@ -29,7 +29,7 @@ namespace :ingest do
     RedcapVariableChoice.delete_all
     RedcapVariable.delete_all
 
-    RedcapProject.all.each do |redcap_project|
+    RedcapProject.not_deleted.all.each do |redcap_project|
       ActiveRecord::Base.transaction do
         redcap_webservice = Webservices::RedcapApi.new(api_token: redcap_project.api_token)
 
@@ -184,9 +184,23 @@ namespace :ingest do
 
   desc "Maps neurofiless"
   task(maps_neurofiles: :environment) do |t, args|
-    RedcapVariableMap.delete_all
-    RedcapVariableChoiceMap.delete_all
-    RedcapVariableChildMap.delete_all
+    redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox - CorePID').first
+    redcap_data_dictionary  = RedcapDataDictionary.find(redcap_project.redcap_data_dictionaries.maximum(:id))
+    RedcapVariableMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
+    RedcapVariableChoiceMap.joins(redcap_variable_choice: :redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
+    RedcapVariableChildMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
+
+    redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox -- PPA').first
+    redcap_data_dictionary  = RedcapDataDictionary.find(redcap_project.redcap_data_dictionaries.maximum(:id))
+    RedcapVariableMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
+    RedcapVariableChoiceMap.joins(redcap_variable_choice: :redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
+    RedcapVariableChildMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
+
+    redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox - SA').first
+    redcap_data_dictionary  = RedcapDataDictionary.find(redcap_project.redcap_data_dictionaries.maximum(:id))
+    RedcapVariableMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
+    RedcapVariableChoiceMap.joins(redcap_variable_choice: :redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
+    RedcapVariableChildMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
 
     map_core
     map_ppa
@@ -363,7 +377,7 @@ namespace :ingest do
 
   desc "Load REDCap records"
   task(data: :environment) do |t, args|
-    RedcapProject.all.each do |redcap_project|
+    RedcapProject.not_deleted.all.each do |redcap_project|
       ActiveRecord::Base.transaction do
         redcap_webservice = Webservices::RedcapApi.new(api_token: redcap_project.api_token)
         records     = redcap_webservice.records
@@ -400,7 +414,7 @@ namespace :ingest do
     Observation.delete_all
     RedcapSourceLink.delete_all
 
-    RedcapProject.all.each do |redcap_project|
+    RedcapProject.not_deleted.all.each do |redcap_project|
       puts 'Start this project:'
       puts redcap_project.name
       person_redcap2omop_map = {}
