@@ -391,7 +391,7 @@ namespace :ingest do
   desc "Insert people"
   task(insert_people: :environment) do |t, args|
     person = Person.new
-    person.person_id = Person.next_person_id
+    person.person_id = Person.next_id
     person.gender_concept_id = 0
     person.birth_datetime = DateTime.parse('1976-10-14')
     person.race_concept_id = 0
@@ -439,7 +439,7 @@ namespace :ingest do
 
             unless person.present?
               person = Person.new
-              person.person_id = Person.next_person_id
+              person.person_id = Person.next_id
 
               person.person_source_value = redcap_export_tmp[person_redcap2omop_map['person_source_value']]
               puts 'redcap: gender_concept_id'
@@ -504,7 +504,7 @@ namespace :ingest do
           provider = Provider.where(provider_source_value: redcap_export_tmp[provider_redcap2omop_map['provider_source_value']]).first
           unless provider.present?
             provider = Provider.new
-            provider.provider_id = Provider.next_provider_id
+            provider.provider_id = Provider.next_id
             provider.provider_source_value = redcap_export_tmp[provider_redcap2omop_map['provider_source_value']]
             provider.provider_name = redcap_export_tmp[provider_redcap2omop_map['provider_name']]
             provider.save!
@@ -533,7 +533,7 @@ namespace :ingest do
                 case domain_redcap_variable_map.concept.domain_id
                 when 'Observation', 'Measurement', 'Metadata'
                   observation = Observation.new
-                  observation.observation_id = Observation.next_observation_id
+                  observation.observation_id = Observation.next_id
                   observation.person_id = person.person_id
                   observation.observation_concept_id = domain_redcap_variable_map.concept.concept_id
                   observation.observation_type_concept_id = RedcapProject.first.type_concept.concept_id
@@ -590,7 +590,7 @@ namespace :ingest do
                 case domain_redcap_variable_map.concept.domain_id
                 when 'Measurement'
                   measurement = Measurement.new
-                  measurement.measurement_id = Measurement.next_measurement_id
+                  measurement.measurement_id = Measurement.next_id
                   measurement.person_id = person.person_id
                   measurement.measurement_concept_id = domain_redcap_variable_map.concept.concept_id
                   measurement.measurement_type_concept_id = RedcapProject.first.type_concept.concept_id
@@ -646,7 +646,7 @@ namespace :ingest do
                   measurement.save!
                 when 'Observation','Metadata'
                   observation = Observation.new
-                  observation.observation_id = Observation.next_observation_id
+                  observation.observation_id = Observation.next_id
                   observation.person_id = person.person_id
                   observation.observation_concept_id = domain_redcap_variable_map.concept.concept_id
                   observation.observation_type_concept_id = RedcapProject.first.type_concept.concept_id
