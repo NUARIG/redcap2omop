@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_12_21_161302) do
+ActiveRecord::Schema.define(version: 2021_01_06_024142) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -530,6 +530,8 @@ ActiveRecord::Schema.define(version: 2020_12_21_161302) do
     t.datetime "deleted_at"
     t.boolean "route_to_observation"
     t.boolean "insert_person"
+    t.boolean "complete_instrument", default: false, null: false
+  end
   end
 
   create_table "redcap_source_links", force: :cascade do |t|

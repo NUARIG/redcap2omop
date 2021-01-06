@@ -404,7 +404,8 @@ namespace :ingest do
   task(redcap2omop: :environment) do |t, args|
     redcap_project = RedcapProject.where(name: 'REDCap2SQL -- sandbox 2 - Longitudinal').first
     redcap_project.route_to_observation = false
-    redcap_project.insert_person = true
+    redcap_project.insert_person        = true
+    redcap_project.complete_instrument  = true
     redcap_project.save!
 
     if redcap_project.insert_person
@@ -522,9 +523,11 @@ namespace :ingest do
         puts person.inspect
         if person.present?
           domain_redcap_variable_maps.each do |domain_redcap_variable_map|
-              puts domain_redcap_variable_map.redcap_variable.name.inspect
-              puts redcap_export_tmp.inspect
-            if redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name].present?
+            puts domain_redcap_variable_map.redcap_variable.name.inspect
+            puts redcap_export_tmp.inspect
+            filter_out = redcap_project.complete_instrument && redcap_export_tmp["#{domain_redcap_variable_map.redcap_variable.form_name}_complete"].to_i != 2
+            puts 'filtering out' if filter_out
+            if redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name].present? && !filter_out
               puts 'we got you'
               puts domain_redcap_variable_map.inspect
               puts domain_redcap_variable_map.redcap_variable.name
