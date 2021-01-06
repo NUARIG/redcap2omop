@@ -4,6 +4,10 @@ class RedcapDataDictionary < ApplicationRecord
   has_many    :redcap_events
   has_many    :redcap_variables
 
+  INSTRUMENT_INCOMPLETE_STATUS = 0.freeze
+  INSTRUMENT_UNVERIFIED_STATUS = 1.freeze
+  INSTRUMENT_COMPLETE_STATUS   = 2.freeze
+
   after_initialize :set_version, if: :new_record?
 
   def set_version

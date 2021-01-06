@@ -525,7 +525,7 @@ namespace :ingest do
           domain_redcap_variable_maps.each do |domain_redcap_variable_map|
             puts domain_redcap_variable_map.redcap_variable.name.inspect
             puts redcap_export_tmp.inspect
-            filter_out = redcap_project.complete_instrument && redcap_export_tmp["#{domain_redcap_variable_map.redcap_variable.form_name}_complete"].to_i != 2
+            filter_out = redcap_project.complete_instrument && redcap_export_tmp["#{domain_redcap_variable_map.redcap_variable.form_name}_complete"].to_i != RedcapDataDictionary::INSTRUMENT_COMPLETE_STATUS
             puts 'filtering out' if filter_out
             if redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name].present? && !filter_out
               puts 'we got you'
