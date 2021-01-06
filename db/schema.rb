@@ -532,7 +532,6 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
     t.boolean "insert_person"
     t.boolean "complete_instrument", default: false, null: false
   end
-  end
 
   create_table "redcap_source_links", force: :cascade do |t|
     t.string "redcap_source_type"
