@@ -184,19 +184,22 @@ namespace :ingest do
 
   desc "Maps neurofiless"
   task(maps_neurofiles: :environment) do |t, args|
-    redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox - CorePID').first
+    # redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox - CorePID').first
+    redcap_project          = RedcapProject.where(project_id: 5840).first
     redcap_data_dictionary  = RedcapDataDictionary.find(redcap_project.redcap_data_dictionaries.maximum(:id))
     RedcapVariableMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
     RedcapVariableChoiceMap.joins(redcap_variable_choice: :redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
     RedcapVariableChildMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
 
-    redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox -- PPA').first
+    # redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox -- PPA').first
+    redcap_project          = RedcapProject.where(project_id: 5843).first
     redcap_data_dictionary  = RedcapDataDictionary.find(redcap_project.redcap_data_dictionaries.maximum(:id))
     RedcapVariableMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
     RedcapVariableChoiceMap.joins(redcap_variable_choice: :redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
     RedcapVariableChildMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
 
-    redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox - SA').first
+    # redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox - SA').first
+    redcap_project          = RedcapProject.where(project_id: 5844).first
     redcap_data_dictionary  = RedcapDataDictionary.find(redcap_project.redcap_data_dictionaries.maximum(:id))
     RedcapVariableMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
     RedcapVariableChoiceMap.joins(redcap_variable_choice: :redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
@@ -300,13 +303,10 @@ namespace :ingest do
 
     #provider
     redcap_variable = RedcapVariable.where(name: 'v_coordinator', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    omop_column       = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    other_omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
-    redcap_variable.save!
-
-    redcap_variable = RedcapVariable.where(name: 'v_coordinator').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
-    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_variable, omop_column: other_omop_column)
     redcap_variable.save!
 
     #moca
@@ -426,8 +426,15 @@ namespace :ingest do
 
       provider_redcap2omop_map = {}
       redcap_variables_by_omop_table('provider', redcap_data_dictionary).each do |redcap_variable_map|
-        provider_redcap2omop_map[redcap_variable_map.omop_column.name] = redcap_variable_map.redcap_variable.name
+        provider_redcap2omop_map[redcap_variable_map.omop_column.name] ||= []
+        hash = { source: redcap_variable_map.redcap_variable.name }
+        redcap_variable_map.redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
+          hash[:variable_children] ||= []
+          hash[:variable_children] << { redcap_variable_child_map.omop_column.name => redcap_variable_child_map.redcap_variable.name }
+        end
+        provider_redcap2omop_map[redcap_variable_map.omop_column.name] << hash
       end
+      # puts provider_redcap2omop_map.inspect
 
       redcap_records = ActiveRecord::Base.connection.select_all("select * from #{redcap_project.export_table_name}").to_a
 
@@ -500,15 +507,24 @@ namespace :ingest do
         end
 
         #provider
-        if redcap_export_tmp[provider_redcap2omop_map['provider_source_value']].present?
-          puts redcap_export_tmp[provider_redcap2omop_map['provider_source_value']]
-          provider = Provider.where(provider_source_value: redcap_export_tmp[provider_redcap2omop_map['provider_source_value']]).first
-          unless provider.present?
-            provider = Provider.new
-            provider.provider_id = Provider.next_id
-            provider.provider_source_value = redcap_export_tmp[provider_redcap2omop_map['provider_source_value']]
-            provider.provider_name = redcap_export_tmp[provider_redcap2omop_map['provider_name']]
-            provider.save!
+        provider_redcap2omop_map['provider_source_value'].each do |provider_source_value_hash|
+          # puts provider_source_value_hash.inspect
+          provider_source_value_column = provider_source_value_hash[:source]
+          # puts "provider_source_value_column: #{provider_source_value_column.inspect}"
+          provider_source_value = redcap_export_tmp[provider_source_value_column]
+          # puts "provider_source_value: #{provider_source_value.inspect}"
+          provider_name_source  = provider_source_value_hash[:variable_children].detect{|c| c.keys.include?('provider_name')}
+          # puts "provider_name_source: #{provider_name_source}"
+          if provider_source_value.present?
+            provider = Provider.where(provider_source_value: provider_source_value).first
+            unless provider.present?
+              provider = Provider.new
+              provider.provider_id = Provider.next_id
+              provider.provider_source_value = provider_source_value
+              provider.provider_name = redcap_export_tmp[provider_name_source['provider_name']]
+              provider.save!
+              puts "Created #{provider.inspect} provider"
+            end
           end
         end
       end
@@ -879,33 +895,24 @@ namespace :ingest do
 
     #provider
     redcap_variable = redcap_variables.where(name: 'ivp_netid_a1').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    omop_column       = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    other_omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
-    redcap_variable.save!
-
-    redcap_variable = redcap_variables.where(name: 'ivp_netid_a1').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
-    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_variable, omop_column: other_omop_column)
     redcap_variable.save!
 
     redcap_variable = redcap_variables.where(name: 'fu_netid_a1').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    omop_column       = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    other_omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
-    redcap_variable.save!
-
-    redcap_variable = redcap_variables.where(name: 'fu_netid_a1').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
-    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_variable, omop_column: other_omop_column)
     redcap_variable.save!
 
     redcap_variable = redcap_variables.where(name: 'tele_netid_a1').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    omop_column       = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    other_omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
-    redcap_variable.save!
-
-    redcap_variable = redcap_variables.where(name: 'tele_netid_a1').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
-    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_variable, omop_column: other_omop_column)
     redcap_variable.save!
 
     #primlang
@@ -1740,13 +1747,10 @@ namespace :ingest do
 
     #provider
     redcap_variable = redcap_variables.where(name: 'netid_summary').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    omop_column       = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    other_omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
-    redcap_variable.save!
-
-    redcap_variable = redcap_variables.where(name: 'netid_summary').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
-    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_variable, omop_column: other_omop_column)
     redcap_variable.save!
 
     #primlang
@@ -2008,13 +2012,10 @@ namespace :ingest do
 
     #provider
     redcap_variable = redcap_variables.where(name: 'netid').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    omop_column       = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    other_omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
-    redcap_variable.save!
-
-    redcap_variable = redcap_variables.where(name: 'netid').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
-    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_variable, omop_column: other_omop_column)
     redcap_variable.save!
 
     #primlang
