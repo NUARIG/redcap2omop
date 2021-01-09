@@ -568,6 +568,7 @@ namespace :ingest do
                   when 'choice'
                     puts domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
                     observation.value_as_concept_id = domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
+                    observation.value_as_number = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name] #if observation.value_as_concept_id == 0
                   when 'text'
                     observation.value_as_string = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
                   end
