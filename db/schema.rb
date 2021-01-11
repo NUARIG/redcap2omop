@@ -530,6 +530,7 @@ ActiveRecord::Schema.define(version: 2021_01_06_174309) do
     t.datetime "deleted_at"
     t.boolean "route_to_observation"
     t.boolean "insert_person"
+    t.boolean "complete_instrument", default: false, null: false
     t.boolean "api_import"
   end
 
