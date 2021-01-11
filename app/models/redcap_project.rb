@@ -23,4 +23,12 @@ class RedcapProject < ApplicationRecord
       self.id
     end
   end
+
+  scope :csv_importable, -> do
+    where(api_import: false)
+  end
+
+  scope :api_importable, -> do
+    where(api_import: true)
+  end
 end
