@@ -6,6 +6,13 @@ class RedcapVariable < ApplicationRecord
   has_many :redcap_variable_child_maps, as: :parentable
   has_many :redcap_source_links, as: :redcap_source
 
+  after_initialize :set_defaults
+
+  REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED = 'undetermined'
+  REDCAP_VARIABLE_CURATION_STATUS_SKIPPED = 'skipped'
+  REDCAP_VARIABLE_CURATION_STATUS_MAPPED = 'mapped'
+  REDCAP_VARIABLE_CURATION_STATUSES = [REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED, REDCAP_VARIABLE_CURATION_STATUS_SKIPPED, REDCAP_VARIABLE_CURATION_STATUS_MAPPED]
+
   def normalize_field_type
     normalized_field_type = case self.field_type
     when 'radio', 'radio', 'checkbox', 'dropdown'
@@ -68,4 +75,11 @@ class RedcapVariable < ApplicationRecord
       self.field_type_normalized
     end
   end
+
+  private
+    def set_defaults
+      if self.new_record?
+        self.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED
+      end
+    end
 end

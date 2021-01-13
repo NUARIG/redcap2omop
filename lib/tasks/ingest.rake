@@ -104,6 +104,62 @@ namespace :ingest do
     end
   end
 
+  desc "Maps CCC19 pre-done"
+  task(maps_ccc19_pre_done: :environment) do |t, args|
+    redcap_project          = RedcapProject.where(name: 'CCC19').first
+    redcap_data_dictionary  = RedcapDataDictionary.find(redcap_project.redcap_data_dictionaries.maximum(:id))
+
+    RedcapVariableMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
+    RedcapVariableChoiceMap.joins(redcap_variable_choice: :redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
+    RedcapVariableChildMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
+
+    redcap_variable = RedcapVariable.where(name: 'record_id', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'person' AND omop_columns.name = 'person_source_value'").first
+    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'inclusion_yn', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'previous_report', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'this_registry', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'registry_other', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'ccc19', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'ccc19_exclude', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'ccc19_exclude_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'ccc19_institution', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'timing_of_report', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'dx_year', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+    redcap_variable.save!
+  end
+
   desc "OMOP tables"
   task(omop_tables: :environment) do |t, args|
     OmopTable.delete_all

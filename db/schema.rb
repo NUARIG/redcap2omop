@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_01_06_174309) do
+ActiveRecord::Schema.define(version: 2021_01_11_192158) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -519,8 +519,8 @@ ActiveRecord::Schema.define(version: 2021_01_06_174309) do
     t.datetime "deleted_at"
     t.boolean "route_to_observation"
     t.boolean "insert_person"
-    t.boolean "complete_instrument", default: false, null: false
     t.boolean "api_import"
+    t.boolean "complete_instrument", default: false, null: false
   end
 
   create_table "redcap_source_links", force: :cascade do |t|
@@ -594,6 +594,7 @@ ActiveRecord::Schema.define(version: 2021_01_06_174309) do
     t.datetime "updated_at", precision: 6, null: false
     t.datetime "deleted_at"
     t.string "field_type_curated"
+    t.string "curation_status"
   end
 
   create_table "relationship", id: false, force: :cascade do |t|
