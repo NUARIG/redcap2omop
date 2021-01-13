@@ -192,10 +192,11 @@ namespace :ingest do
     observation_map_types['provider_id'] = 'provider'
     observation_map_types['visit_occurrence_id'] = 'visit_occurrence'
     observation_map_types['visit_detail_id'] = 'skip'
-    observation_map_types['observation_source_value'] = 'redcap variable name|choice redcap variable choice description'
+    observation_map_types['observation_source_value'] = 'redcap variable name'
     observation_map_types['observation_source_concept_id'] = 'skip'
     observation_map_types['unit_source_value'] = 'skip'
     observation_map_types['qualifier_source_value'] = 'skip'
+    observation_map_types['value_source_value'] = 'redcap choice'
 
     observation = Observation.new
     observation.attributes.keys.each do |attribute|
