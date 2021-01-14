@@ -3,6 +3,13 @@ select  rv.*
 from redcap_variables rv left join redcap_variable_choices rvc on rv.id = rvc.redcap_variable_id
                          join redcap_data_dictionaries rdd on rv.redcap_data_dictionary_id = rdd.id
                          join redcap_projects rp on rdd.redcap_project_id = rp.id
+where rp.name = 'CCC19'
+
+select  rv.*
+     ,  rvc.*
+from redcap_variables rv left join redcap_variable_choices rvc on rv.id = rvc.redcap_variable_id
+                         join redcap_data_dictionaries rdd on rv.redcap_data_dictionary_id = rdd.id
+                         join redcap_projects rp on rdd.redcap_project_id = rp.id
 where rp.name = 'Data Migration Sandbox -- PPA'
 
 select *

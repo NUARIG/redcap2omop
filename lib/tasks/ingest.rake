@@ -1,3 +1,4 @@
+require 'csv'
 require 'webservices/redcap_api'
 
 # bundle exec rake data:truncate_omop_clinical_data_tables
@@ -9,6 +10,69 @@ require 'webservices/redcap_api'
   # bundle exec rake ingest:insert_people
 # bundle exec rake ingest:redcap2omop
 namespace :ingest do
+  desc "Data dictionary CSV"
+  task(data_dictionary_csv: :environment) do  |t, args|
+    redcap_project = RedcapProject.where(project_id: 0 , name: 'CCC19', api_import: false).first_or_create
+
+    RedcapDataDictionary.delete_all
+    RedcapEventMapDependent.delete_all
+    RedcapEventMap.delete_all
+    RedcapEvent.delete_all
+    RedcapVariableChildMap.delete_all
+    RedcapVariableChoiceMap.delete_all
+    RedcapVariableChoice.delete_all
+    RedcapVariable.delete_all
+    RedcapVariableMap.delete_all
+    RedcapVariableChoice.delete_all
+    RedcapVariable.delete_all
+
+    RedcapProject.not_deleted.csv_importable.all.each do |redcap_project|
+      ActiveRecord::Base.transaction do
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+
+        file_name = 'CCC19_DataDictionary.csv'
+        file_location = "#{Rails.root}/lib/setup/data/data_dictionaries/"
+        data_dictionary = File.read("#{file_location}#{file_name}")
+        data_dictionary[0]=''
+        File.write("#{file_location}CCC19_DataDictionary_clean.csv", data_dictionary)
+
+        data_dictionary_variables = CSV.new(File.open('lib/setup/data/data_dictionaries/CCC19_DataDictionary_clean.csv'), headers: true, col_sep: ",", return_headers: false,  quote_char: "\"")
+        data_dictionary_variables.each do |data_dictionary_variable|
+          redcap_variable = RedcapVariable.new(redcap_data_dictionary_id: redcap_data_dictionary.id)
+
+          redcap_variable.name                  = data_dictionary_variable['Variable / Field Name']                         #metadata_variable['field_name']
+          redcap_variable.form_name             = data_dictionary_variable['Form Name']                                     #metadata_variable['form_name']
+          redcap_variable.field_type            = data_dictionary_variable['Field Type']                                    #metadata_variable['field_type']
+          redcap_variable.text_validation_type  = data_dictionary_variable['Text Validation Type OR Show Slider Number']    #metadata_variable['text_validation_type_or_show_slider_number']
+          redcap_variable.field_type_normalized = redcap_variable.normalize_field_type
+          redcap_variable.field_label           = data_dictionary_variable['Field Label']                                   #metadata_variable['field_label']
+          redcap_variable.choices               = data_dictionary_variable['Choices, Calculations, OR Slider Labels']       #metadata_variable['select_choices_or_calculations']
+          redcap_variable.field_annotation      = data_dictionary_variable['Field Annotation']                              #metadata_variable['field_annotation']
+
+          if redcap_variable.choices.present?
+            redcap_variable.choices.split('|').each_with_index do |choice, i|
+              choice_code, delimiter, choice_description = choice.partition(',')
+              if choice_code.present?
+                choice_code.strip!
+              end
+
+              if choice_description.present?
+                choice_description.strip!
+              end
+
+              if redcap_variable.field_annotation.present?
+                redcap_variable.field_annotation.strip!
+              end
+
+              redcap_variable.redcap_variable_choices.build(choice_code_raw: choice_code.try(:strip), choice_description: choice_description.try(:strip), vocabulary_id_raw: redcap_variable.field_annotation.try(:strip), ordinal_position: i, curated: false)
+            end
+          end
+          redcap_variable.save!
+        end
+      end
+    end
+  end
+
   desc "Data dictionary"
   task(data_dictionary: :environment) do |t, args|
     # RedcapProject.delete_all
@@ -128,10 +192,11 @@ namespace :ingest do
     observation_map_types['provider_id'] = 'provider'
     observation_map_types['visit_occurrence_id'] = 'visit_occurrence'
     observation_map_types['visit_detail_id'] = 'skip'
-    observation_map_types['observation_source_value'] = 'redcap variable name|choice redcap variable choice description'
+    observation_map_types['observation_source_value'] = 'redcap variable name'
     observation_map_types['observation_source_concept_id'] = 'skip'
     observation_map_types['unit_source_value'] = 'skip'
     observation_map_types['qualifier_source_value'] = 'skip'
+    observation_map_types['value_source_value'] = 'redcap choice'
 
     observation = Observation.new
     observation.attributes.keys.each do |attribute|

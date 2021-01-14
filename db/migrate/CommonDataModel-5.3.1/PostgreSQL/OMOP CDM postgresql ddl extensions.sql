@@ -1,0 +1,1 @@
+ALTER TABLE observation ADD COLUMN value_source_value VARCHAR(50) NULL;

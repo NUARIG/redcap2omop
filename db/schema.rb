@@ -10,17 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_01_06_024142) do
+ActiveRecord::Schema.define(version: 2021_01_06_174309) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "attribute_definition", primary_key: "attribute_definition_id", id: :integer, default: nil, force: :cascade do |t|
+  create_table "attribute_definition", id: false, force: :cascade do |t|
+    t.integer "attribute_definition_id", null: false
     t.string "attribute_name", limit: 255, null: false
     t.text "attribute_description"
     t.integer "attribute_type_concept_id", null: false
     t.text "attribute_syntax"
-    t.index ["attribute_definition_id"], name: "idx_attribute_definition_id"
   end
 
   create_table "care_site", id: false, force: :cascade do |t|
@@ -62,17 +62,18 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
     t.integer "value_as_concept_id"
   end
 
-  create_table "cohort_definition", primary_key: "cohort_definition_id", id: :integer, default: nil, force: :cascade do |t|
+  create_table "cohort_definition", id: false, force: :cascade do |t|
+    t.integer "cohort_definition_id", null: false
     t.string "cohort_definition_name", limit: 255, null: false
     t.text "cohort_definition_description"
     t.integer "definition_type_concept_id", null: false
     t.text "cohort_definition_syntax"
     t.integer "subject_concept_id", null: false
     t.date "cohort_initiation_date"
-    t.index ["cohort_definition_id"], name: "idx_cohort_definition_id"
   end
 
-  create_table "concept", primary_key: "concept_id", id: :integer, default: nil, force: :cascade do |t|
+  create_table "concept", id: false, force: :cascade do |t|
+    t.integer "concept_id", null: false
     t.string "concept_name", limit: 255, null: false
     t.string "domain_id", limit: 20, null: false
     t.string "vocabulary_id", limit: 20, null: false
@@ -82,45 +83,34 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
     t.date "valid_start_date", null: false
     t.date "valid_end_date", null: false
     t.string "invalid_reason", limit: 1
-    t.index ["concept_class_id"], name: "idx_concept_class_id"
-    t.index ["concept_code"], name: "idx_concept_code"
-    t.index ["concept_id"], name: "idx_concept_concept_id", unique: true
-    t.index ["domain_id"], name: "idx_concept_domain_id"
-    t.index ["vocabulary_id"], name: "idx_concept_vocabluary_id"
   end
 
-  create_table "concept_ancestor", primary_key: ["ancestor_concept_id", "descendant_concept_id"], force: :cascade do |t|
+  create_table "concept_ancestor", id: false, force: :cascade do |t|
     t.integer "ancestor_concept_id", null: false
     t.integer "descendant_concept_id", null: false
     t.integer "min_levels_of_separation", null: false
     t.integer "max_levels_of_separation", null: false
-    t.index ["ancestor_concept_id"], name: "idx_concept_ancestor_id_1"
-    t.index ["descendant_concept_id"], name: "idx_concept_ancestor_id_2"
   end
 
-  create_table "concept_class", primary_key: "concept_class_id", id: :string, limit: 20, force: :cascade do |t|
+  create_table "concept_class", id: false, force: :cascade do |t|
+    t.string "concept_class_id", limit: 20, null: false
     t.string "concept_class_name", limit: 255, null: false
     t.integer "concept_class_concept_id", null: false
-    t.index ["concept_class_id"], name: "idx_concept_class_class_id", unique: true
   end
 
-  create_table "concept_relationship", primary_key: ["concept_id_1", "concept_id_2", "relationship_id"], force: :cascade do |t|
+  create_table "concept_relationship", id: false, force: :cascade do |t|
     t.integer "concept_id_1", null: false
     t.integer "concept_id_2", null: false
     t.string "relationship_id", limit: 20, null: false
     t.date "valid_start_date", null: false
     t.date "valid_end_date", null: false
     t.string "invalid_reason", limit: 1
-    t.index ["concept_id_1"], name: "idx_concept_relationship_id_1"
-    t.index ["concept_id_2"], name: "idx_concept_relationship_id_2"
-    t.index ["relationship_id"], name: "idx_concept_relationship_id_3"
   end
 
   create_table "concept_synonym", id: false, force: :cascade do |t|
     t.integer "concept_id", null: false
     t.string "concept_synonym_name", limit: 1000, null: false
     t.integer "language_concept_id", null: false
-    t.index ["concept_id"], name: "idx_concept_synonym_id"
   end
 
   create_table "condition_era", id: false, force: :cascade do |t|
@@ -204,10 +194,10 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
     t.integer "device_source_concept_id"
   end
 
-  create_table "domain", primary_key: "domain_id", id: :string, limit: 20, force: :cascade do |t|
+  create_table "domain", id: false, force: :cascade do |t|
+    t.string "domain_id", limit: 20, null: false
     t.string "domain_name", limit: 255, null: false
     t.integer "domain_concept_id", null: false
-    t.index ["domain_id"], name: "idx_domain_domain_id", unique: true
   end
 
   create_table "dose_era", id: false, force: :cascade do |t|
@@ -256,7 +246,7 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
     t.string "dose_unit_source_value", limit: 50
   end
 
-  create_table "drug_strength", primary_key: ["drug_concept_id", "ingredient_concept_id"], force: :cascade do |t|
+  create_table "drug_strength", id: false, force: :cascade do |t|
     t.integer "drug_concept_id", null: false
     t.integer "ingredient_concept_id", null: false
     t.decimal "amount_value"
@@ -269,8 +259,6 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
     t.date "valid_start_date", null: false
     t.date "valid_end_date", null: false
     t.string "invalid_reason", limit: 1
-    t.index ["drug_concept_id"], name: "idx_drug_strength_id_1"
-    t.index ["ingredient_concept_id"], name: "idx_drug_strength_id_2"
   end
 
   create_table "fact_relationship", id: false, force: :cascade do |t|
@@ -378,6 +366,7 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
     t.integer "observation_source_concept_id"
     t.string "unit_source_value", limit: 50
     t.string "qualifier_source_value", limit: 50
+    t.string "value_source_value", limit: 50
   end
 
   create_table "observation_period", id: false, force: :cascade do |t|
@@ -523,7 +512,7 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
   create_table "redcap_projects", force: :cascade do |t|
     t.integer "project_id", null: false
     t.string "name", null: false
-    t.string "api_token", null: false
+    t.string "api_token"
     t.string "export_table_name", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -531,6 +520,7 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
     t.boolean "route_to_observation"
     t.boolean "insert_person"
     t.boolean "complete_instrument", default: false, null: false
+    t.boolean "api_import"
   end
 
   create_table "redcap_source_links", force: :cascade do |t|
@@ -606,16 +596,16 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
     t.string "field_type_curated"
   end
 
-  create_table "relationship", primary_key: "relationship_id", id: :string, limit: 20, force: :cascade do |t|
+  create_table "relationship", id: false, force: :cascade do |t|
+    t.string "relationship_id", limit: 20, null: false
     t.string "relationship_name", limit: 255, null: false
     t.string "is_hierarchical", limit: 1, null: false
     t.string "defines_ancestry", limit: 1, null: false
     t.string "reverse_relationship_id", limit: 20, null: false
     t.integer "relationship_concept_id", null: false
-    t.index ["relationship_id"], name: "idx_relationship_rel_id", unique: true
   end
 
-  create_table "source_to_concept_map", primary_key: ["source_vocabulary_id", "target_concept_id", "source_code", "valid_end_date"], force: :cascade do |t|
+  create_table "source_to_concept_map", id: false, force: :cascade do |t|
     t.string "source_code", limit: 50, null: false
     t.integer "source_concept_id", null: false
     t.string "source_vocabulary_id", limit: 20, null: false
@@ -625,10 +615,6 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
     t.date "valid_start_date", null: false
     t.date "valid_end_date", null: false
     t.string "invalid_reason", limit: 1
-    t.index ["source_code"], name: "idx_source_to_concept_map_code"
-    t.index ["source_vocabulary_id"], name: "idx_source_to_concept_map_id_1"
-    t.index ["target_concept_id"], name: "idx_source_to_concept_map_id_3"
-    t.index ["target_vocabulary_id"], name: "idx_source_to_concept_map_id_2"
   end
 
   create_table "specimen", id: false, force: :cascade do |t|
@@ -647,37 +633,6 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
     t.string "unit_source_value", limit: 50
     t.string "anatomic_site_source_value", limit: 50
     t.string "disease_status_source_value", limit: 50
-  end
-
-  create_table "test_records_tmp", id: false, force: :cascade do |t|
-    t.string "record_id", limit: 255
-    t.string "redcap_event_name", limit: 255
-    t.string "redcap_repeat_instrument", limit: 255
-    t.string "redcap_repeat_instance", limit: 255
-    t.string "first_name", limit: 255
-    t.string "last_name", limit: 255
-    t.string "dob", limit: 255
-    t.string "gender", limit: 255
-    t.string "race___1", limit: 255
-    t.string "race___2", limit: 255
-    t.string "race___3", limit: 255
-    t.string "race___4", limit: 255
-    t.string "race___5", limit: 255
-    t.string "race___6", limit: 255
-    t.string "race___99", limit: 255
-    t.string "ethnicity", limit: 255
-    t.string "demographics_complete", limit: 255
-    t.string "v_d", limit: 255
-    t.string "v_coordinator", limit: 255
-    t.string "visit_information_complete", limit: 255
-    t.string "moca", limit: 255
-    t.string "mood", limit: 255
-    t.string "test_calc", limit: 255
-    t.string "clock_position_of_wound", limit: 255
-    t.string "visit_data_complete", limit: 255
-    t.string "m_d", limit: 255
-    t.string "mri_coordinator", limit: 255
-    t.string "mri_information_complete", limit: 255
   end
 
   create_table "visit_detail", id: false, force: :cascade do |t|
@@ -722,12 +677,12 @@ ActiveRecord::Schema.define(version: 2021_01_06_024142) do
     t.integer "preceding_visit_occurrence_id"
   end
 
-  create_table "vocabulary", primary_key: "vocabulary_id", id: :string, limit: 20, force: :cascade do |t|
+  create_table "vocabulary", id: false, force: :cascade do |t|
+    t.string "vocabulary_id", limit: 20, null: false
     t.string "vocabulary_name", limit: 255, null: false
     t.string "vocabulary_reference", limit: 255, null: false
     t.string "vocabulary_version", limit: 255
     t.integer "vocabulary_concept_id", null: false
-    t.index ["vocabulary_id"], name: "idx_vocabulary_vocabulary_id", unique: true
   end
 
 end
