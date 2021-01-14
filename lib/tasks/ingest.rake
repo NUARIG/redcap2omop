@@ -633,10 +633,11 @@ namespace :ingest do
                   when 'choice'
                     puts domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
                     observation.value_as_concept_id = domain_redcap_variable_map.redcap_variable.map_redcap_variable_choice(redcap_export_tmp)
-                    observation.value_as_number = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name] #if observation.value_as_concept_id == 0
                   when 'text'
                     observation.value_as_string = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
                   end
+                  observation.value_source_value  = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
+
                   redcap_variable = domain_redcap_variable_map.redcap_variable
                   redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
                     # puts redcap_variable_child_map.redcap_variable.name
@@ -695,6 +696,7 @@ namespace :ingest do
                     #do nothing
                     #no measurement.value_as_string column
                   end
+                  measurement.value_source_value  = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
                   redcap_variable = domain_redcap_variable_map.redcap_variable
                   redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
                     # puts redcap_variable_child_map.redcap_variable.name
@@ -751,6 +753,7 @@ namespace :ingest do
                   when 'text'
                     observation.value_as_string = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
                   end
+                  observation.value_source_value  = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
                   redcap_variable = domain_redcap_variable_map.redcap_variable
                   redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
                     # puts redcap_variable_child_map.redcap_variable.name
