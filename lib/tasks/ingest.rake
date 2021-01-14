@@ -249,19 +249,22 @@ namespace :ingest do
 
   desc "Maps neurofiless"
   task(maps_neurofiles: :environment) do |t, args|
-    redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox - CorePID').first
+    # redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox - CorePID').first
+    redcap_project          = RedcapProject.where(project_id: 5840).first
     redcap_data_dictionary  = RedcapDataDictionary.find(redcap_project.redcap_data_dictionaries.maximum(:id))
     RedcapVariableMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
     RedcapVariableChoiceMap.joins(redcap_variable_choice: :redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
     RedcapVariableChildMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
 
-    redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox -- PPA').first
+    # redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox -- PPA').first
+    redcap_project          = RedcapProject.where(project_id: 5843).first
     redcap_data_dictionary  = RedcapDataDictionary.find(redcap_project.redcap_data_dictionaries.maximum(:id))
     RedcapVariableMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
     RedcapVariableChoiceMap.joins(redcap_variable_choice: :redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
     RedcapVariableChildMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
 
-    redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox - SA').first
+    # redcap_project          = RedcapProject.where(name: 'Data Migration Sandbox - SA').first
+    redcap_project          = RedcapProject.where(project_id: 5844).first
     redcap_data_dictionary  = RedcapDataDictionary.find(redcap_project.redcap_data_dictionaries.maximum(:id))
     RedcapVariableMap.joins(:redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
     RedcapVariableChoiceMap.joins(redcap_variable_choice: :redcap_variable).where('redcap_variables.redcap_data_dictionary_id = ?', redcap_data_dictionary.id).destroy_all
@@ -365,13 +368,10 @@ namespace :ingest do
 
     #provider
     redcap_variable = RedcapVariable.where(name: 'v_coordinator', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    omop_column       = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    other_omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
-    redcap_variable.save!
-
-    redcap_variable = RedcapVariable.where(name: 'v_coordinator').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
-    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_variable, omop_column: other_omop_column)
     redcap_variable.save!
 
     #moca
@@ -491,8 +491,15 @@ namespace :ingest do
 
       provider_redcap2omop_map = {}
       redcap_variables_by_omop_table('provider', redcap_data_dictionary).each do |redcap_variable_map|
-        provider_redcap2omop_map[redcap_variable_map.omop_column.name] = redcap_variable_map.redcap_variable.name
+        provider_redcap2omop_map[redcap_variable_map.omop_column.name] ||= []
+        hash = { source: redcap_variable_map.redcap_variable.name }
+        redcap_variable_map.redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
+          hash[:variable_children] ||= []
+          hash[:variable_children] << { redcap_variable_child_map.omop_column.name => redcap_variable_child_map.redcap_variable.name }
+        end
+        provider_redcap2omop_map[redcap_variable_map.omop_column.name] << hash
       end
+      # puts provider_redcap2omop_map.inspect
 
       redcap_records = ActiveRecord::Base.connection.select_all("select * from #{redcap_project.export_table_name}").to_a
 
@@ -565,15 +572,24 @@ namespace :ingest do
         end
 
         #provider
-        if redcap_export_tmp[provider_redcap2omop_map['provider_source_value']].present?
-          puts redcap_export_tmp[provider_redcap2omop_map['provider_source_value']]
-          provider = Provider.where(provider_source_value: redcap_export_tmp[provider_redcap2omop_map['provider_source_value']]).first
-          unless provider.present?
-            provider = Provider.new
-            provider.provider_id = Provider.next_id
-            provider.provider_source_value = redcap_export_tmp[provider_redcap2omop_map['provider_source_value']]
-            provider.provider_name = redcap_export_tmp[provider_redcap2omop_map['provider_name']]
-            provider.save!
+        provider_redcap2omop_map['provider_source_value'].each do |provider_source_value_hash|
+          # puts provider_source_value_hash.inspect
+          provider_source_value_column = provider_source_value_hash[:source]
+          # puts "provider_source_value_column: #{provider_source_value_column.inspect}"
+          provider_source_value = redcap_export_tmp[provider_source_value_column]
+          # puts "provider_source_value: #{provider_source_value.inspect}"
+          provider_name_source  = provider_source_value_hash[:variable_children].detect{|c| c.keys.include?('provider_name')}
+          # puts "provider_name_source: #{provider_name_source}"
+          if provider_source_value.present?
+            provider = Provider.where(provider_source_value: provider_source_value).first
+            unless provider.present?
+              provider = Provider.new
+              provider.provider_id = Provider.next_id
+              provider.provider_source_value = provider_source_value
+              provider.provider_name = redcap_export_tmp[provider_name_source['provider_name']]
+              provider.save!
+              puts "Created #{provider.inspect} provider"
+            end
           end
         end
       end
@@ -620,6 +636,8 @@ namespace :ingest do
                   when 'text'
                     observation.value_as_string = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
                   end
+                  observation.value_source_value  = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
+
                   redcap_variable = domain_redcap_variable_map.redcap_variable
                   redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
                     # puts redcap_variable_child_map.redcap_variable.name
@@ -678,6 +696,7 @@ namespace :ingest do
                     #do nothing
                     #no measurement.value_as_string column
                   end
+                  measurement.value_source_value  = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
                   redcap_variable = domain_redcap_variable_map.redcap_variable
                   redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
                     # puts redcap_variable_child_map.redcap_variable.name
@@ -734,6 +753,7 @@ namespace :ingest do
                   when 'text'
                     observation.value_as_string = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
                   end
+                  observation.value_source_value  = redcap_export_tmp[domain_redcap_variable_map.redcap_variable.name]
                   redcap_variable = domain_redcap_variable_map.redcap_variable
                   redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
                     # puts redcap_variable_child_map.redcap_variable.name
@@ -944,33 +964,24 @@ namespace :ingest do
 
     #provider
     redcap_variable = redcap_variables.where(name: 'ivp_netid_a1').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    omop_column       = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    other_omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
-    redcap_variable.save!
-
-    redcap_variable = redcap_variables.where(name: 'ivp_netid_a1').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
-    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_variable, omop_column: other_omop_column)
     redcap_variable.save!
 
     redcap_variable = redcap_variables.where(name: 'fu_netid_a1').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    omop_column       = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    other_omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
-    redcap_variable.save!
-
-    redcap_variable = redcap_variables.where(name: 'fu_netid_a1').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
-    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_variable, omop_column: other_omop_column)
     redcap_variable.save!
 
     redcap_variable = redcap_variables.where(name: 'tele_netid_a1').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    omop_column       = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    other_omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
-    redcap_variable.save!
-
-    redcap_variable = redcap_variables.where(name: 'tele_netid_a1').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
-    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_variable, omop_column: other_omop_column)
     redcap_variable.save!
 
     #primlang
@@ -1003,11 +1014,13 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '8 Other primary language (specify)').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA46-8').first.concept_id)
+    # redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
-    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "9 Unknown").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
+    # redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'ivp_formdate_a1').first
@@ -1020,7 +1033,7 @@ namespace :ingest do
     redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
     redcap_variable.save!
 
-    #primlangx
+    #primlanx
     redcap_variable = redcap_variables.where(name: 'primlanx').first
     redcap_variable.redcap_variable_maps.build(concept_id: Concept.where(domain_id: 'Observation', concept_code: 'Language_SpokenWrittenLanguage', standard_concept: 'S').first.concept_id)
     redcap_variable.save!
@@ -1042,7 +1055,8 @@ namespace :ingest do
     redcap_variable.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '99').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
+    # redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'ivp_formdate_a1').first
@@ -1096,11 +1110,11 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "6 Living as married/domestic partner").first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Observation', vocabulary_id: 'PPI', concept_code: 'CurrentMaritalStatus_LivingWithPartner').first.concept_id)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA15605-1').first.concept_id)
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'ivp_formdate_a1').first
@@ -1139,11 +1153,11 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "6 Living as married/domestic partner").first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Observation', vocabulary_id: 'PPI', concept_code: 'CurrentMaritalStatus_LivingWithPartner').first.concept_id)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA15605-1').first.concept_id)
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'fu_formdate_a1').first
@@ -1182,11 +1196,11 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "6 Living as married/domestic partner").first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Observation', vocabulary_id: 'PPI', concept_code: 'CurrentMaritalStatus_LivingWithPartner').first.concept_id)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA15605-1').first.concept_id)
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'tele_formdate_a1').first
@@ -1217,7 +1231,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'ivp_formdate_a1').first
@@ -1252,7 +1266,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'ivp_formdate_a1').first
@@ -1286,7 +1300,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'fu_formdate_a1').first
@@ -1321,7 +1335,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'tele_formdate_a1').first
@@ -1369,7 +1383,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'ivp_formdate_a1').first
@@ -1417,7 +1431,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'fu_formdate_a1').first
@@ -1465,7 +1479,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'tele_formdate_a1').first
@@ -1489,7 +1503,6 @@ namespace :ingest do
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "1 Yes").first
     redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA33-6').first.concept_id)
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "8 Never drove").first
@@ -1497,7 +1510,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0) # https://athena.ohdsi.org/search-terms/terms/45877986?
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'ivp_formdate_a1').first
@@ -1521,7 +1534,6 @@ namespace :ingest do
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "1 Yes").first
     redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA33-6').first.concept_id)
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "8 Never drove").first
@@ -1529,7 +1541,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0) # https://athena.ohdsi.org/search-terms/terms/45877986?
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'fu_formdate_a1').first
@@ -1553,7 +1565,6 @@ namespace :ingest do
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "1 Yes").first
     redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA33-6').first.concept_id)
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "8 Never drove").first
@@ -1561,7 +1572,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0) # https://athena.ohdsi.org/search-terms/terms/45877986?
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'tele_formdate_a1').first
@@ -1581,7 +1592,7 @@ namespace :ingest do
     redcap_variable.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '999 = Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'ivp_formdate_a1').first
@@ -1601,7 +1612,7 @@ namespace :ingest do
     redcap_variable.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '999 = Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'fu_formdate_a1').first
@@ -1621,7 +1632,7 @@ namespace :ingest do
     redcap_variable.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '999 = Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'tele_formdate_a1').first
@@ -1649,7 +1660,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0) # https://athena.ohdsi.org/search-terms/terms/45877986?
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'ivp_formdate_a1').first
@@ -1673,11 +1684,10 @@ namespace :ingest do
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "1 Yes").first
     redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA33-6').first.concept_id) # Patient lives with other person
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0) # https://athena.ohdsi.org/search-terms/terms/45877986?
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'fu_formdate_a1').first
@@ -1705,7 +1715,67 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0) # https://athena.ohdsi.org/search-terms/terms/45877986?
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
+    redcap_variable_choice.save!
+
+    other_redcap_variable = redcap_variables.where(name: 'tele_formdate_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    other_redcap_variable = redcap_variables.where(name: 'tele_netid_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    # mc_ivp_number_accidents
+    redcap_variable = redcap_variables.where(name: 'mc_ivp_number_accidents').first
+    redcap_variable.field_type_curated = 'integer'
+    redcap_variable.redcap_variable_maps.build(concept_id: 0)
+    redcap_variable.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '999 = Unknown').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
+    redcap_variable_choice.save!
+
+    other_redcap_variable = redcap_variables.where(name: 'ivp_formdate_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    other_redcap_variable = redcap_variables.where(name: 'tele_netid_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    # mc_fu_number_accidents
+    redcap_variable = redcap_variables.where(name: 'mc_fu_number_accidents').first
+    redcap_variable.field_type_curated = 'integer'
+    redcap_variable.redcap_variable_maps.build(concept_id: 0)
+    redcap_variable.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '999 = Unknown').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
+    redcap_variable_choice.save!
+
+    other_redcap_variable = redcap_variables.where(name: 'fu_formdate_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    other_redcap_variable = redcap_variables.where(name: 'fu_netid_a1').first
+    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'provider_id'").first
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column)
+    redcap_variable.save!
+
+    # mc_tele_number_accidents
+    redcap_variable = redcap_variables.where(name: 'mc_tele_number_accidents').first
+    redcap_variable.field_type_curated = 'integer'
+    redcap_variable.redcap_variable_maps.build(concept_id: 0)
+    redcap_variable.save!
+
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '999 = Unknown').first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'tele_formdate_a1').first
@@ -1805,13 +1875,10 @@ namespace :ingest do
 
     #provider
     redcap_variable = redcap_variables.where(name: 'netid_summary').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    omop_column       = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    other_omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
-    redcap_variable.save!
-
-    redcap_variable = redcap_variables.where(name: 'netid_summary').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
-    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_variable, omop_column: other_omop_column)
     redcap_variable.save!
 
     #primlang
@@ -1844,11 +1911,13 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '8 Other primary language (specify)').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA46-8').first.concept_id)
+    # redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
-    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "9 Unknown").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
+    # redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'visit_date_summary').first
@@ -1883,7 +1952,8 @@ namespace :ingest do
     redcap_variable.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '99').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
+    # redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'visit_date_summary').first
@@ -1952,11 +2022,11 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "6 Living as married/domestic partner").first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Observation', vocabulary_id: 'PPI', concept_code: 'CurrentMaritalStatus_LivingWithPartner').first.concept_id)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA15605-1').first.concept_id)
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'visit_date_summary').first
@@ -2073,13 +2143,10 @@ namespace :ingest do
 
     #provider
     redcap_variable = redcap_variables.where(name: 'netid').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    omop_column       = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_source_value'").first
+    other_omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
     redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
-    redcap_variable.save!
-
-    redcap_variable = redcap_variables.where(name: 'netid').first
-    omop_column = OmopColumn.joins(:omop_table).where("omop_tables.name = 'provider' AND omop_columns.name = 'provider_name'").first
-    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_variable, omop_column: other_omop_column)
     redcap_variable.save!
 
     #primlang
@@ -2112,11 +2179,13 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '8 Other primary language (specify)').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA46-8').first.concept_id)
+    # redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
-    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "9 Unknown").first
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
+    # redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'date_visit').first
@@ -2151,7 +2220,8 @@ namespace :ingest do
     redcap_variable.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '99').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
+    # redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'date_visit').first
@@ -2220,11 +2290,11 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "6 Living as married/domestic partner").first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Observation', vocabulary_id: 'PPI', concept_code: 'CurrentMaritalStatus_LivingWithPartner').first.concept_id)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA15605-1').first.concept_id)
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'date_visit').first
@@ -2255,7 +2325,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'date_visit').first
@@ -2290,7 +2360,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'date_visit').first
@@ -2338,7 +2408,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'date_visit').first
@@ -2362,7 +2432,6 @@ namespace :ingest do
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "1 Yes").first
     redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA33-6').first.concept_id)
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "8 Never drove").first
@@ -2370,7 +2439,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0) # https://athena.ohdsi.org/search-terms/terms/45877986?
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'date_visit').first
@@ -2390,7 +2459,7 @@ namespace :ingest do
     redcap_variable.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '999 = Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'date_visit').first
@@ -2418,7 +2487,7 @@ namespace :ingest do
     redcap_variable_choice.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '9 Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0) # https://athena.ohdsi.org/search-terms/terms/45877986?
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'date_visit').first
@@ -2438,7 +2507,7 @@ namespace :ingest do
     redcap_variable.save!
 
     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '999 = Unknown').first
-    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0)
+    redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA4489-6').first.concept_id)
     redcap_variable_choice.save!
 
     other_redcap_variable = redcap_variables.where(name: 'date_visit').first
