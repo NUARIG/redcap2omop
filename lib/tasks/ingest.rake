@@ -3,6 +3,7 @@ require 'webservices/redcap_api'
 
 # bundle exec rake data:truncate_omop_clinical_data_tables
 # bundle exec rake ingest:data_dictionary
+  # bundle exec rake ingest:data_dictionary_csv
 # bundle exec rake ingest:omop_tables
 # bundle exec rake ingest:maps
   # bundle exec rake ingest:maps_neurofiles
@@ -76,7 +77,7 @@ namespace :ingest do
   desc "Data dictionary"
   task(data_dictionary: :environment) do |t, args|
     # RedcapProject.delete_all
-    # redcap_project = RedcapProject.where(project_id: 5912, name:'REDCap2SQL -- sandbox 2 - Longitudinal', api_token: '').first_or_create
+    # redcap_project = RedcapProject.where(project_id: 5912, name:'REDCap2SQL -- sandbox 2 - Longitudinal', api_token: '5258517CCB29E4AB9476DB5258E0993D').first_or_create
     # redcap_project = RedcapProject.where(project_id: 5840, name:'Data Migration Sandbox - CorePID', api_token: '?').first_or_create
     # redcap_project = RedcapProject.where(project_id: 5843, name:'Data Migration Sandbox -- PPA', api_token: '?').first_or_create
     # redcap_project = RedcapProject.where(project_id: 5844, name: 'Data Migration Sandbox - SA', api_token: '?').first_or_create
@@ -156,6 +157,15 @@ namespace :ingest do
     redcap_variable.save!
 
     redcap_variable = RedcapVariable.where(name: 'dx_year', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'ts_1', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+    redcap_variable.redcap_variable_maps.build(omop_column_id: omop_column.id)
+    redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+    redcap_variable.save!
+
+    redcap_variable = RedcapVariable.where(name: 'covid_19_dx_interval', redcap_data_dictionary_id: redcap_data_dictionary.id).first
     redcap_variable.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
     redcap_variable.save!
   end
