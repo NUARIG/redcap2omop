@@ -13,7 +13,7 @@ require 'webservices/redcap_api'
 namespace :ingest do
   desc "Data dictionary CSV"
   task(data_dictionary_csv: :environment) do  |t, args|
-    redcap_project = RedcapProject.where(project_id: 0 , name: 'CCC19', api_import: false).first_or_create
+    # redcap_project = RedcapProject.where(project_id: 0 , name: 'CCC19', api_import: false).first_or_create
 
     RedcapDataDictionary.delete_all
     RedcapEventMapDependent.delete_all
