@@ -2,7 +2,7 @@ class RedcapVariable < ApplicationRecord
   include SoftDelete
   belongs_to :redcap_data_dictionary
   has_many :redcap_variable_choices
-  has_many :redcap_variable_maps
+  has_one :redcap_variable_map
   has_many :redcap_variable_child_maps, as: :parentable
   has_many :redcap_source_links, as: :redcap_source
 
