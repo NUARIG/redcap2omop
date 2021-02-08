@@ -20,7 +20,7 @@ module Webservices
         returnFormat: 'json'
       }
       api_response = redcap_api_request_wrapper(parameters)
-      api_response[:response]
+      api_response
     end
 
     def metadata
@@ -32,7 +32,7 @@ module Webservices
         returnFormat: 'json'
       }
       api_response = redcap_api_request_wrapper(parameters)
-      api_response[:response]
+      api_response
     end
 
     def records
@@ -52,7 +52,7 @@ module Webservices
         # returnFormat: json
       }
       api_response = redcap_api_request_wrapper(parameters)
-      api_response[:response]
+      api_response
     end
 
     def export_field_names
@@ -64,7 +64,7 @@ module Webservices
         returnFormat: 'json',
       }
       api_response = redcap_api_request_wrapper(parameters)
-      api_response[:response]
+      api_response
     end
 
     def instruments
@@ -76,7 +76,7 @@ module Webservices
         returnFormat: 'json'
       }
       api_response = redcap_api_request_wrapper(parameters)
-      api_response[:response]
+      api_response
     end
 
     def events
@@ -88,7 +88,7 @@ module Webservices
         returnFormat: 'json'
       }
       api_response = redcap_api_request_wrapper(parameters)
-      api_response[:response]
+      api_response
     end
 
     def metadata
@@ -100,7 +100,7 @@ module Webservices
         returnFormat: 'json'
       }
       api_response = redcap_api_request_wrapper(parameters)
-      api_response[:response]
+      api_response
     end
 
     def redcap_api_request(options, parse_response = true)
