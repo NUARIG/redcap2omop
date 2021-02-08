@@ -3,29 +3,33 @@ select  rv.*
 from redcap_variables rv left join redcap_variable_choices rvc on rv.id = rvc.redcap_variable_id
                          join redcap_data_dictionaries rdd on rv.redcap_data_dictionary_id = rdd.id
                          join redcap_projects rp on rdd.redcap_project_id = rp.id
-where rp.name = 'CCC19'
+where rp.name = 'REDCap2SQL -- sandbox 2 - Longitudinal'
+order by rv.id
 
-select  rv.*
-     ,  rvc.*
+select  rv.name
+      , rv.form_name
+      , rv.field_type
+      , rv.field_type_normalized
+      , rv.field_label
+      , rv.text_validation_type
+      , rv.field_annotation
+      , rv.field_type_curated
+      , rvc.choice_code_raw
+      , rvc.choice_code_concept_code
+      , rvc.choice_description
 from redcap_variables rv left join redcap_variable_choices rvc on rv.id = rvc.redcap_variable_id
                          join redcap_data_dictionaries rdd on rv.redcap_data_dictionary_id = rdd.id
                          join redcap_projects rp on rdd.redcap_project_id = rp.id
-where rp.name = 'REDCap2SQL -- sandbox 2 - Longitudinal'
+where rp.name = 'CCC19'
+and rv.name = 'urban_rural'
+order by rv.id
 
 select *
-from redcap_export_tmps
-
-select   redcap_event_name
-        , v_d
-        , v_coordinator
-        , moca
-from redcap_export_tmps
---where moca is not null
---and moca!= ''
-order by  redcap_event_name, redcap_export_tmps.id, v_d
+from redcap_records_tmp_1
 
 select *
 from person
+
 
 select  p.person_source_value
       , rp.name

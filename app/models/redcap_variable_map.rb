@@ -2,4 +2,9 @@ class RedcapVariableMap < ApplicationRecord
   belongs_to :redcap_variable
   belongs_to :omop_column, optional: true
   belongs_to :concept, optional: true
+
+  REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN = 'OMOP column'
+  REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT = 'OMOP concept'
+  REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE = 'OMOP concept choice'
+  REDCAP_VARIABLE_MAP_MAP_TYPES = [REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN, REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT, REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE]
 end

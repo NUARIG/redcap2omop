@@ -11,7 +11,7 @@ class CreateRedcapVariables < ActiveRecord::Migration[6.0]
       t.string  :text_validation_type,       null: true
       t.string  :field_annotation,           null: true
       t.decimal :ordinal_position,           null: true
-      t.boolean :curated,                    null: true
+      t.string  :curation_status,            null: false
       t.timestamps
       t.datetime :deleted_at, null: true
     end
