@@ -7,6 +7,7 @@ class RedcapVariable < ApplicationRecord
   has_many :redcap_source_links, as: :redcap_source
 
   after_initialize :set_defaults
+  before_save :set_variable_choices
 
   REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED = 'undetermined'
   REDCAP_VARIABLE_CURATION_STATUS_SKIPPED = 'skipped'
@@ -45,23 +46,29 @@ class RedcapVariable < ApplicationRecord
     self.field_type_curated == 'integer'  || self.field_type_normalized == 'integer'
   end
 
-  def map_redcap_variable_choice(redcap_export_tmp)
+  def map_redcap_variable_choice(redcap_record)
     if self.checkbox?
       mapped_choices = []
       self.redcap_variable_choices.each do |redcap_variable_choice|
-        mapped_choices << { chosen: redcap_export_tmp["#{self.name}___#{}#{redcap_variable_choice.choice_code_raw}"], redcap_choice_code: redcap_variable_choice.choice_code_raw, omop_concept_id: redcap_variable_choice.redcap_variable_choice_map.concept_id }
+        puts redcap_variable_choice.inspect
+        puts redcap_variable_choice.redcap_variable_choice_map.inspect
+        mapped_choices << {
+          chosen: redcap_record["#{self.name}___#{}#{redcap_variable_choice.choice_code_raw}"],
+          redcap_choice_code: redcap_variable_choice.choice_code_raw,
+          omop_concept_id: redcap_variable_choice.redcap_variable_choice_map.concept_id
+        }
       end
       mapped_choice = mapped_choices.detect { |mapped_choice| mapped_choice[:chosen] == '1' }
       if mapped_choice
         mapped_choice[:omop_concept_id]
       end
     elsif self.choice?
-      redcap_variable_choice = self.redcap_variable_choices.where(choice_code_raw: redcap_export_tmp[self.name]).first
+      redcap_variable_choice = self.redcap_variable_choices.where(choice_code_raw: redcap_record[self.name]).first
       if redcap_variable_choice.present?
         redcap_variable_choice.redcap_variable_choice_map.concept_id
       end
     elsif self.integer?
-      redcap_variable_choice = self.redcap_variable_choices.where(choice_code_raw: redcap_export_tmp[self.name]).first
+      redcap_variable_choice = self.redcap_variable_choices.where(choice_code_raw: redcap_record[self.name]).first
       if redcap_variable_choice && redcap_variable_choice.redcap_variable_choice_map
         redcap_variable_choice.redcap_variable_choice_map.concept_id
       end
@@ -76,10 +83,28 @@ class RedcapVariable < ApplicationRecord
     end
   end
 
+  def self.get_by_name(name)
+    where(name: name).first
+  end
+
   private
     def set_defaults
       if self.new_record?
         self.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED
+      end
+    end
+
+    def set_variable_choices
+      return if self.choices.blank? || self.redcap_variable_choices.any?
+      self.choices.split('|').each_with_index do |choice, i|
+        choice_code, delimiter, choice_description = choice.partition(',')
+        self.redcap_variable_choices.build(
+          choice_code_raw:    choice_code.try(:strip),
+          choice_description: choice_description.try(:strip),
+          vocabulary_id_raw:  self.field_annotation.try(:strip),
+          ordinal_position:   i,
+          curated:            false
+        )
       end
     end
 end
