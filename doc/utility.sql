@@ -1,12 +1,23 @@
-select  rv.*
-     ,  rvc.*
+select  rv.id
+      , rv.name
+      , rv.form_name
+      , rv.field_type
+      , rv.field_type_normalized
+      , rv.field_label
+      , rv.text_validation_type
+      , rv.field_annotation
+      , rv.field_type_curated
+      , rvc.choice_code_raw
+      , rvc.choice_code_concept_code
+      , rvc.choice_description
 from redcap_variables rv left join redcap_variable_choices rvc on rv.id = rvc.redcap_variable_id
                          join redcap_data_dictionaries rdd on rv.redcap_data_dictionary_id = rdd.id
                          join redcap_projects rp on rdd.redcap_project_id = rp.id
 where rp.name = 'REDCap2SQL -- sandbox 2 - Longitudinal'
 order by rv.id
 
-select  rv.name
+select  rv.id
+      , rv.name
       , rv.form_name
       , rv.field_type
       , rv.field_type_normalized
@@ -21,8 +32,10 @@ from redcap_variables rv left join redcap_variable_choices rvc on rv.id = rvc.re
                          join redcap_data_dictionaries rdd on rv.redcap_data_dictionary_id = rdd.id
                          join redcap_projects rp on rdd.redcap_project_id = rp.id
 where rp.name = 'CCC19'
-and rv.name = 'urban_rural'
+--and rv.name = 'hcw'
+and rv.id > 483
 order by rv.id
+
 
 select *
 from redcap_records_tmp_1
@@ -68,3 +81,19 @@ from measurement m left join concept c1 on m.measurement_concept_id = c1.concept
                    join redcap_projects rp on rdd.redcap_project_id = rp.id
                    join person p on m.person_id = p.person_id
                    left join provider pr on m.provider_id = pr.provider_id
+
+
+
+select  p.person_source_value
+      , rp.name
+      , rv.name
+      , c1.concept_name
+      , de.device_source_value
+      , pr.provider_source_value
+from device_exposure de left join concept c1 on de.device_concept_id = c1.concept_id
+         				        join redcap_source_links rsl on de.device_exposure_id = rsl.redcap_sourced_id and rsl.redcap_sourced_type = 'DeviceExposure'
+         				        join redcap_variables rv on rv.id = rsl.redcap_source_id
+                        join redcap_data_dictionaries rdd on rv.redcap_data_dictionary_id = rdd.id
+                        join redcap_projects rp on rdd.redcap_project_id = rp.id
+                        join person p on de.person_id = p.person_id
+                        left join provider pr on de.provider_id = pr.provider_id

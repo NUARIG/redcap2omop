@@ -11,6 +11,22 @@ class RedcapVariableChoice < ApplicationRecord
 
   after_initialize :set_defaults
 
+  def redcap_variable_name
+    if redcap_variable.checkbox?
+      "#{redcap_variable.name}___#{self.choice_code_raw}"
+    else
+      redcap_variable.name
+    end
+  end
+
+  def match?(value)
+    if redcap_variable.checkbox?
+      value == '1'
+    else
+      value == self.choice_code_raw
+    end
+  end
+
   private
     def set_defaults
       if self.new_record?
