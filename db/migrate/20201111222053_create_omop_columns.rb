@@ -1,6 +1,6 @@
-class CreateOmopColumns < ActiveRecord::Migration[6.0]
+class CreateOmopColumns < ActiveRecord::Migration[6.1]
   def change
-    create_table :omop_columns do |t|
+    create_table :redcap2omop_omop_columns do |t|
       t.integer :omop_table_id,   null: false
       t.string  :name,            null: false
       t.string  :data_type,       null: false

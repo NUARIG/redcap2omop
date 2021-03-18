@@ -1,0 +1,17 @@
+default:
+  adapter: postgresql
+  host: localhost
+development:
+  adapter: postgresql
+  host: localhost
+  datamapper_adapter: postgres
+  database: redcap2omop
+  username: yab944
+  password:
+test:
+  adapter: postgresql
+  host: localhost
+  datamapper_adapter: postgres
+  database: redcap2omop_test
+  username: yab944
+  password:
