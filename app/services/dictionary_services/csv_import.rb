@@ -7,12 +7,13 @@ module DictionaryServices
       @redcap_project   = redcap_project
       @csv_file         = csv_file
       @csv_file_options = csv_file_options || {}
+      @csv_file_options||= {}
     end
 
     def run
       ActiveRecord::Base.transaction do
         redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
-        data_dictionary_variables = CSV.new(File.open(csv_file), **cvs_file_options)
+        data_dictionary_variables = CSV.new(File.open(csv_file), { headers: true, col_sep: ",", return_headers: false,  quote_char: "\""})
         data_dictionary_variables.each do |data_dictionary_variable|
           redcap_variable = RedcapVariable.new(redcap_data_dictionary_id: redcap_data_dictionary.id)
           redcap_variable.name                  = data_dictionary_variable['Variable / Field Name']                         #metadata_variable['field_name']

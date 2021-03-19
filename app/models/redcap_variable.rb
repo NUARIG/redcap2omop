@@ -103,7 +103,7 @@ class RedcapVariable < ApplicationRecord
           choice_description: choice_description.try(:strip),
           vocabulary_id_raw:  self.field_annotation.try(:strip),
           ordinal_position:   i,
-          curated:            false
+          curation_status: RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
         )
       end
     end
