@@ -1,0 +1,11 @@
+N3C
+
+https://ncats.nih.gov/n3c/resources
+https://covid.cd2h.org/N3C_phenotype
+https://github.com/National-COVID-Cohort-Collaborative/Phenotype_Data_Acquisition/wiki/Latest-Phenotype
+https://github.com/National-COVID-Cohort-Collaborative/Phenotype_Data_Acquisition/wiki/Instructions-for-Sites:-OMOP-Data-Model
+
+
+OHDSI
+
+https://github.com/OHDSI/Covid-19/wiki/Release

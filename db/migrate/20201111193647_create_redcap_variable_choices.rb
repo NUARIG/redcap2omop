@@ -11,7 +11,7 @@ class CreateRedcapVariableChoices < ActiveRecord::Migration[6.0]
       t.string  :choice_code_value_as_concept_code, null: true
       t.string  :value_as_vocabualry_id,            null: true
       t.decimal :ordinal_position,                  null: false
-      t.boolean :curated,                           null: false
+      t.string  :curation_status,                   null: false
       t.timestamps
       t.datetime :deleted_at, null: true
     end

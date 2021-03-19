@@ -2,6 +2,8 @@ class Concept < ApplicationRecord
   self.table_name = 'concept'
   self.primary_key = 'concept_id'
 
+  CONCEPT_ID_NO_MATCHING_CONCEPT = 0
+
   CONCEPT_CODE_OMOP_GENERATED = 'OMOP generated'
 
   DOMAIN_ID_CONDITION = 'Condition'

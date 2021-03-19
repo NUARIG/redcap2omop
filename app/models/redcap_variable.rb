@@ -2,11 +2,18 @@ class RedcapVariable < ApplicationRecord
   include SoftDelete
   belongs_to :redcap_data_dictionary
   has_many :redcap_variable_choices
-  has_many :redcap_variable_maps
+  has_one :redcap_variable_map
   has_many :redcap_variable_child_maps, as: :parentable
   has_many :redcap_source_links, as: :redcap_source
 
+
+  after_initialize :set_defaults
   before_save :set_variable_choices
+
+  REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED = 'undetermined'
+  REDCAP_VARIABLE_CURATION_STATUS_SKIPPED = 'skipped'
+  REDCAP_VARIABLE_CURATION_STATUS_MAPPED = 'mapped'
+  REDCAP_VARIABLE_CURATION_STATUSES = [REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED, REDCAP_VARIABLE_CURATION_STATUS_SKIPPED, REDCAP_VARIABLE_CURATION_STATUS_MAPPED]
 
   def normalize_field_type
     normalized_field_type = case self.field_type
@@ -81,18 +88,24 @@ class RedcapVariable < ApplicationRecord
     where(name: name).first
   end
 
-  # private
-  def set_variable_choices
-    return if self.choices.blank? || self.redcap_variable_choices.any?
-    self.choices.split('|').each_with_index do |choice, i|
-      choice_code, delimiter, choice_description = choice.partition(',')
-      self.redcap_variable_choices.build(
-        choice_code_raw:    choice_code.try(:strip),
-        choice_description: choice_description.try(:strip),
-        vocabulary_id_raw:  self.field_annotation.try(:strip),
-        ordinal_position:   i,
-        curated:            false
-      )
+  private
+    def set_defaults
+      if self.new_record?
+        self.curation_status = RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED
+      end
     end
-  end
+
+    def set_variable_choices
+      return if self.choices.blank? || self.redcap_variable_choices.any?
+      self.choices.split('|').each_with_index do |choice, i|
+        choice_code, delimiter, choice_description = choice.partition(',')
+        self.redcap_variable_choices.build(
+          choice_code_raw:    choice_code.try(:strip),
+          choice_description: choice_description.try(:strip),
+          vocabulary_id_raw:  self.field_annotation.try(:strip),
+          ordinal_position:   i,
+          curation_status: RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
+        )
+      end
+    end
 end
