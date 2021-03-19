@@ -6,6 +6,7 @@ class RedcapVariable < ApplicationRecord
   has_many :redcap_variable_child_maps, as: :parentable
   has_many :redcap_source_links, as: :redcap_source
 
+
   after_initialize :set_defaults
   before_save :set_variable_choices
 

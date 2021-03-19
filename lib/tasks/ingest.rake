@@ -7,6 +7,7 @@ require 'highline/import'
 # bundle exec rake ingest:data_dictionary:cleanup
 # bundle exec rake ingest:data_dictionary:from_csv
 # bundle exec rake setup:omop_tables
+
 # bundle exec rake setup:ccc19:maps
 # bundle exec rake ingest:data
 # bundle exec rake ingest:redcap2omop
@@ -17,7 +18,9 @@ require 'highline/import'
 # bundle exec rake ingest:data_dictionary:cleanup
 # bundle exec rake ingest:data_dictionary:from_redcap
 # bundle exec rake setup:omop_tables
+
 # bundle exec rake setup:ccc19:insert_people
+
 # bundle exec rake setup:neurofiles:maps
 # bundle exec rake setup:neurofiles:maps_sandbox
 # bundle exec rake ingest:data
@@ -40,6 +43,7 @@ namespace :ingest do
 
     desc 'Import data dictionary from CSV'
     task from_csv: :environment do  |t, args|
+
       import_folder = File.join(Rails.root, 'lib', 'setup', 'data', 'data_dictionaries')
       file_list = Dir.glob(File.join(import_folder,'*.csv')).sort
       fail "no dictionary files (*.csv) found in #{import_folder}" if file_list.empty?
@@ -49,6 +53,7 @@ namespace :ingest do
 
       projects =  RedcapProject.not_deleted.csv_importable.pluck(:project_id, :name)
       projects.each{|p| puts "#{p[0]}:#{p[1]}"}
+
       project_id = ask('Which project? ', Integer){|q| q.in = projects.map(&:first)}
 
       # dictionary = DictionaryServices::Parsers.load_dictionary(file_list[file_selected_index.to_i-1], study_id == 0 ? nil : study_id)
