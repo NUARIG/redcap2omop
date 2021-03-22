@@ -1,6 +1,6 @@
 module Redcap2omop::Methods::Models::Person
   MAP_TYPES = {
-    person_id: 'record_id',
+    person_id: 'primary key',
     gender_concept_id: 'choice redcap variable',
     year_of_birth: 'date redcap variable year',
     month_of_birth: 'date redcap variable month',

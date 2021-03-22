@@ -1,4 +1,7 @@
 module Redcap2omop::Methods::Models::RedcapVariableChoiceMap
+  REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT = 'OMOP concept'
+  REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPES = [REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT]
+
   def self.included(base)
     # Associations
     base.send :belongs_to, :redcap_variable_choice
@@ -13,5 +16,8 @@ module Redcap2omop::Methods::Models::RedcapVariableChoiceMap
   end
 
   module ClassMethods
+    def not_no_matching_concept
+      where('redcap_variable_choice_maps.concept_id != ?', Concept::CONCEPT_ID_NO_MATCHING_CONCEPT)
+    end
   end
 end

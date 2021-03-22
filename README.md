@@ -54,9 +54,9 @@ $ bundle exec rake redcap2omop:data:compile_omop_vocabulary_indexes
 ```bash
 $ bundle exec rake redcap2omop:setup:ccc19:project
 $ bundle exec rake redcap2omop:ingest:data_dictionary:cleanup
-$ bundle exec rake redcap2omop:ingest:data_dictionary:from_csv
+$ bundle exec rake redcap2omop:ingest:data_dictionary:from_csv PROJECT_ID=0 FILE=../support/data/test_dictionary.csv
 $ bundle exec rake redcap2omop:setup:omop_tables
-$ bundle exec rake redcap2omop:setup:ccc19:insert_people
+$ bundle exec rake redcap2omop:setup:ccc19:maps
 $ bundle exec rake redcap2omop:ingest:data
 $ bundle exec rake redcap2omop:ingest:redcap2omop
 ```
@@ -68,6 +68,7 @@ $ bundle exec rake redcap2omop:setup:neurofiles:project_sandbox
 $ bundle exec rake redcap2omop:ingest:data_dictionary:cleanup
 $ bundle exec rake redcap2omop:ingest:data_dictionary:from_redcap
 $ bundle exec rake redcap2omop:setup:omop_tables
+$ bundle exec rake redcap2omop:setup:neurofiles:insert_people
 $ bundle exec rake redcap2omop:setup:neurofiles:maps
 $ bundle exec rake redcap2omop:setup:neurofiles:maps_sandbox
 $ bundle exec rake redcap2omop:ingest:data
@@ -99,5 +100,5 @@ Run the following rake tasks to prepare the testing environment.
 RAILS_ENV=test bundle exec rake db:migrate
 RAILS_ENV=test bundle exec rake app:redcap2omop:data:load_omop_vocabulary_tables
 RAILS_ENV=test bundle exec rake app:redcap2omop:data:compile_omop_vocabulary_indexes
-bundle exec rake spec
+bundle exec rspec
 ```

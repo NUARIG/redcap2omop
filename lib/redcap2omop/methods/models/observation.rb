@@ -37,7 +37,7 @@ module Redcap2omop::Methods::Models::Observation
     # Associations
     base.send :has_one, :redcap_source_link, as: :redcap_sourced
     base.send :belongs_to, :person
-    base.send :belongs_to, :provider
+    base.send :belongs_to, :provider, optional: true
     base.send :belongs_to, :concept, foreign_key: :observation_concept_id
     base.send :belongs_to, :type_concept, foreign_key: :observation_type_concept_id, class_name: 'Redcap2omop::Concept'
     base.send :belongs_to, :value_as_concept, foreign_key: :value_as_concept_id, class_name: 'Redcap2omop::Concept', optional: true

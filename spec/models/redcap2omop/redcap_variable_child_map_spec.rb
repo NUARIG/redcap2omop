@@ -5,7 +5,7 @@ module Redcap2omop
     let(:subject)                   { redcap_variable_child_map }
 
     describe 'associations' do
-      it { is_expected.to belong_to(:redcap_variable) }
+      it { is_expected.to belong_to(:redcap_variable).optional }
       it { is_expected.to belong_to(:parentable) }
       it { is_expected.to belong_to(:omop_column).optional }
       it { is_expected.to belong_to(:concept).optional }

@@ -33,10 +33,13 @@ module Redcap2omop::Methods::Models::Measurement
     # Associations
     base.send :has_one, :redcap_source_link, as: :redcap_sourced
     base.send :belongs_to, :person
-    base.send :belongs_to, :provider
+    base.send :belongs_to, :provider, optional: true
     base.send :belongs_to, :concept, foreign_key: :measurement_concept_id
     base.send :belongs_to, :type_concept, foreign_key: :measurement_type_concept_id, class_name: 'Redcap2omop::Concept'
     base.send :belongs_to, :value_as_concept, foreign_key: :value_as_concept_id, class_name: 'Redcap2omop::Concept', optional: true
+
+    # Validations
+    base.send :validates_presence_of, :measurement_date
 
     base.instance_eval do
       self.table_name   = 'measurement'

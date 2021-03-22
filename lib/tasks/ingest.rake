@@ -18,20 +18,17 @@ namespace :redcap2omop do
 
       desc 'Import data dictionary from CSV'
       task from_csv: :environment do  |t, args|
-        import_folder = File.join(Rails.root, 'tmp', 'data', 'data_dictionaries')
-        file_list = Dir.glob(File.join(import_folder,'*.csv')).sort
-        fail "no dictionary files (*.csv) found in #{import_folder}" if file_list.empty?
+        raise "project_id has to be provided" if ENV["PROJECT_ID"].blank?
 
-        file_list.each_with_index{|f,i| puts "#{i+1}:#{File.basename(f)}"}
-        file_selected_index = ask('Which file? ', Integer){|q| q.above = 0; q.below = file_list.size+1}
-
-        projects =  Redcap2omop::RedcapProject.not_deleted.csv_importable.pluck(:id, :name)
-        projects.each{|p| puts "#{p[0]}:#{p[1]}"}
-        project_id = ask('Which project? ', Integer){|q| 0; q.in = projects.map(&:first)}
+        redcap_project = Redcap2omop::RedcapProject.where(project_id: ENV["PROJECT_ID"].strip).first
+        raise "Could not find a project with project_idr '#{ENV["PROJECT_ID"]}'" if redcap_project.blank?
+        raise "file name required e.g. 'FILE=~/dictionary.csv'" if ENV["FILE"].blank?
+        file = ENV['FILE']
+        raise "File does not exist: #{file}" unless FileTest.exists?(file)
 
         import = Redcap2omop::DictionaryServices::CsvImport.new(
-          redcap_project: Redcap2omop::RedcapProject.find(project_id),
-          csv_file: file_list[file_selected_index.to_i-1],
+          redcap_project: redcap_project,
+          csv_file: file,
           csv_file_options: { headers: true, col_sep: ",", return_headers: false,  quote_char: "\""}
         ).run
         if import.success

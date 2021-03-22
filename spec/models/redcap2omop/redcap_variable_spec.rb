@@ -8,7 +8,7 @@ module Redcap2omop
     describe 'associations' do
       it { is_expected.to belong_to(:redcap_data_dictionary) }
       it { is_expected.to have_many(:redcap_variable_choices) }
-      it { is_expected.to have_many(:redcap_variable_maps) }
+      it { is_expected.to have_one(:redcap_variable_map) }
       it { is_expected.to have_many(:redcap_variable_child_maps) }
       it { is_expected.to have_many(:redcap_source_links) }
     end
@@ -80,10 +80,9 @@ module Redcap2omop
           redcap_variable.field_type = 'checkbox'
           redcap_variable.field_type_curated = nil
           redcap_variable.choices = "1, 1 Yes | 0, 0 No | 99, 99 Unknown"
-          redcap_variable.set_variable_choices
           redcap_variable.save!
           redcap_variable.reload.redcap_variable_choices.each do |redcap_variable_choice|
-            redcap_variable_choice.build_redcap_variable_choice_map(concept_id: FactoryBot.create(:concept).id)
+            redcap_variable_choice.build_redcap_variable_choice_map(concept_id: FactoryBot.create(:concept).id, map_type: RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
             redcap_variable_choice.save!
           end
 
@@ -97,10 +96,9 @@ module Redcap2omop
           redcap_variable.field_type = 'radio'
           redcap_variable.field_type_curated = nil
           redcap_variable.choices = "1, 1 Yes | 0, 0 No | 99, 99 Unknown"
-          redcap_variable.set_variable_choices
           redcap_variable.save!
           redcap_variable.reload.redcap_variable_choices.each do |redcap_variable_choice|
-            redcap_variable_choice.build_redcap_variable_choice_map(concept_id: FactoryBot.create(:concept).id)
+            redcap_variable_choice.build_redcap_variable_choice_map(concept_id: FactoryBot.create(:concept).id, map_type: RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
             redcap_variable_choice.save!
           end
 
@@ -114,10 +112,9 @@ module Redcap2omop
           redcap_variable.field_type = 'radio'
           redcap_variable.field_type_curated = nil
           redcap_variable.choices = "1, 1 Yes | 0, 0 No | 99, 99 Unknown"
-          redcap_variable.set_variable_choices
           redcap_variable.save!
           redcap_variable.reload.redcap_variable_choices.each do |redcap_variable_choice|
-            redcap_variable_choice.build_redcap_variable_choice_map(concept_id: FactoryBot.create(:concept).id)
+            redcap_variable_choice.build_redcap_variable_choice_map(concept_id: FactoryBot.create(:concept).id, map_type: RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
             redcap_variable_choice.save!
           end
 
@@ -131,10 +128,9 @@ module Redcap2omop
           redcap_variable.field_type = 'dropdown'
           redcap_variable.field_type_normalized = 'integer'
           redcap_variable.choices = "1, 1 Yes | 0, 0 No | 99, 99 Unknown"
-          redcap_variable.set_variable_choices
           redcap_variable.save!
           redcap_variable.reload.redcap_variable_choices.each do |redcap_variable_choice|
-            redcap_variable_choice.build_redcap_variable_choice_map(concept_id: FactoryBot.create(:concept).id)
+            redcap_variable_choice.build_redcap_variable_choice_map(concept_id: FactoryBot.create(:concept).id, map_type: RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
             redcap_variable_choice.save!
           end
 
@@ -154,14 +150,14 @@ module Redcap2omop
 
       describe 'setting variable_choices' do
         it 'does not set if choices are empty' do
-          redcap_variable.set_variable_choices
+          redcap_variable.choices = ''
+          redcap_variable.save!
           expect(redcap_variable.redcap_variable_choices).to be_blank
         end
 
         it 'sets choices' do
           redcap_variable.choices = "1, 1 Yes | 0, 0 No"
           expect{
-            redcap_variable.set_variable_choices
             redcap_variable.save!
           }.to change{ Redcap2omop::RedcapVariableChoice.count }.by(2)
 
@@ -169,26 +165,23 @@ module Redcap2omop
           expect(redcap_variable.redcap_variable_choices.first.choice_description).to eq '1 Yes'
           expect(redcap_variable.redcap_variable_choices.first.vocabulary_id_raw).to be_nil
           expect(redcap_variable.redcap_variable_choices.first.ordinal_position).to eq 0.0
-          expect(redcap_variable.redcap_variable_choices.first.curated).to eq false
+          expect(redcap_variable.redcap_variable_choices.first.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
 
           expect(redcap_variable.redcap_variable_choices.last.choice_code_raw).to eq '0'
           expect(redcap_variable.redcap_variable_choices.last.choice_description).to eq '0 No'
           expect(redcap_variable.redcap_variable_choices.last.vocabulary_id_raw).to be_nil
           expect(redcap_variable.redcap_variable_choices.last.ordinal_position).to eq 1.0
-          expect(redcap_variable.redcap_variable_choices.last.curated).to eq false
+          expect(redcap_variable.redcap_variable_choices.last.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
         end
 
         it 'does not set choices again' do
           redcap_variable.choices = "1, 1 Yes | 0, 0 No"
-          redcap_variable.set_variable_choices
           expect{
-            redcap_variable.set_variable_choices
             redcap_variable.save!
           }.to change{ Redcap2omop::RedcapVariableChoice.count }
 
           redcap_variable.choices = "1, 1 Yes | 0, 0 No | 99, 99 Unknown"
           expect{
-            redcap_variable.set_variable_choices
             redcap_variable.save!
           }.not_to change{ Redcap2omop::RedcapVariableChoice.count }
         end

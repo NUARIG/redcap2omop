@@ -4,6 +4,6 @@ FactoryBot.define do
     choice_code_raw { '1' }
     choice_description { Faker::Lorem.sentence}
     ordinal_position { 1 }
-    curated { true }
+    curation_status { Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUSES.sample }
   end
 end

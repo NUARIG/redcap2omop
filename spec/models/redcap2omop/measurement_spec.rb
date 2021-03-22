@@ -8,8 +8,14 @@ module Redcap2omop
     describe 'associations' do
       it { is_expected.to have_one(:redcap_source_link) }
       it { is_expected.to belong_to(:person) }
-      it { is_expected.to belong_to(:provider) }
+      it { is_expected.to belong_to(:provider).optional }
       it { is_expected.to belong_to(:concept) }
+      it { is_expected.to belong_to(:type_concept) }
+      it { is_expected.to belong_to(:value_as_concept).optional }
+    end
+
+    describe 'validations' do
+      it { is_expected.to validate_presence_of(:measurement_date) }
     end
 
     describe 'methods' do

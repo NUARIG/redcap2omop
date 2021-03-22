@@ -8,7 +8,7 @@ module Redcap2omop
     describe 'associations' do
       it { is_expected.to have_one(:redcap_source_link) }
       it { is_expected.to belong_to(:person) }
-      it { is_expected.to belong_to(:provider) }
+      it { is_expected.to belong_to(:provider).optional }
       it { is_expected.to belong_to(:concept) }
     end
 
