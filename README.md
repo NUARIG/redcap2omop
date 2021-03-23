@@ -40,10 +40,9 @@ development:
 
 ```bash
 $ bundle exec rake db:create
-$ rails g redcap2omop:install ( for dummy app use $ rails g redcap2omop:install --migrations=false)
+$ rails g redcap2omop:install
 ```
 Download the latest OMOP vocabulary distribution from http://athena.ohdsi.org
-
 Unzip and copy the vocabulary to /db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport
 ```bash
 $ bundle exec rake redcap2omop:data:load_omop_vocabulary_tables
@@ -96,6 +95,12 @@ Download the latest OMOP vocabulary distribution from http://athena.ohdsi.org
 Unzip and copy the vocabulary to spec/dummy/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport
 
 Run the following rake tasks to prepare the testing environment.
+```bash
+RAILS_ENV=test bundle exec rake db:create
+rails g redcap2omop:install --migrations=false
+```
+Download the latest OMOP vocabulary distribution from http://athena.ohdsi.org
+Unzip and copy the vocabulary to spec/dummy/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport
 ```bash
 RAILS_ENV=test bundle exec rake db:migrate
 RAILS_ENV=test bundle exec rake app:redcap2omop:data:load_omop_vocabulary_tables
