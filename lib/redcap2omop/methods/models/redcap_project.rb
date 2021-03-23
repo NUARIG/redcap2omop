@@ -29,16 +29,15 @@ module Redcap2omop::Methods::Models::RedcapProject
       self.export_table_name ||= "redcap_records_tmp_#{self.unique_identifier}"
     end
 
-    private
-      def unique_identifier
-        if self.new_record?
-          last_id = self.class.default_scoped.maximum(:id)
-          last_id ||= 0
-          last_id + 1
-        else
-          self.id
-        end
+    def unique_identifier
+      if self.new_record?
+        last_id = self.class.default_scoped.maximum(:id)
+        last_id ||= 0
+        last_id + 1
+      else
+        self.id
       end
+    end
   end
 
   module ClassMethods
