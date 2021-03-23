@@ -1,6 +1,6 @@
-class CreateRedcapEvents < ActiveRecord::Migration[6.0]
+class CreateRedcapEvents < ActiveRecord::Migration[6.1]
   def change
-    create_table :redcap_events do |t|
+    create_table :redcap2omop_redcap_events do |t|
       t.integer :redcap_data_dictionary_id, null: false
       t.string :event_name,                 null: false
       t.integer :arm_num,                   null: false

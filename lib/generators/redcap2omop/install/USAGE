@@ -1,0 +1,8 @@
+Description:
+    Redcap2omop setup generator adds engine configuration and setup files to the host app.
+
+Example:
+    rails generate redcap2omop:setup
+
+    This will add engine migrations, copy OMOP setup files create redcap2omop initializer.
+

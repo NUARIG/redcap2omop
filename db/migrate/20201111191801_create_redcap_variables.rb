@@ -1,6 +1,6 @@
-class CreateRedcapVariables < ActiveRecord::Migration[6.0]
+class CreateRedcapVariables < ActiveRecord::Migration[6.1]
   def change
-    create_table :redcap_variables do |t|
+    create_table :redcap2omop_redcap_variables do |t|
       t.integer :redcap_data_dictionary_id,  null: false
       t.string  :name,                       null: false
       t.string  :form_name,                  null: false

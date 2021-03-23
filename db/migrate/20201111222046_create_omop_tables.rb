@@ -1,6 +1,6 @@
-class CreateOmopTables < ActiveRecord::Migration[6.0]
+class CreateOmopTables < ActiveRecord::Migration[6.1]
   def change
-    create_table :omop_tables do |t|
+    create_table :redcap2omop_omop_tables do |t|
       t.string :domain,       null: true
       t.string :name,         null: false
       t.timestamps

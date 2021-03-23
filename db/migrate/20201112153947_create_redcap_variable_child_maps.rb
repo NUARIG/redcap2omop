@@ -1,6 +1,6 @@
-class CreateRedcapVariableChildMaps < ActiveRecord::Migration[6.0]
+class CreateRedcapVariableChildMaps < ActiveRecord::Migration[6.1]
   def change
-    create_table :redcap_variable_child_maps do |t|
+    create_table :redcap2omop_redcap_variable_child_maps do |t|
       t.integer :redcap_variable_id,          null: true
       t.integer :parentable_id,               null: false
       t.string  :parentable_type,             null: false

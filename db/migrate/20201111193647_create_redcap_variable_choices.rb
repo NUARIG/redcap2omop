@@ -1,6 +1,6 @@
-class CreateRedcapVariableChoices < ActiveRecord::Migration[6.0]
+class CreateRedcapVariableChoices < ActiveRecord::Migration[6.1]
   def change
-    create_table :redcap_variable_choices do |t|
+    create_table :redcap2omop_redcap_variable_choices do |t|
       t.integer :redcap_variable_id,                null: false
       t.string  :choice_code_raw,                   null: false
       t.string  :choice_code_concept_code,          null: true
