@@ -27,19 +27,19 @@ Contribution directions go here.
 ## License
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
-## Initial setup 
+## Initial setup
 Do not forget to create secrets.yaml or add to existing one the following keys:
 
 ```yaml
 development:
   redcap:
     api_token:
-    api_url: 
+    api_url:
     verify_ssl: true
 ```
 
 ```bash
-$ bundle exec rake rake db:create
+$ bundle exec rake db:create
 $ rails g redcap2omop:install ( for dummy app use $ rails g redcap2omop:install --migrations=false)
 ```
 Download the latest OMOP vocabulary distribution from http://athena.ohdsi.org

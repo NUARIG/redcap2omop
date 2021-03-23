@@ -9,6 +9,7 @@
 
 # Ignore dummy migrations and schema
 spec/dummy/db/*
+!spec/dummy/db/migrate/.keep
 
 # Ignore all logfiles and tempfiles.
 spec/dummy/log/*

@@ -5,13 +5,13 @@ development:
   adapter: postgresql
   host: localhost
   datamapper_adapter: postgres
-  database: redcap2omop
-  username: yab944
-  password:
+  database: redcap2omop_development
+  username: redcap2omop_development
+  password: redcap2omop_development
 test:
   adapter: postgresql
   host: localhost
   datamapper_adapter: postgres
   database: redcap2omop_test
-  username: yab944
-  password:
+  username: redcap2omop_test
+  password: redcap2omop_test
