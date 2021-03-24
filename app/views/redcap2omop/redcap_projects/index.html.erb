@@ -2,4 +2,14 @@
 
 <p>elapsed since page load: <span id="counter">0</span></p>
 
-<%= javascript_pack_tag 'redcap_projects' %>
+
+<div data-controller="hello">
+  <input data-hello-target="name" type="text">
+
+  <button data-action="click->hello#greet">
+    Greet
+  </button>
+
+  <span data-hello-target="output">
+  </span>
+</div>
