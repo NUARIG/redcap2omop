@@ -47,3 +47,8 @@ spec/examples.txt
 #db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/OMOP CDM vocabulary load - PostgreSQL.sql
 
 #lib/setup/data/data_dictionaries/*.CSV
+
+# Ignore assets
+public/
+tmp/cache/
+node_modules/
