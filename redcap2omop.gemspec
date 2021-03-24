@@ -27,7 +27,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'highline', '~> 2.0.3'
   spec.add_dependency 'rest-client', '~> 2.1.0'
   spec.add_dependency 'american_date', '~> 1.1.1'
-  spec.add_dependency 'webpacker', '~> 5.2.1'
+  spec.add_dependency 'webpacker', '~> 6.0.0.pre.2'
+  spec.add_dependency 'stimulus-rails', '~> 0.2.3'
 
   spec.add_development_dependency 'pg', '~> 1.2.3'
   spec.add_development_dependency 'rspec-rails', '~> 5.0.0'

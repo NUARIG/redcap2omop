@@ -17,9 +17,23 @@ namespace :redcap2omop do
 
     desc "Compile JavaScript packs using webpack for production with digests"
     task compile: [:yarn_install, :environment] do
-      Webpacker.with_node_env("production") do
+      Webpacker.with_node_env(ENV.fetch("NODE_ENV", "production")) do
         ensure_log_goes_to_stdout do
+          # puts Redcap2omop.webpacker.inspect
           if Redcap2omop.webpacker.commands.compile
+            # Successful compilation!
+          else
+            # Failed compilation
+            exit!
+          end
+        end
+      end
+    end
+
+    task clobber: :environment do
+      Webpacker.with_node_env(ENV.fetch("NODE_ENV", "production")) do
+        ensure_log_goes_to_stdout do
+          if Redcap2omop.webpacker.commands.clobber
             # Successful compilation!
           else
             # Failed compilation
