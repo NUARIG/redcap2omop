@@ -10,6 +10,13 @@ module Redcap2omop::Methods::Models::RedcapVariableMap
     base.send :belongs_to, :omop_column, optional: true
     base.send :belongs_to, :concept, optional: true
 
+    base.instance_eval do
+      # Hooks
+      after_create_commit  { broadcast_prepend_to "redcap_variable_maps" }
+      after_update_commit  { broadcast_replace_to "redcap_variable_maps" }
+      after_destroy_commit { broadcast_remove_to "redcap_variable_maps" }
+    end
+
     base.send :include, InstanceMethods
     base.extend(ClassMethods)
   end

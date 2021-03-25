@@ -1,0 +1,38 @@
+<p id="notice"><%= notice %></p>
+
+<h1>HELLO!</h1>
+
+<p>elapsed since page load: <span id="counter">0</span></p>
+
+
+<div data-controller="hello">
+  <input data-hello-target="name" type="text">
+
+  <button data-action="click->hello#greet">
+    Greet
+  </button>
+
+  <span data-hello-target="output">
+  </span>
+</div>
+
+<h1>Redcap2omop::RedcapVariableMaps</h1>
+
+<table>
+  <thead>
+  <tr>
+    <th colspan="3"></th>
+  </tr>
+  </thead>
+
+  <div class="d-flex ">
+    <%= turbo_stream_from "redcap_variable_maps" %>
+    <%= turbo_frame_tag "redcap_variable_maps" do %>
+      <%= render @redcap_variable_maps %>
+    <% end %>
+  </div>
+</table>
+
+<br>
+
+<%= link_to 'New RedcapVariableMap', new_redcap_variable_map_path %>

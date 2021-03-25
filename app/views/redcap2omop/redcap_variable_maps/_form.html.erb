@@ -1,0 +1,17 @@
+<%= form_with(model: redcap_variable_map) do |form| %>
+  <% if redcap_variable_map.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(redcap_variable_map.errors.count, "error") %> prohibited this redcap_variable_map from being saved:</h2>
+
+      <ul>
+        <% redcap_variable_map.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>

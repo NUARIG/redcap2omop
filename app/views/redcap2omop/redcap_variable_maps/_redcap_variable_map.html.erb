@@ -1,0 +1,12 @@
+<%= turbo_frame_tag dom_id(redcap_variable_map) do %>
+  <div class="card m-4">
+    <div class="card-body">
+      <%= redcap_variable_map.redcap_variable.name %>
+    </div>
+    <div class="card-footer bg-transparent border-success">
+      <%= link_to 'Show', redcap_variable_map, class: 'btn btn-sm btn-primary text-white' %>
+      <%= link_to 'Edit', edit_redcap_variable_map_path(redcap_variable_map), class: 'btn btn-sm btn-warning text-white', remote: true %>
+      <%= link_to 'Destroy', redcap_variable_map, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-sm btn-danger text-white' %>
+    </div>
+  </div>
+<% end %>
