@@ -33,7 +33,6 @@ Do not forget to create secrets.yaml or add to existing one the following keys:
 ```yaml
 development:
   redcap:
-    api_token:
     api_url:
     verify_ssl: true
 ```
@@ -56,20 +55,6 @@ $ bundle exec rake redcap2omop:ingest:data_dictionary:cleanup
 $ bundle exec rake redcap2omop:ingest:data_dictionary:from_csv PROJECT_ID=0 FILE=../support/data/test_dictionary.csv
 $ bundle exec rake redcap2omop:setup:omop_tables
 $ bundle exec rake redcap2omop:setup:ccc19:maps
-$ bundle exec rake redcap2omop:ingest:data
-$ bundle exec rake redcap2omop:ingest:redcap2omop
-```
-
-# Neurofiles workflow
-```bash
-$ bundle exec rake redcap2omop:setup:neurofiles:projects
-$ bundle exec rake redcap2omop:setup:neurofiles:project_sandbox
-$ bundle exec rake redcap2omop:ingest:data_dictionary:cleanup
-$ bundle exec rake redcap2omop:ingest:data_dictionary:from_redcap
-$ bundle exec rake redcap2omop:setup:omop_tables
-$ bundle exec rake redcap2omop:setup:neurofiles:insert_people
-$ bundle exec rake redcap2omop:setup:neurofiles:maps
-$ bundle exec rake redcap2omop:setup:neurofiles:maps_sandbox
 $ bundle exec rake redcap2omop:ingest:data
 $ bundle exec rake redcap2omop:ingest:redcap2omop
 ```
