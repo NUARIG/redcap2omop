@@ -4,13 +4,13 @@
 // that code so it'll be compiled.
 
 import Rails from "@rails/ujs"
-import Turbolinks from "turbolinks"
+import "regenerator-runtime/runtime"
+import "@hotwired/turbo-rails"
+
 import * as ActiveStorage from "@rails/activestorage"
 import "channels"
 
 Rails.start()
-Turbolinks.start()
 ActiveStorage.start()
 
 import "controllers"
-// import "components"

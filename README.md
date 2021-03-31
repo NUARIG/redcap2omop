@@ -88,7 +88,11 @@ $ bundle exec rake redcap2omop:data:drop_omop_indexes
 $ bundle exec rake redcap2omop:data:drop_omop_vocabulary_indexes
 $ bundle exec rake redcap2omop:data:drop_all_tables
 ```
-
+## Install and configure Redis
+```bash
+brew install redis
+brew services start redis
+```
 ## Testing
 Download the latest OMOP vocabulary distribution from http://athena.ohdsi.org
 

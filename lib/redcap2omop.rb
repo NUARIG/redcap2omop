@@ -4,6 +4,7 @@ require "redcap2omop/setup/setup"
 require "redcap2omop/webservices/redcap_api"
 require 'american_date'
 require 'webpacker'
+require 'hotwire-rails'
 
 module Redcap2omop
   class << self

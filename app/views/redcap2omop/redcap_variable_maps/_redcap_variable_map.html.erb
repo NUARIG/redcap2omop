@@ -1,0 +1,12 @@
+<%- redcap_variable_map ||= redcap2omop_redcap_variable_map %>
+<%= turbo_stream_from redcap_variable_map %>
+<div id="<%= dom_id(redcap_variable_map) %>">
+  <div>
+    <div>
+      <%= redcap_variable_map.redcap_variable.name %>
+      &nbsp;
+      <%= redcap_variable_map.map_type %>
+      <%= link_to 'Destroy', redcap_variable_map, method: :delete, data: { confirm: 'Are you sure?' }%>
+    </div>
+  </div>
+</div>

@@ -5,9 +5,13 @@ export default class extends Controller {
     this.element.textContent = "Hello World, it's me!"
 
     let loadedAt = new Date().getTime();
-    let updateFn = setInterval(function() {
-      let elapsed = (new Date().getTime() - loadedAt)/1000;
-      document.getElementById("counter").innerHTML = elapsed;
-    }, 200); // update 5x second for maximum fan usage
+    let counter = document.getElementById("counter");
+    if (counter) {
+      let updateFn = setInterval(function() {
+        let elapsed = (new Date().getTime() - loadedAt)/1000;
+        counter.innerHTML = elapsed;
+      }, 800); // update 5x second for maximum fan usage
+    }
+
   }
 }
