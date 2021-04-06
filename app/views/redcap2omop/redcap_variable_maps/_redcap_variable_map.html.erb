@@ -6,7 +6,7 @@
       <%= redcap_variable_map.redcap_variable.name %>
       &nbsp;
       <%= redcap_variable_map.map_type %>
-      <%= link_to 'Destroy', redcap_variable_map, method: :delete, data: { confirm: 'Are you sure?' }%>
+      <%= link_to 'Destroy', Redcap2omop::Engine.routes.url_helpers.redcap_variable_map_path(redcap_variable_map), method: :delete, data: { confirm: 'Are you sure?' }%>
     </div>
   </div>
 </div>
