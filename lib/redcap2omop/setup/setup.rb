@@ -1,6 +1,20 @@
 require 'fileutils'
 module Redcap2omop
   module Setup
+    def self.omop_tables
+      [Redcap2omop::ConditionOccurrence,
+       Redcap2omop::Death,
+       Redcap2omop::DeviceExposure,
+       Redcap2omop::DrugExposure,
+       Redcap2omop::Measurement,
+       Redcap2omop::Person,
+       Redcap2omop::ProcedureOccurrence,
+       Redcap2omop::Provider,
+       Redcap2omop::Observation,
+       Redcap2omop::VisitOccurrence
+      ].map(&:setup_omop_table)
+    end
+
     def self.compile_omop_tables
       ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
 

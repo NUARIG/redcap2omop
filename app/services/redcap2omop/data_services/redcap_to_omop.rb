@@ -125,6 +125,8 @@ module Redcap2omop::DataServices
     def parse_redcap_data
       redcap_variable_maps = Redcap2omop::RedcapVariableMap.joins(:concept, :redcap_variable).by_redcap_dictionary(redcap_data_dictionary)
       log_message("Found #{redcap_variable_maps.size} domain redcap_variable_maps")
+      redcap_variable_choice_maps = Redcap2omop::RedcapVariableChoiceMap.by_redcap_dictionary(redcap_data_dictionary).not_no_matching_concept
+      log_message("Found #{redcap_variable_choice_maps.size} domain redcap_variable_choice_maps")
 
       redcap_records.each do |redcap_record|
         person_source_value = redcap_record[person_redcap2omop_map['person_source_value']]
@@ -132,6 +134,79 @@ module Redcap2omop::DataServices
         if person.blank?
           log_error("Could not locate person with person_source_value #{person_source_value}")
         else
+
+          redcap_variable_choice_maps.each do |redcap_variable_choice_map|
+            redcap_variable = redcap_variable_choice_map.redcap_variable_choice.redcap_variable
+            if redcap_record[redcap_variable_choice_map.redcap_variable_choice.redcap_variable_name].present?
+              filter_out = redcap_project.complete_instrument && redcap_record["#{redcap_variable.form_name}_complete"].to_i != Redcap2omop::RedcapDataDictionary::INSTRUMENT_COMPLETE_STATUS
+              if filter_out
+                log_message("Filtering out #{redcap_variable_choice_map.redcap_variable_choice.choice_description} for person with source value #{person_source_value}")
+              else
+                if redcap_variable_choice_map.redcap_variable_choice.match?(redcap_record[redcap_variable_choice_map.redcap_variable_choice.redcap_variable_name])
+                  log_message("Recording #{redcap_variable_choice_map.redcap_variable_choice.choice_description} for person with source value #{person_source_value}")
+                  klass = get_omop_domain_from_redcap_variable_choice_map(redcap_variable_choice_map)
+                  case klass.to_s
+                  when Redcap2omop::Death.to_s
+                    klass_instance = Redcap2omop::Death.where(person_id: person.person_id).first
+                    if klass_instance.blank?
+                      klass_instance = Redcap2omop::Death.new(
+                          person_id:          person.person_id,
+                          death_type_concept_id: redcap_variable_choice_map.concept.concept_id,
+                      )
+                    else
+                      klass_instance.death_type_concept_id = redcap_variable_map.concept.concept_id
+                    end
+                  else
+                    klass_instance = klass.new(
+                      instance_id:        klass.next_id,
+                      person_id:          person.person_id,
+                      concept_id:         redcap_variable_choice_map.concept.concept_id,
+                      type_concept_id:    Redcap2omop::RedcapProject.first.type_concept.concept_id,
+                      source_value:       redcap_variable.name
+                    )
+                  end
+
+                  # Set linked values
+                  redcap_variable_choice_map.redcap_variable_choice.redcap_variable_child_maps.each do |redcap_variable_child_map|
+                    case redcap_variable_child_map.map_type
+                    when Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE
+                      redcap_variable_child = redcap_variable_child_map.redcap_variable
+                      if redcap_variable_child.choice?
+                        value = redcap_variable_child.map_redcap_variable_choice_to_concept(redcap_record)
+                        if value.blank?
+                          other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
+                          value = redcap_variable_child.map_redcap_variable_choice_to_concept(other_redcap_record) if other_redcap_record
+                        end
+                      else
+                        if redcap_record[redcap_variable_child.name].present?
+                          source_value = redcap_record[redcap_variable_child.name]
+                        else
+                          other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
+                          source_value = other_redcap_record[redcap_variable_child.name] if other_redcap_record
+                        end
+                        if source_value && redcap_variable_child_map.omop_column.name == 'provider_id'
+                          value = Redcap2omop::Provider.where(provider_source_value: source_value).first.provider_id
+                        else
+                          value = source_value
+                        end
+                      end
+                    when Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT
+                      value = redcap_variable_child_map.concept.concept_id
+                    when Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE
+                      value = get_redcap_derived_date(redcap_variable_child_map.redcap_derived_date, redcap_record, redcap_records)
+                    end
+                    klass_instance.write_attribute(redcap_variable_child_map.omop_column.name, value) if value && klass_instance.respond_to?(redcap_variable_child_map.omop_column.name.to_sym)
+                  end
+
+                  # Link to source record
+                  klass_instance.build_redcap_source_link(redcap_source: redcap_variable)
+                  # Do not save with a bang.  If we cannot save becuase we can't map, we want to move on.
+                  klass_instance.save
+                end
+              end
+            end
+          end
+
           redcap_variable_maps.each do |redcap_variable_map|
             redcap_variable = redcap_variable_map.redcap_variable
             if redcap_record[redcap_variable.name].present?
@@ -141,49 +216,81 @@ module Redcap2omop::DataServices
               else
                 log_message("Recording #{redcap_variable.name} for person with source value #{person_source_value}")
                 klass = get_omop_domain(redcap_variable_map)
-                klass_instance = klass.new(
-                  instance_id:        klass.next_id,
-                  person_id:          person.person_id,
-                  concept_id:         redcap_variable_map.concept.concept_id,
-                  type_concept_id:    Redcap2omop::RedcapProject.first.type_concept.concept_id,
-                  source_value:       redcap_variable.name,
-                  value_source_value: redcap_record[redcap_variable.name]
-                )
-                # Set values
-                case redcap_variable.determine_field_type
-                when 'integer'
-                  value_as_concept_id = redcap_variable.map_redcap_variable_choice_to_concept(redcap_record)
-                  if value_as_concept_id.present?
-                    klass_instance.value_as_concept_id = value_as_concept_id
+                case klass.to_s
+                when Redcap2omop::Death.to_s
+                  klass_instance = Redcap2omop::Death.where(person_id: person.person_id).first
+                  if klass_instance.blank?
+                    klass_instance = Redcap2omop::Death.new(
+                        person_id:          person.person_id,
+                        death_type_concept_id: redcap_variable_map.concept.concept_id
+                    )
                   else
-                    klass_instance.value_as_number = redcap_record[redcap_variable.name].to_i
+                    klass_instance.death_type_concept_id = redcap_variable_map.concept.concept_id
                   end
-                when 'choice'
-                  klass_instance.value_as_concept_id = redcap_variable.map_redcap_variable_choice_to_concept(redcap_record)
-                when 'text'
-                  klass_instance.value_as_string = redcap_record[redcap_variable.name] if klass_instance.respond_to?(:value_as_string)
+                else
+                  klass_instance = klass.new(
+                    instance_id:        klass.next_id,
+                    person_id:          person.person_id,
+                    concept_id:         redcap_variable_map.concept.concept_id,
+                    type_concept_id:    Redcap2omop::RedcapProject.first.type_concept.concept_id,
+                    source_value:       redcap_variable.name
+                  )
+                end
+
+                if klass_instance.respond_to?('value_source_value')
+                  klass_instance.value_source_value =  redcap_record[redcap_variable.name]
+                  # Set values
+                  case redcap_variable.determine_field_type
+                  when 'number'
+                    value_as_concept_id = redcap_variable.map_redcap_variable_choice_to_concept(redcap_record)
+                    if value_as_concept_id.present?
+                      klass_instance.value_as_concept_id = value_as_concept_id
+                    else
+                      klass_instance.value_as_number = redcap_record[redcap_variable.name].to_d
+                    end
+                  when 'choice'
+                    klass_instance.value_as_concept_id = redcap_variable.map_redcap_variable_choice_to_concept(redcap_record)
+                  when 'text'
+                    klass_instance.value_as_string = redcap_record[redcap_variable.name] if klass_instance.respond_to?(:value_as_string)
+                  end
                 end
 
                 # Set linked values
                 redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
-                  redcap_variable_child = redcap_variable_child_map.redcap_variable
-                  if redcap_record[redcap_variable_child.name].present?
-                    source_value = redcap_record[redcap_variable_child.name]
-                  else
-                    other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
-                    source_value = other_redcap_record[redcap_variable_child.name] if other_redcap_record
-                  end
-                  if source_value && redcap_variable_child_map.omop_column.name == 'provider_id'
-                    value = Redcap2omop::Provider.where(provider_source_value: source_value).first.provider_id
-                  else
-                    value = source_value
+                  case redcap_variable_child_map.map_type
+                  when Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE
+                    redcap_variable_child = redcap_variable_child_map.redcap_variable
+                    if redcap_variable_child.choice?
+                      value = redcap_variable_child.map_redcap_variable_choice_to_concept(redcap_record)
+                      if value.blank?
+                        other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
+                        value = redcap_variable_child.map_redcap_variable_choice_to_concept(other_redcap_record) if other_redcap_record
+                      end
+                    else
+                      if redcap_record[redcap_variable_child.name].present?
+                        source_value = redcap_record[redcap_variable_child.name]
+                      else
+                        other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
+                        source_value = other_redcap_record[redcap_variable_child.name] if other_redcap_record
+                      end
+                      if source_value && redcap_variable_child_map.omop_column.name == 'provider_id'
+                        value = Redcap2omop::Provider.where(provider_source_value: source_value).first.provider_id
+                      else
+                        value = source_value
+                      end
+                    end
+                  when Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT
+                    value = redcap_variable_child_map.concept.concept_id
+                  when Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE
+                    value = get_redcap_derived_date(redcap_variable_child_map.redcap_derived_date, redcap_record, redcap_records)
                   end
                   klass_instance.write_attribute(redcap_variable_child_map.omop_column.name, value) if value && klass_instance.respond_to?(redcap_variable_child_map.omop_column.name.to_sym)
                 end
 
                 # Link to source record
                 klass_instance.build_redcap_source_link(redcap_source: redcap_variable)
-                klass_instance.save!
+                # Do not save with a bang.  If we cannot save becuase we can't map, we want to move on.
+                klass_instance.save
               end
             end
           end
@@ -196,6 +303,39 @@ module Redcap2omop::DataServices
         klass = Redcap2omop::Observation
       elsif redcap_variable_map.concept.domain_id == 'Measurement'
         klass = Redcap2omop::Measurement
+      elsif redcap_variable_map.concept.domain_id == 'Condition'
+        klass = Redcap2omop::ConditionOccurrence
+      elsif redcap_variable_map.concept.domain_id == 'Device'
+        klass = Redcap2omop::DeiceExposure
+      elsif redcap_variable_map.concept.domain_id == 'Drug'
+        klass = Redcap2omop::DrugExposure
+      elsif redcap_variable_map.concept.domain_id == 'Procedure'
+        klass = Redcap2omop::ProcedureOccurrence
+      elsif redcap_variable_map.concept.domain_id == 'Visit'
+        klass = Redcap2omop::VisitOccurrence
+      elsif redcap_variable_map.concept.vocabulary_id == 'Death Type'
+        klass = Redcap2omop::Death
+      end
+      klass
+    end
+
+    def get_omop_domain_from_redcap_variable_choice_map(redcap_variable_choice_map)
+      if redcap_project.route_to_observation || %w[Observation Metadata].include?(redcap_variable_choice_map.concept.domain_id)
+        klass = Redcap2omop::Observation
+      elsif redcap_variable_choice_map.concept.domain_id == 'Measurement'
+        klass = Redcap2omop::Measurement
+      elsif redcap_variable_choice_map.concept.domain_id == 'Condition'
+        klass = Redcap2omop::ConditionOccurrence
+      elsif redcap_variable_choice_map.concept.domain_id == 'Device'
+        klass = Redcap2omop::DeviceExposure
+      elsif redcap_variable_choice_map.concept.domain_id == 'Drug'
+        klass = Redcap2omop::DrugExposure
+      elsif redcap_variable_choice_map.concept.domain_id == 'Procedure'
+        klass = Redcap2omop::ProcedureOccurrence
+      elsif redcap_variable_choice_map.concept.domain_id == 'Visit'
+        klass = Redcap2omop::VisitOccurrence
+      elsif redcap_variable_map.concept.vocabulary_id == 'Death Type'
+        klass = Redcap2omop::Death
       end
       klass
     end
@@ -210,6 +350,88 @@ module Redcap2omop::DataServices
 
     def log_prefix
       'RedcapToOmop'
+    end
+
+    def get_redcap_derived_date(redcap_derived_date, redcap_record, redcap_records)
+      if redcap_derived_date.base_date_redcap_variable.present?
+        if redcap_record[redcap_derived_date.base_date_redcap_variable.name].present?
+          base_date = Date.parse(redcap_record[redcap_derived_date.base_date_redcap_variable.name])
+        else
+          other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
+          base_date = Date.parse(other_redcap_record[redcap_derived_date.base_date_redcap_variable.name]) if other_redcap_record
+        end
+
+        if redcap_record[redcap_derived_date.offset_redcap_variable.name].present?
+          offset_choice_code_raw = redcap_record[redcap_derived_date.offset_redcap_variable.name]
+          redcap_variable_choice = redcap_derived_date.offset_redcap_variable.redcap_variable_choices.detect { |redcap_variable_choice| redcap_variable_choice.choice_code_raw == offset_choice_code_raw }
+          if redcap_variable_choice.present?
+            redcap_derived_date_choice_offset_mapping = redcap_derived_date.redcap_derived_date_choice_offset_mappings.detect { |redcap_derived_date_choice_offset_mapping| redcap_derived_date_choice_offset_mapping.redcap_variable_choice_id == redcap_variable_choice.id }
+          end
+        else
+          other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
+
+          offset_choice_code_raw = other_redcap_record[redcap_derived_date.offset_redcap_variable.name]
+          redcap_variable_choice = redcap_derived_date.offset_redcap_variable.redcap_variable_choices.detect { |redcap_variable_choice| redcap_variable_choice.choice_code_raw == offset_choice_code_raw }
+          if redcap_variable_choice.present?
+            redcap_derived_date_choice_offset_mapping = redcap_derived_date.redcap_derived_date_choice_offset_mappings.detect { |redcap_derived_date_choice_offset_mapping| redcap_derived_date_choice_offset_mapping.redcap_variable_choice_id == redcap_variable_choice.id }
+          end
+        end
+
+        if base_date.present? && redcap_derived_date_choice_offset_mapping.present?
+          value = (base_date - redcap_derived_date_choice_offset_mapping.offset_days)
+        else
+          value = nil
+        end
+      elsif redcap_derived_date.parent_redcap_derived_date.present?
+        offset_days = nil
+        if redcap_record[redcap_derived_date.offset_redcap_variable.name].present?
+          if redcap_derived_date.offset_redcap_variable.choice?
+            offset_choice_code_raw = redcap_record[redcap_derived_date.offset_redcap_variable.name]
+            redcap_variable_choice = redcap_derived_date.offset_redcap_variable.redcap_variable_choices.detect { |redcap_variable_choice| redcap_variable_choice.choice_code_raw == offset_choice_code_raw }
+            if redcap_variable_choice.present?
+              redcap_derived_date_choice_offset_mapping = redcap_derived_date.redcap_derived_date_choice_offset_mappings.detect { |redcap_derived_date_choice_offset_mapping| redcap_derived_date_choice_offset_mapping.redcap_variable_choice_id == redcap_variable_choice.id }
+              if redcap_derived_date_choice_offset_mapping.present?
+                offset_days = redcap_derived_date_choice_offset_mapping.offset_days
+              end
+            end
+          else
+            case redcap_derived_date.offset_interval_direction
+            when Redcap2omop::RedcapDerivedDate::OFFSET_INTERVAL_DIRECTION_PAST
+              direction = -1
+            when Redcap2omop::RedcapDerivedDate::OFFSET_INTERVAL_DIRECTION_FUTURE
+              direction = 1
+            end
+            offset_days = redcap_record[redcap_derived_date.offset_redcap_variable.name].to_i * redcap_derived_date.offset_interval_days * direction
+          end
+        else
+          other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
+          if redcap_derived_date.offset_redcap_variable.field_type_normalized.choice?
+            offset_choice_code_raw = other_redcap_record[redcap_derived_date.offset_redcap_variable.name]
+            redcap_variable_choice = redcap_derived_date.offset_redcap_variable.redcap_variable_choices.detect { |redcap_variable_choice| redcap_variable_choice.choice_code_raw == offset_choice_code_raw }
+            if redcap_variable_choice.present?
+              redcap_derived_date_choice_offset_mapping = redcap_derived_date.redcap_derived_date_choice_offset_mappings.detect { |redcap_derived_date_choice_offset_mapping| redcap_derived_date_choice_offset_mapping.redcap_variable_choice_id == redcap_variable_choice.id }
+              offset_days = redcap_derived_date_choice_offset_mapping.offset_days
+            end
+          else
+            case redcap_derived_date.offset_interval_direction
+            when Redcap2omop::RedcapDerivedDate::OFFSET_INTERVAL_DIRECTION_PAST
+              direction = -1
+            when Redcap2omop::RedcapDerivedDate::OFFSET_INTERVAL_DIRECTION_FUTURE
+              direction = 1
+            end
+            offset_days = redcap_record[redcap_derived_date.offset_redcap_variable.name].to_i * redcap_derived_date.offset_interval_days * direction
+          end
+        end
+
+        base_date = get_redcap_derived_date(redcap_derived_date.parent_redcap_derived_date, redcap_record, redcap_records)
+
+        if offset_days.present? && base_date.present?
+          value = (base_date - offset_days)
+        else
+          value = nil
+        end
+      end
+      value
     end
   end
 end

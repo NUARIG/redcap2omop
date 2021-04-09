@@ -22,7 +22,7 @@ module Redcap2omop::Methods::Models::RedcapVariableChoice
   module InstanceMethods
     def redcap_variable_name
       if redcap_variable.checkbox?
-        "#{redcap_variable.name}___#{self.choice_code_raw}"
+        "#{redcap_variable.name}___#{self.choice_code_raw_normalized}"
       else
         redcap_variable.name
       end
@@ -34,6 +34,10 @@ module Redcap2omop::Methods::Models::RedcapVariableChoice
       else
         value == self.choice_code_raw
       end
+    end
+
+    def choice_code_raw_normalized
+      normalized = self.choice_code_raw.downcase.gsub('-','_')
     end
 
     private

@@ -23,7 +23,7 @@ namespace :redcap2omop do
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'record_id', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'person' AND omop_columns.name = 'person_source_value'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'person' AND redcap2omop_omop_columns.name = 'person_source_value'").first
         redcap_variable.build_redcap_variable_map(omop_column_id: omop_column.id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
@@ -56,6 +56,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_diagnosis_covid19.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_diagnosis_covid19.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'inclusion_yn', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -108,7 +109,7 @@ namespace :redcap2omop do
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'dx_year', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.build_redcap_variable_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '840539006').first.concept_id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable.save!
 
@@ -169,7 +170,7 @@ namespace :redcap2omop do
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'gender', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'person' AND omop_columns.name = 'gender_concept_id'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'person' AND redcap2omop_omop_columns.name = 'gender_concept_id'").first
         redcap_variable.build_redcap_variable_map(omop_column_id: omop_column.id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         redcap_variable.save!
@@ -227,7 +228,7 @@ namespace :redcap2omop do
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'race', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'person' AND omop_columns.name = 'race_concept_id'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'person' AND redcap2omop_omop_columns.name = 'race_concept_id'").first
         redcap_variable.build_redcap_variable_map(omop_column_id: omop_column.id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         redcap_variable.save!
@@ -269,7 +270,7 @@ namespace :redcap2omop do
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ethnicity', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'person' AND omop_columns.name = 'ethnicity_concept_id'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'person' AND redcap2omop_omop_columns.name = 'ethnicity_concept_id'").first
         redcap_variable.build_redcap_variable_map(omop_column_id: omop_column.id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
@@ -292,10 +293,9 @@ namespace :redcap2omop do
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'urban_rural', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         other_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ts_1', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'observation' AND redcap2omop_omop_columns.name = 'observation_date'").first
         redcap_variable.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
-        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Urban (city)').first
@@ -329,7 +329,7 @@ namespace :redcap2omop do
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'insurance', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         other_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ts_1', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'observation' AND redcap2omop_omop_columns.name = 'observation_date'").first
         redcap_variable.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
@@ -373,7 +373,7 @@ namespace :redcap2omop do
         #https://github.com/OHDSI/Covid-19/wiki/Release
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'hcw', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         other_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ts_1', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'observation' AND redcap2omop_omop_columns.name = 'observation_date'").first
         redcap_variable.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
@@ -402,7 +402,7 @@ namespace :redcap2omop do
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ecog_status', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         other_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ts_1', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'observation' AND redcap2omop_omop_columns.name = 'observation_date'").first
         redcap_variable.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
@@ -449,7 +449,7 @@ namespace :redcap2omop do
         redcap_variable.save!
 
         other_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ts_1', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'observation' AND redcap2omop_omop_columns.name = 'observation_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Current smoker').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Observation', vocabulary_id: 'SNOMED', concept_code: '65568007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -500,7 +500,7 @@ namespace :redcap2omop do
         redcap_variable.save!
 
         other_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ts_1', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'device_exposure' AND omop_columns.name = 'device_exposure_start_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'device_exposure' AND redcap2omop_omop_columns.name = 'device_exposure_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Cigarettes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Device', vocabulary_id: 'SNOMED', concept_code: '722496004').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -561,7 +561,7 @@ namespace :redcap2omop do
         redcap_variable.build_redcap_variable_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'LOINC', concept_code: '39156-5').first.concept_id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         other_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ts_1', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -583,8 +583,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'ACE inhibitors').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'ATC', concept_code: 'C09A').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -756,8 +756,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Adalimumab').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '327361').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -878,8 +878,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Direct factor Xa inhibitors (e.g., apixaban [Eliquis], rivaroxaban [Xarelto])').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'ATC', concept_code: 'B01AF').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -961,8 +961,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes, Prophylactic G-CSF use (within 1-3 days of completion of chemo)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '68442').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1019,8 +1019,8 @@ namespace :redcap2omop do
         # redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         # redcap_variable.save!
         #
-        # omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        # omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        # omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        # omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
         #
         # redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'AstraZeneca vaccine (both doses)').first
         # redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'CPT4', concept_code: '0022A').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1087,8 +1087,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'CVX', concept_code: '141').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1114,8 +1114,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'CVX', concept_code: '19').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1140,7 +1140,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'A').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '112144000').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1177,7 +1177,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Rh+').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '165747007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1207,9 +1207,9 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
-        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'observation' AND redcap2omop_omop_columns.name = 'observation_date'").first
+        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Alcoholism').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '7200002').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1456,7 +1456,7 @@ namespace :redcap2omop do
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'hiv_cd4', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         other_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ts_1', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.build_redcap_variable_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Measurement', concept_code: '413789001').first.concept_id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
@@ -1465,8 +1465,8 @@ namespace :redcap2omop do
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'hiv_vl', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         other_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ts_1', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'unit_concept_id'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'unit_concept_id'").first
         redcap_variable.build_redcap_variable_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Measurement', concept_code: '395058002').first.concept_id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.redcap_variable_child_maps.build(concept_id: Redcap2omop::Concept.where(domain_id: 'Unit', concept_code: '{copies}/mL').first.concept_id, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1489,7 +1489,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes, patient requires chronic supplemental O2').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '57485005').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1549,7 +1549,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Abdominal discomfort (other than frank abdominal pain)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '43364001').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1699,7 +1699,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '243791004').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1723,7 +1723,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'observation' AND redcap2omop_omop_columns.name = 'observation_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Laboratory-confirmed').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Observation', vocabulary_id: 'OMOP Extension', concept_code: 'OMOP4912978').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1766,8 +1766,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'value_as_concept_id'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'value_as_concept_id'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Antigen test (ELISA)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'LOINC', concept_code: '94558-4').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1813,8 +1813,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'value_as_concept_id'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'value_as_concept_id'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'LOINC', concept_code: '94558-4').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1849,7 +1849,7 @@ namespace :redcap2omop do
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'severity_of_covid_19_v2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable.save!
 
@@ -1879,7 +1879,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '710027002').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1903,8 +1903,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes - admitted directly to the ICU').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OMOP4822460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1975,8 +1975,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'ER - Follow up').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'ER').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2039,7 +2039,7 @@ namespace :redcap2omop do
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.build_redcap_variable_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Type Concept', vocabulary_id: 'Death Type', concept_code: 'OMOP4822229').first.concept_id , map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT)
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'death' AND omop_columns.name = 'death_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'death_date'").first
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_death, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable.save!
@@ -2051,7 +2051,7 @@ namespace :redcap2omop do
         # redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         # redcap_variable.save!
         #
-        # omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'death' AND omop_columns.name = 'cause_concept_id'").first
+        # omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'cause_concept_id'").first
         #
         # redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Both').first
         # redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '840539006').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2061,7 +2061,7 @@ namespace :redcap2omop do
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'cause_of_death', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'death' AND omop_columns.name = 'cause_concept_id'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'cause_concept_id'").first
         redcap_variable.build_redcap_variable_map(omop_column_id: omop_column.id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         redcap_variable.save!
@@ -2102,7 +2102,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Bleeding').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '43364001').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2149,7 +2149,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'CNS hemorrhage, extensive').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '230690007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2202,7 +2202,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Definite').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '67406007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2226,7 +2226,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'device_exposure' AND omop_columns.name = 'device_exposure_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'device_exposure' AND redcap2omop_omop_columns.name = 'device_exposure_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Cryoprecipitate').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Device', vocabulary_id: 'SNOMED', concept_code: '256401009').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2271,7 +2271,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '57485005').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2300,7 +2300,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Acute respiratory distress syndrome (ARDS)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '67782005').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2365,8 +2365,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'device_exposure' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'device_exposure' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'BiPAP').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Device', vocabulary_id: 'SNOMED', concept_code: '425826004').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2435,7 +2435,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Atrial fibrillation').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '49436004').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2524,11 +2524,10 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'ATC', concept_code: 'H01BA').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '870386000').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
@@ -2555,7 +2554,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Acute hepatic injury').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '427044009').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2614,7 +2613,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Acute kidney injury').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '14669001').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2668,7 +2667,7 @@ namespace :redcap2omop do
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.build_redcap_variable_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Type Concept', vocabulary_id: 'Death Type', concept_code: 'OMOP4822229').first.concept_id , map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT)
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'death' AND omop_columns.name = 'death_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'death_date'").first
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_death, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable.save!
@@ -2694,7 +2693,7 @@ namespace :redcap2omop do
         # redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         # redcap_variable.save!
         #
-        # omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'death' AND omop_columns.name = 'cause_concept_id'").first
+        # omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'cause_concept_id'").first
         #
         # redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Both').first
         # redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '840539006').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2704,7 +2703,7 @@ namespace :redcap2omop do
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'cause_of_death_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'death' AND omop_columns.name = 'cause_concept_id'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'cause_concept_id'").first
         redcap_variable.build_redcap_variable_map(omop_column_id: omop_column.id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         redcap_variable.save!
@@ -2740,8 +2739,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
         redcap_variable_date = Redcap2omop::RedcapVariable.where(name: 'ts_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Critical (ICU) - Severely ill, intubated').first
@@ -2814,8 +2813,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
         redcap_variable_date = Redcap2omop::RedcapVariable.where(name: 'ts_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Critical (ICU) - Severely ill, intubated').first
@@ -2918,6 +2917,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_30_day_survival.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_30_day_survival.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'mortality', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -2925,8 +2925,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2961,6 +2961,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_90_day_survival.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_90_day_survival.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'mortality_90', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -2968,8 +2969,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -3004,6 +3005,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_180_day_survival.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_180_day_survival.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'mortality_180', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -3011,8 +3013,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -3078,7 +3080,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3113,7 +3115,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3148,7 +3150,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3183,7 +3185,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3218,7 +3220,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3228,11 +3230,11 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'value_as_concept_id'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'value_as_concept_id'").first
         redcap_variable.redcap_variable_child_maps.build(concept_id: Redcap2omop::Concept.where(domain_id: 'Unit', vocabulary_id: 'UCUM', concept_code: '10*9/L').first.concept_id,  omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable.save!
 
@@ -3242,11 +3244,11 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'value_as_concept_id'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'value_as_concept_id'").first
         redcap_variable.redcap_variable_child_maps.build(concept_id: Redcap2omop::Concept.where(domain_id: 'Unit', vocabulary_id: 'UCUM', concept_code: '/uL').first.concept_id,  omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable.save!
 
@@ -3256,11 +3258,11 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'value_as_concept_id'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'value_as_concept_id'").first
         redcap_variable.redcap_variable_child_maps.build(concept_id: Redcap2omop::Concept.where(domain_id: 'Unit', vocabulary_id: 'UCUM', concept_code: '/uL').first.concept_id,  omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable.save!
 
@@ -3270,11 +3272,11 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'value_as_concept_id'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'value_as_concept_id'").first
         redcap_variable.redcap_variable_child_maps.build(concept_id: Redcap2omop::Concept.where(domain_id: 'Unit', vocabulary_id: 'UCUM', concept_code: '/uL').first.concept_id,  omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable.save!
 
@@ -3284,11 +3286,11 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'value_as_concept_id'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'value_as_concept_id'").first
         redcap_variable.redcap_variable_child_maps.build(concept_id: Redcap2omop::Concept.where(domain_id: 'Unit', vocabulary_id: 'UCUM', concept_code: 'g/dL').first.concept_id,  omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable.save!
 
@@ -3298,11 +3300,11 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'value_as_concept_id'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'value_as_concept_id'").first
         redcap_variable.redcap_variable_child_maps.build(concept_id: Redcap2omop::Concept.where(domain_id: 'Unit', vocabulary_id: 'UCUM', concept_code: '10*3/uL').first.concept_id,  omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable.save!
 
@@ -3332,7 +3334,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3362,7 +3364,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3392,7 +3394,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3422,7 +3424,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3452,7 +3454,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3482,7 +3484,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3512,7 +3514,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3542,7 +3544,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3572,7 +3574,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3602,7 +3604,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3632,7 +3634,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3662,7 +3664,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3692,7 +3694,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3722,7 +3724,7 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3731,7 +3733,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3741,7 +3743,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3751,7 +3753,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3761,7 +3763,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3771,7 +3773,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3782,7 +3784,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3792,7 +3794,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3802,7 +3804,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3812,7 +3814,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3822,7 +3824,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3832,7 +3834,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3842,7 +3844,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3852,7 +3854,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3862,7 +3864,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3872,7 +3874,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'measurement_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable.save!
 
@@ -3892,8 +3894,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'observation' AND redcap2omop_omop_columns.name = 'observation_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Aspergillus culture-confirmed').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Observation', vocabulary_id: 'SNOMED', concept_code: '2429008').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -4198,8 +4200,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Dexamethasone (Decadron)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '3264').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -4259,8 +4261,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Sarilumab').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'ATC', concept_code: 'L04AC14').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -4280,8 +4282,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Ruxolitinib (Jakafi)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'ATC', concept_code: 'L01XE18').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -4313,8 +4315,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Etanercept').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'ATC', concept_code: 'L04AB01').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -4339,8 +4341,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Direct factor Xa inhibitors (e.g., apixaban [Eliquis], rivaroxaban [Xarelto])').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'ATC', concept_code: 'B01AF').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -4405,8 +4407,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Anti-virals').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'HemOnc', concept_code: '44995').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -4537,7 +4539,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'device_exposure' AND omop_columns.name = 'device_exposure_start_date'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'device_exposure' AND redcap2omop_omop_columns.name = 'device_exposure_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Device', vocabulary_id: 'SNOMED', concept_code: '431069006').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -4588,6 +4590,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_diagnosis_cancer.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_diagnosis_cancer.save!
 
         #redcap_variable
         redcap_variables = []
@@ -4602,7 +4605,7 @@ namespace :redcap2omop do
           redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
           redcap_variable.save!
 
-          omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+          omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
           redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'AL amyloidosis').first
           redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '23132008').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -5189,9 +5192,9 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'value_as_concept_id'").first
-        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'observation' AND redcap2omop_omop_columns.name = 'observation_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'observation' AND redcap2omop_omop_columns.name = 'value_as_concept_id'").first
+        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         # come back
         # hardcoing to ER positive because of silly 'OR'
@@ -5223,8 +5226,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '214555').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -5249,7 +5252,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'observation_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'observation_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Gleason score 2').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'Cancer Modifier', concept_code: 'OMOP5000329').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -5334,8 +5337,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
         redcap_variable_date = Redcap2omop::RedcapVariable.where(name: 'ts_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
@@ -5381,6 +5384,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_diagnosis_cancer.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_diagnosis_cancer.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'hx_treatment', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -5393,42 +5397,40 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Cytotoxic chemotherapy').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Regimen', vocabulary_id: 'HemOnc', concept_code: '685').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '367336001').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Endocrine (Hormone) therapy').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Regimen', vocabulary_id: 'HemOnc', concept_code: '691').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '169413002').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Immunotherapy').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Regimen', vocabulary_id: 'HemOnc', concept_code: '694').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '76334006').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        # come back
-        # this is not the right kind of semantic type
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Intravesicular therapy (e.g., BCG)').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'HemOnc', concept_code: '45215').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '42284007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Radiotherapy').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Regimen', vocabulary_id: 'HemOnc', concept_code: '695').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '33195004').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Surgery').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'HemOnc', concept_code: '14051').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '387713003').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
@@ -5444,7 +5446,7 @@ namespace :redcap2omop do
         # come back
         # this is not the right kind of semantic type
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Transplant/Cellular therapy').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'HemOnc', concept_code: '45186').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '77465005').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
@@ -5460,7 +5462,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Regimen', vocabulary_id: 'HemOnc', concept_code: '5106').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -5489,7 +5491,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         # come back
         # this is why we need a cancer treatment ontology
@@ -5525,7 +5527,6 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'immuno_other_specify', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
@@ -5537,60 +5538,46 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
-        # come back
-        # this is why we need a cancer treatment ontology
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Acalabrutinib (Calquence)').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Regimen', vocabulary_id: 'HemOnc', concept_code: '12460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '1986808').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        # come back
-        # this is why we need a cancer treatment ontology
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Dasatinib (Sprycel)').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Regimen', vocabulary_id: 'HemOnc', concept_code: '4853').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '475342').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        # come back
-        # this is why we need a cancer treatment ontology
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Fedratinib (Inrebic)').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Regimen', vocabulary_id: 'HemOnc', concept_code: '48563').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '2197490').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        # come back
-        # this is why we need a cancer treatment ontology
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Ibrutinib (Imbruvica)').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Regimen', vocabulary_id: 'HemOnc', concept_code: '12027').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '1442981').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        # come back
-        # this is why we need a cancer treatment ontology
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Imatinib (Gleevec)').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Regimen', vocabulary_id: 'HemOnc', concept_code: '4907').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '282388').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        # come back
-        # this is why we need a cancer treatment ontology
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Nilotinib (Tasigna)').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Regimen', vocabulary_id: 'HemOnc', concept_code: '4852').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '662281').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
-        # come back
-        # this is why we need a cancer treatment ontology
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Ruxolitinib (Jakafi)').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Regimen', vocabulary_id: 'HemOnc', concept_code: '1882').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '1193326').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
@@ -5621,7 +5608,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Definite irAE pneumonitis').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '205237003').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -5671,7 +5658,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Allogeneic SCT (donor/type unknown)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '50223000').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -5752,6 +5739,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_diagnosis_cancer.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_diagnosis_cancer.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'treatment_additional', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -5798,6 +5786,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_diagnosis_cancer.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_diagnosis_cancer.save!
 
         #redcap_variable
         # come back
@@ -5808,7 +5797,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '386633000').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -5845,6 +5834,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_diagnosis_cancer.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_diagnosis_cancer.save!
 
         #redcap_variable
         # come back
@@ -5855,7 +5845,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '707266006').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -5879,9 +5869,9 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
-        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Abiraterone (Zytiga)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '1100072').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6010,7 +6000,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'observation_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'observation_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: '0 (in situ)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'Cancer Modifier', concept_code: 'OMOP4999300').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6076,7 +6066,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'observation_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'observation_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'Cancer Modifier', concept_code: 'OMOP4998856').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6105,7 +6095,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'measurement' AND omop_columns.name = 'observation_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'observation_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Bone').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'Cancer Modifier', concept_code: 'OMOP4998978').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6165,7 +6155,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'observation' AND omop_columns.name = 'observation_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'observation' AND redcap2omop_omop_columns.name = 'observation_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Observation', vocabulary_id: 'SNOMED', concept_code: '110465008').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6211,7 +6201,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Arthralgia').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '112144000').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6374,6 +6364,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_followup_1.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_followup_1.save!
 
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'd30_vital_status', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -6390,6 +6381,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_30_day_vital_status.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_30_day_vital_status.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'd30_vital_status', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -6397,9 +6389,9 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
-        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'death' AND omop_columns.name = 'death_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
+        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'death_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Patient was deceased within 30 days of COVID-19 diagnosis").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Type Concept', vocabulary_id: 'Death Type', concept_code: 'OMOP4822229').first.concept_id , map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6432,6 +6424,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_90_day_vital_status.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_90_day_vital_status.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'd90_vital_status', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -6439,9 +6432,9 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
-        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'death' AND omop_columns.name = 'death_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
+        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'death_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Patient was deceased within 90 days of COVID-19 diagnosis").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Type Concept', vocabulary_id: 'Death Type', concept_code: 'OMOP4822229').first.concept_id , map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6474,6 +6467,7 @@ namespace :redcap2omop do
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
           redcap_derived_date_180_day_vital_status.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
         end
+        redcap_derived_date_180_day_vital_status.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'd180_vital_status', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -6481,9 +6475,9 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
-        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'death' AND omop_columns.name = 'death_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
+        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'death_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Patient was deceased within 180 days of COVID-19 diagnosis").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Type Concept', vocabulary_id: 'Death Type', concept_code: 'OMOP4822229').first.concept_id , map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6522,7 +6516,7 @@ namespace :redcap2omop do
         offset_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         offset_redcap_variable.save!
         # name: 'Followup 2'
-        redcap_derived_date_followup_2 = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable, offset_redcap_variable_numeric_interval_days: 7).first_or_create
+        redcap_derived_date_followup_2 = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable, offset_interval_days: 7).first_or_create
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'covid_19_status_fu', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -6530,8 +6524,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Fully recovered').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '840539006').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6565,19 +6559,19 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_fu_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: 'Death 2'
-        redcap_derived_date_death_2 = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable, offset_redcap_variable_numeric_interval_days: 1).first_or_create
+        redcap_derived_date_death_2 = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable, offset_interval_days: 1).first_or_create
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_fu_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.build_redcap_variable_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Type Concept', vocabulary_id: 'Death Type', concept_code: 'OMOP4822229').first.concept_id , map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT)
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'death' AND omop_columns.name = 'death_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'death_date'").first
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_death_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'cause_of_death_fu', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'death' AND omop_columns.name = 'cause_concept_id'").first
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'cause_concept_id'").first
         redcap_variable.build_redcap_variable_map(omop_column_id: omop_column.id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         redcap_variable.save!
@@ -6630,8 +6624,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Critical (ICU) - Severely ill, intubated').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OMOP4822460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6744,8 +6738,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
         redcap_variable_date = Redcap2omop::RedcapVariable.where(name: 'ts_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
@@ -6775,8 +6769,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'visit_occurrence' AND omop_columns.name = 'visit_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'visit_occurrence' AND redcap2omop_omop_columns.name = 'visit_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Not applicable - they were admitted to the hospital at the time of the last report and remain hospitalized').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6854,7 +6848,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'ER - Follow up').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'ER').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6908,7 +6902,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'CNS hemorrhage, extensive').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '230690007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6971,7 +6965,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '57485005').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6995,7 +6989,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Acute respiratory distress syndrome (ARDS)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '67782005').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -7055,8 +7049,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrence' AND omop_columns.name = 'procedure_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'device_exposure' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrence' AND redcap2omop_omop_columns.name = 'procedure_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'device_exposure' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'BiPAP').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Device', vocabulary_id: 'SNOMED', concept_code: '425826004').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -7120,7 +7114,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Atrial fibrillation').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '49436004').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -7204,8 +7198,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'ATC', concept_code: 'H01BA').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -7235,7 +7229,7 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'condition_occurrence' AND omop_columns.name = 'condition_start_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Acute hepatic injury').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '427044009').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -7309,9 +7303,9 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
-        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'procedure_occurrecne' AND omop_columns.name = 'procedure_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_3 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'procedure_occurrecne' AND redcap2omop_omop_columns.name = 'procedure_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Anticoagulation').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'ATC', concept_code: 'B01A').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -7490,8 +7484,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Dexamethasone (Decadron)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '3264').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -7550,8 +7544,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Direct factor Xa inhibitors (e.g., apixaban [Eliquis], rivaroxaban [Xarelto])').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'ATC', concept_code: 'B01AF').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -7626,8 +7620,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'anakinra').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '72435').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -7756,8 +7750,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Baricitinib').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '2047232').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -7815,8 +7809,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Adalimumab').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '327361').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -7881,8 +7875,8 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
-        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_start_date'").first
-        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("omop_tables.name = 'drug_exposure' AND omop_columns.name = 'drug_exposure_end_date'").first
+        omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_start_date'").first
+        omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'drug_exposure' AND redcap2omop_omop_columns.name = 'drug_exposure_end_date'").first
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Anti-virals').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'HemOnc', concept_code: '44995').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)

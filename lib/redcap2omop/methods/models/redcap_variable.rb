@@ -28,13 +28,15 @@ module Redcap2omop::Methods::Models::RedcapVariable
                     when 'radio', 'checkbox', 'dropdown'
                       'choice'
                     when 'slider'
-                      'integer'
+                      'number'
                     when 'text'
                       case self.text_validation_type
                       when 'date_ymd'
                         'date'
                       when 'integer'
-                        'integer'
+                        'number'
+                      when 'number'
+                        'number'
                       else
                         'text'
                       end
