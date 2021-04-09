@@ -247,7 +247,7 @@ RSpec.describe Redcap2omop::DataServices::RedcapToOmop do
           @days_to_death_2_redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: @redcap_derived_date_death, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
           omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'cause_concept_id'").first
           @redcap_variable_cause_of_death = Redcap2omop::RedcapVariable.where(name: 'cause_of_death', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-          # @days_to_death_2_redcap_variable.redcap_variable_child_maps.build(redcap_variable: @redcap_variable_cause_of_death, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+          @days_to_death_2_redcap_variable.redcap_variable_child_maps.build(redcap_variable: @redcap_variable_cause_of_death, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
           @redcap_variable_cause_of_death_choice_1 = @redcap_variable_cause_of_death.redcap_variable_choices.where(choice_description: 'Both').first
           @cause_of_death_concept_1 = Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '840539006').first
           @redcap_variable_cause_of_death_choice_1.build_redcap_variable_choice_map(concept_id: @cause_of_death_concept_1.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -591,7 +591,7 @@ RSpec.describe Redcap2omop::DataServices::RedcapToOmop do
           expect(Redcap2omop::Death.where(person_id: person_1.person_id).count).to eq 1
 
           expect(person_1_death.death_type_concept_id).to eq @death_type_concept.concept_id
-          # expect(person_1_death.cause_concept_id).to eq @cause_of_death_concept_1.concept_id
+          expect(person_1_death.cause_concept_id).to eq @cause_of_death_concept_1.concept_id
           expect(person_1_death.death_date).to eq ((Date.parse(@ts_0_1) - @covid_19_redcap_variable_choices[@covid_19_dx_interval_choice_description_1]) - (@days_to_death_2_record_id_1 * 1 * 1))
         end
 

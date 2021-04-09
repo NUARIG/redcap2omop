@@ -171,16 +171,24 @@ module Redcap2omop::DataServices
                     case redcap_variable_child_map.map_type
                     when Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE
                       redcap_variable_child = redcap_variable_child_map.redcap_variable
-                      if redcap_record[redcap_variable_child.name].present?
-                        source_value = redcap_record[redcap_variable_child.name]
+                      if redcap_variable_child.choice?
+                        value = redcap_variable_child.map_redcap_variable_choice_to_concept(redcap_record)
+                        if value.blank?
+                          other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
+                          value = redcap_variable_child.map_redcap_variable_choice_to_concept(other_redcap_record) if other_redcap_record
+                        end
                       else
-                        other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
-                        source_value = other_redcap_record[redcap_variable_child.name] if other_redcap_record
-                      end
-                      if source_value && redcap_variable_child_map.omop_column.name == 'provider_id'
-                        value = Redcap2omop::Provider.where(provider_source_value: source_value).first.provider_id
-                      else
-                        value = source_value
+                        if redcap_record[redcap_variable_child.name].present?
+                          source_value = redcap_record[redcap_variable_child.name]
+                        else
+                          other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
+                          source_value = other_redcap_record[redcap_variable_child.name] if other_redcap_record
+                        end
+                        if source_value && redcap_variable_child_map.omop_column.name == 'provider_id'
+                          value = Redcap2omop::Provider.where(provider_source_value: source_value).first.provider_id
+                        else
+                          value = source_value
+                        end
                       end
                     when Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT
                       value = redcap_variable_child_map.concept.concept_id
@@ -252,16 +260,24 @@ module Redcap2omop::DataServices
                   case redcap_variable_child_map.map_type
                   when Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE
                     redcap_variable_child = redcap_variable_child_map.redcap_variable
-                    if redcap_record[redcap_variable_child.name].present?
-                      source_value = redcap_record[redcap_variable_child.name]
+                    if redcap_variable_child.choice?
+                      value = redcap_variable_child.map_redcap_variable_choice_to_concept(redcap_record)
+                      if value.blank?
+                        other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
+                        value = redcap_variable_child.map_redcap_variable_choice_to_concept(other_redcap_record) if other_redcap_record
+                      end
                     else
-                      other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
-                      source_value = other_redcap_record[redcap_variable_child.name] if other_redcap_record
-                    end
-                    if source_value && redcap_variable_child_map.omop_column.name == 'provider_id'
-                      value = Redcap2omop::Provider.where(provider_source_value: source_value).first.provider_id
-                    else
-                      value = source_value
+                      if redcap_record[redcap_variable_child.name].present?
+                        source_value = redcap_record[redcap_variable_child.name]
+                      else
+                        other_redcap_record = redcap_records.select{|record| record['redcap_event_name'] == redcap_record['redcap_event_name'] && record['redcap_repeat_instrument'].blank?}.first
+                        source_value = other_redcap_record[redcap_variable_child.name] if other_redcap_record
+                      end
+                      if source_value && redcap_variable_child_map.omop_column.name == 'provider_id'
+                        value = Redcap2omop::Provider.where(provider_source_value: source_value).first.provider_id
+                      else
+                        value = source_value
+                      end
                     end
                   when Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT
                     value = redcap_variable_child_map.concept.concept_id
