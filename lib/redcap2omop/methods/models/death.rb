@@ -17,6 +17,7 @@ module Redcap2omop::Methods::Models::Death
     base.extend(ClassMethods)
 
     # Associations
+    base.send :has_one, :redcap_source_link, as: :redcap_sourced
     base.send :belongs_to, :person
     base.send :belongs_to, :type_concept, foreign_key: :death_type_concept_id, class_name: 'Redcap2omop::Concept'
 

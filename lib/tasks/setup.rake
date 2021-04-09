@@ -12,7 +12,8 @@ namespace :redcap2omop do
        Redcap2omop::Person,
        Redcap2omop::ProcedureOccurrence,
        Redcap2omop::Provider,
-       Redcap2omop::Observation
+       Redcap2omop::Observation,
+       Redcap2omop::VisitOccurrence
       ].map(&:setup_omop_table)
     end
   end
