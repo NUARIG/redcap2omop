@@ -33,7 +33,6 @@ Do not forget to create secrets.yaml or add to existing one the following keys:
 ```yaml
 development:
   redcap:
-    api_token:
     api_url:
     verify_ssl: true
 ```
@@ -60,20 +59,6 @@ $ bundle exec rake redcap2omop:ingest:data
 $ bundle exec rake redcap2omop:ingest:redcap2omop
 ```
 
-# Neurofiles workflow
-```bash
-$ bundle exec rake redcap2omop:setup:neurofiles:projects
-$ bundle exec rake redcap2omop:setup:neurofiles:project_sandbox
-$ bundle exec rake redcap2omop:ingest:data_dictionary:cleanup
-$ bundle exec rake redcap2omop:ingest:data_dictionary:from_redcap
-$ bundle exec rake redcap2omop:setup:omop_tables
-$ bundle exec rake redcap2omop:setup:neurofiles:insert_people
-$ bundle exec rake redcap2omop:setup:neurofiles:maps
-$ bundle exec rake redcap2omop:setup:neurofiles:maps_sandbox
-$ bundle exec rake redcap2omop:ingest:data
-$ bundle exec rake redcap2omop:ingest:redcap2omop
-```
-
 ## Compile indexes after loading data
 ```bash
 $ bundle exec rake redcap2omop:data:compile_omop_indexes
@@ -88,7 +73,11 @@ $ bundle exec rake redcap2omop:data:drop_omop_indexes
 $ bundle exec rake redcap2omop:data:drop_omop_vocabulary_indexes
 $ bundle exec rake redcap2omop:data:drop_all_tables
 ```
-
+## Install and configure Redis
+```bash
+brew install redis
+brew services start redis
+```
 ## Testing
 Download the latest OMOP vocabulary distribution from http://athena.ohdsi.org
 

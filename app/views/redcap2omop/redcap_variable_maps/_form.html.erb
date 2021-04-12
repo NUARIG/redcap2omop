@@ -1,0 +1,17 @@
+<%= form_with model: @redcap2omop_redcap_variable_map, id: dom_id(@redcap2omop_redcap_variable_map) do |form| %>
+  <% if @redcap2omop_redcap_variable_map.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@redcap2omop_redcap_variable_map.errors.count, "error") %> prohibited this redcap_variable_map from being saved:</h2>
+
+      <ul>
+        <% @redcap2omop_redcap_variable_map.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  <%= form.select :redcap_variable_id, Redcap2omop::RedcapVariable.all.collect { |p| [ p.name, p.id ] }, { include_blank: true } %>
+  <%= form.select :map_type, Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPES.map{|p| [p,p]}, { include_blank: true } %>
+  <%= form.submit %>
+<% end %>
+
