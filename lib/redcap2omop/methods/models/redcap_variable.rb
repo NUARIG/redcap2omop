@@ -34,7 +34,7 @@ module Redcap2omop::Methods::Models::RedcapVariable
                       when 'date_ymd'
                         'date'
                       when 'integer'
-                        'number'
+                        'integer'
                       when 'number'
                         'number'
                       else
