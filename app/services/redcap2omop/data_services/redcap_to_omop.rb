@@ -241,7 +241,7 @@ module Redcap2omop::DataServices
                   klass_instance.value_source_value =  redcap_record[redcap_variable.name]
                   # Set values
                   case redcap_variable.determine_field_type
-                  when 'number'
+                  when 'number', 'integer'
                     value_as_concept_id = redcap_variable.map_redcap_variable_choice_to_concept(redcap_record)
                     if value_as_concept_id.present?
                       klass_instance.value_as_concept_id = value_as_concept_id
