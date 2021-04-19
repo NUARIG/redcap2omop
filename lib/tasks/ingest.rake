@@ -13,6 +13,7 @@ namespace :redcap2omop do
         Redcap2omop::RedcapVariableChoiceMap.delete_all
         Redcap2omop::RedcapVariableChoice.delete_all
         Redcap2omop::RedcapVariableMap.delete_all
+        Redcap2omop::RedcapSourceLink.delete_all
         Redcap2omop::RedcapVariable.delete_all
       end
 
