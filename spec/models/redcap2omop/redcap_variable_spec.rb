@@ -23,14 +23,14 @@ module Redcap2omop
         end
 
         redcap_variable.field_type = 'slider'
-        expect(redcap_variable.normalize_field_type).to eq 'integer'
+        expect(redcap_variable.normalize_field_type).to eq 'number'
 
         redcap_variable.field_type = 'text'
         redcap_variable.text_validation_type = 'date_ymd'
         expect(redcap_variable.normalize_field_type).to eq 'date'
 
         redcap_variable.text_validation_type = 'integer'
-        expect(redcap_variable.normalize_field_type).to eq 'integer'
+        expect(redcap_variable.normalize_field_type).to eq 'number'
 
         redcap_variable.text_validation_type = ''
         expect(redcap_variable.normalize_field_type).to eq 'text'
