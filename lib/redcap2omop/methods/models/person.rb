@@ -25,6 +25,9 @@ module Redcap2omop::Methods::Models::Person
     base.send :include, Redcap2omop::WithOmopTable
     base.send :mattr_reader, :map_types, default: MAP_TYPES
 
+    # Associations
+    base.send :has_many, :observations, class_name: 'Redcap2omop::Observation'
+
     # Validations
     base.send :validates_presence_of, :gender_concept_id, :year_of_birth, :race_concept_id, :ethnicity_concept_id
     base.send :before_validation, :set_birth_fields

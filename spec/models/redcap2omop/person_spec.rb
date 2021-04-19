@@ -5,6 +5,10 @@ module Redcap2omop
     let(:person) { FactoryBot.create(:person) }
     let(:subject){ person }
 
+    describe 'associations' do
+      it { is_expected.to have_many(:observations) }
+    end
+
     describe 'validations' do
       it { is_expected.to validate_presence_of(:gender_concept_id) }
       it { is_expected.to validate_presence_of(:year_of_birth) }
