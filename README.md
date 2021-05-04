@@ -1,4 +1,4 @@
-__# Redcap2omop
+# Redcap2omop
 Short description and motivation.
 
 ## Usage
