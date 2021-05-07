@@ -14,9 +14,9 @@ module Redcap2omop::Methods::Models::RedcapVariableMap
 
     base.instance_eval do
       # Hooks
-      after_create_commit  { broadcast_prepend_to "redcap2omop_redcap_variable_maps" }
-      after_update_commit  { broadcast_replace_to "redcap2omop_redcap_variable_maps" }
-      after_destroy_commit { broadcast_remove_to "redcap2omop_redcap_variable_maps" }
+      # after_create_commit  { broadcast_prepend_to "redcap2omop_redcap_variable_maps" }
+      # after_update_commit  { broadcast_replace_to "redcap2omop_redcap_variable_maps" }
+      # after_destroy_commit { broadcast_remove_to "redcap2omop_redcap_variable_maps" }
     end
 
     base.send :include, InstanceMethods
