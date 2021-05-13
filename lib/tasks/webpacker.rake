@@ -19,7 +19,6 @@ namespace :redcap2omop do
     task compile: [:yarn_install, :environment] do
       Webpacker.with_node_env(ENV.fetch("NODE_ENV", "production")) do
         ensure_log_goes_to_stdout do
-          # puts Redcap2omop.webpacker.inspect
           if Redcap2omop.webpacker.commands.compile
             # Successful compilation!
           else
