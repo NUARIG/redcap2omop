@@ -1,10 +1,15 @@
-select  rv.*
-     ,  rvc.*
-from redcap2omop_redcap_variables rv
-    left join redcap2omop_redcap_variable_choices rvc on rv.id = rvc.redcap_variable_id
-    join redcap2omop_redcap_data_dictionaries rdd on rv.redcap_data_dictionary_id = rdd.id
-    join redcap2omop_redcap_projects rp on rdd.redcap_project_id = rp.id
-where rp.name = 'CCC19'
+SELECT  rv.name
+      , rv.form_name
+      , rv.field_type
+      , rv.field_type_normalized
+      , rv.text_validation_type
+      , rv.curation_status
+      , rv.field_type_curated
+FROM redcap2omop_redcap_variables rv LEFT JOIN redcap2omop_redcap_variable_choices rvc ON rv.id                         = rvc.redcap_variable_id
+                                     JOIN redcap2omop_redcap_data_dictionaries rdd     ON rv.redcap_data_dictionary_id  = rdd.id
+                                     JOIN redcap2omop_redcap_projects rp               ON rdd.redcap_project_id         = rp.id
+WHERE rp.name = 'CCC19'
+ORDER By rv.id
 
 select  rv.*
      ,  rvc.*
@@ -25,7 +30,8 @@ from redcap2omop_redcap_export_tmps
 --where moca is not null
 --and moca!= ''
 order by  redcap_event_name, redcap_export_tmps.id, v_d
-=======
+
+
 select  rv.id
       , rv.name
       , rv.form_name
@@ -124,4 +130,3 @@ from device_exposure de left join concept c1 on de.device_concept_id = c1.concep
                         join redcap_projects rp on rdd.redcap_project_id = rp.id
                         join person p on de.person_id = p.person_id
                         left join provider pr on de.provider_id = pr.provider_id
->>>>>>> develop

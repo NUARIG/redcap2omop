@@ -22,7 +22,7 @@ namespace :redcap2omop do
         raise "project_id has to be provided" if ENV["PROJECT_ID"].blank?
 
         redcap_project = Redcap2omop::RedcapProject.where(project_id: ENV["PROJECT_ID"].strip).first
-        raise "Could not find a project with project_idr '#{ENV["PROJECT_ID"]}'" if redcap_project.blank?
+        raise "Could not find a project with project_id '#{ENV["PROJECT_ID"]}'" if redcap_project.blank?
         raise "file name required e.g. 'FILE=~/dictionary.csv'" if ENV["FILE"].blank?
         file = ENV['FILE']
         raise "File does not exist: #{file}" unless FileTest.exists?(file)

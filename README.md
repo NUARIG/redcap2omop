@@ -44,15 +44,17 @@ $ rails g redcap2omop:install
 Download the latest OMOP vocabulary distribution from http://athena.ohdsi.org
 Unzip and copy the vocabulary to /db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport
 ```bash
+$ bundle exec rake redcap2omop:data:truncate_omop_vocabulary_tables
 $ bundle exec rake redcap2omop:data:load_omop_vocabulary_tables
+$ bundle exec rake redcap2omop:data:drop_omop_vocabulary_indexes
 $ bundle exec rake redcap2omop:data:compile_omop_vocabulary_indexes
 ```
 
 # CCC19 workflow
 ```bash
-$ bundle exec rake redcap2omop:setup:ccc19:project
+$ bundle exec rake app:redcap2omop:setup:ccc19:project
 $ bundle exec rake redcap2omop:ingest:data_dictionary:cleanup
-$ bundle exec rake redcap2omop:ingest:data_dictionary:from_csv PROJECT_ID=0 FILE=../support/data/test_dictionary.csv
+$ bundle exec rake redcap2omop:ingest:data_dictionary:from_csv PROJECT_ID=0 FILE=../../lib/setup/data/data_dictionaries/CCC19_DataDictionary_clean.csv
 $ bundle exec rake redcap2omop:setup:omop_tables
 $ bundle exec rake redcap2omop:setup:ccc19:maps
 $ bundle exec rake redcap2omop:ingest:data
