@@ -1,3 +1,4 @@
+-- https://github.com/covidncancer/CCC19_dictionary
 --All
 SELECT  rv.form_name
       , rv.name                   AS variable_name
