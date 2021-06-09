@@ -24,6 +24,15 @@ module Redcap2omop
         new_redcap_project = FactoryBot.build(:redcap_project)
         expect(new_redcap_project.export_table_name).to eq "redcap_records_tmp_#{redcap_project.id + 1}"
       end
+
+      it 'returns the current version of the Redcap data dictionary', focus: true do
+        expect(redcap_project.redcap_data_dictionaries.size).to eq 0
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create(version: 1)
+        redcap_project.reload
+        expect(redcap_project.current_redcap_data_dictionary).to eq redcap_data_dictionary
+        new_redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create(version: 2)
+        expect(redcap_project.current_redcap_data_dictionary).to eq new_redcap_data_dictionary
+      end
     end
 
     describe 'scopes' do

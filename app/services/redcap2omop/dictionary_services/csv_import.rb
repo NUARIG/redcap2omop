@@ -11,6 +11,7 @@ module Redcap2omop::DictionaryServices
 
     def run
       ActiveRecord::Base.transaction do
+
         redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
         data_dictionary_variables = CSV.new(File.open(csv_file), **csv_file_options)
         data_dictionary_variables.each do |data_dictionary_variable|

@@ -5,7 +5,8 @@ namespace :redcap2omop do
       task project: :environment do  |t, args|
         redcap_project = Redcap2omop::RedcapProject.where(project_id: 0 , name: 'CCC19', api_import: false).first_or_create
         file_name = 'CCC19_DataDictionary.csv'
-        file_location = "#{Rails.root}/lib/setup/data/data_dictionaries/"
+        # file_location = "#{Rails.root}/lib/setup/data/data_dictionaries/"
+        file_location = "#{Redcap2omop::Engine.root}/lib/setup/data/data_dictionaries/"
         data_dictionary = File.read("#{file_location}#{file_name}")
         data_dictionary[0]=''
         File.write("#{file_location}CCC19_DataDictionary_clean.csv", data_dictionary)

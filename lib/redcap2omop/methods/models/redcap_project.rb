@@ -38,6 +38,10 @@ module Redcap2omop::Methods::Models::RedcapProject
         self.id
       end
     end
+
+    def current_redcap_data_dictionary
+      self.redcap_data_dictionaries.where(version: redcap_data_dictionaries.maximum(:version)).first
+    end
   end
 
   module ClassMethods
