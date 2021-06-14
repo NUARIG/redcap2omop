@@ -52,7 +52,7 @@ $ bundle exec rake redcap2omop:data:compile_omop_vocabulary_indexes
 
 # CCC19 workflow
 ```bash
-$ bundle exec rake app:redcap2omop:setup:ccc19:project
+$ bundle exec rake redcap2omop:setup:ccc19:project
 $ bundle exec rake redcap2omop:ingest:data_dictionary:cleanup
 $ bundle exec rake redcap2omop:ingest:data_dictionary:from_csv PROJECT_ID=0 FILE=../../lib/setup/data/data_dictionaries/CCC19_DataDictionary_clean.csv
 $ bundle exec rake redcap2omop:setup:omop_tables

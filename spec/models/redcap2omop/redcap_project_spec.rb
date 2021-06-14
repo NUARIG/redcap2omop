@@ -25,14 +25,49 @@ module Redcap2omop
         expect(new_redcap_project.export_table_name).to eq "redcap_records_tmp_#{redcap_project.id + 1}"
       end
 
-      it 'returns the current version of the Redcap data dictionary', focus: true do
+      it 'returns the current version of the Redcap data dictionary', focus: false do
+        expect(redcap_project.redcap_data_dictionaries.size).to eq 0
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        redcap_project.reload
+        expect(redcap_project.current_redcap_data_dictionary).to eq redcap_data_dictionary
+        new_redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        expect(redcap_project.current_redcap_data_dictionary).to eq new_redcap_data_dictionary
+      end
+
+      it 'returns the pior version of the Redcap data dictionary', focus: false do
         expect(redcap_project.redcap_data_dictionaries.size).to eq 0
         redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create(version: 1)
         redcap_project.reload
         expect(redcap_project.current_redcap_data_dictionary).to eq redcap_data_dictionary
         new_redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create(version: 2)
-        expect(redcap_project.current_redcap_data_dictionary).to eq new_redcap_data_dictionary
+        expect(redcap_project.prior_redcap_data_dictionary).to eq redcap_data_dictionary
       end
+
+      it 'checks if a Redcap variable does not exist if there is no Redcap dictionary', focus: false do
+        expect(redcap_project.redcap_variable_exists_in_redcap_data_dictionary?('moomin')).to be_falsey
+      end
+
+      it 'checks if a Redcap variable does not exist if there is no prior Redcap dictionary', focus: false do
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'moomin')
+        expect(redcap_project.redcap_variable_exists_in_redcap_data_dictionary?('moomin')).to be_falsey
+      end
+
+      it 'checks if a Redcap variable does exist if there is a prior Redcap dictionary', focus: false do
+        prior_redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: prior_redcap_data_dictionary, name: 'moomin')
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        expect(redcap_project.redcap_variable_exists_in_redcap_data_dictionary?('moomin')).to be_truthy
+      end
+
+      it 'checks if a Redcap variable does not exist (because it has bedn deleted) if there is a prior Redcap dictionary', focus: false do
+        prior_redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        redcap_variable = FactoryBot.create(:redcap_variable, redcap_data_dictionary: prior_redcap_data_dictionary, name: 'moomin')
+        redcap_variable.destroy!
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        expect(redcap_project.redcap_variable_exists_in_redcap_data_dictionary?('moomin')).to be_falsey
+      end
+
     end
 
     describe 'scopes' do

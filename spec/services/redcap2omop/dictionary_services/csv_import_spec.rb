@@ -2,25 +2,42 @@ require 'rails_helper'
 
 RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
   describe 'parsing dictionary from CSV file' do
-    let(:project) { FactoryBot.create(:redcap_project) }
+    let(:redcap_project) { FactoryBot.create(:redcap_project) }
     let(:import) {
       Redcap2omop::DictionaryServices::CsvImport.new(
-        redcap_project: project,
+        redcap_project: redcap_project,
         csv_file: 'spec/support/data/test_dictionary.csv',
         csv_file_options: { headers: true, col_sep: ",", return_headers: false}
       )
     }
+
+    let(:import_data_dictionary_with_new_redcap_variable) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_new_redcap_variable.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
+    let(:import_data_dictionary_with_redcap_variable_changed_field_type) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_redcap_variable_changed_field_type.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
     describe 'when import is successful' do
-      it 'creates new dictionary' do
+      it 'creates new dictionary', focus: false do
         expect{ import.run }.to change{ Redcap2omop::RedcapDataDictionary.count }.by(1)
-        expect(Redcap2omop::RedcapDataDictionary.last.redcap_project).to eq project
+        expect(Redcap2omop::RedcapDataDictionary.last.redcap_project).to eq redcap_project
       end
 
       it 'creates redcap variables' do
         expect(Redcap2omop::RedcapVariable.count).to eq 0
         expect{ import.run }.to change{ Redcap2omop::RedcapVariable.count }.by(18)
         Redcap2omop::RedcapVariable.all.each do |redcap_variable|
-          expect(redcap_variable.redcap_data_dictionary.redcap_project).to eq project
+          expect(redcap_variable.redcap_data_dictionary.redcap_project).to eq redcap_project
         end
         variable = Redcap2omop::RedcapVariable.get_by_name('dob')
         expect(variable).not_to be_nil
@@ -50,8 +67,39 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         expect(variable.field_annotation).to be_blank
       end
 
-      it 'returns success' do
+      it 'returns success', focus: false do
         expect(import.run.success).to eq true
+      end
+
+      it 'does not create a new data dictionary if nothing changed', focus: false do
+        import.run
+        redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+        redcap_project.reload
+        import.run
+        redcap_project.reload
+        expect(redcap_project.current_redcap_data_dictionary).to eq redcap_data_dictionary
+      end
+
+      it 'does create a new data dictionary if new Redcap variable is added', focus: false do
+        import.run
+        redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+        redcap_project.reload
+        import_data_dictionary_with_new_redcap_variable.run
+        redcap_project.reload
+        current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+        expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
+        expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
+      end
+
+      it "does create a new data dictionary if a Redcap variable's type is changed", focus: true do
+        import.run
+        redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+        redcap_project.reload
+        import_data_dictionary_with_redcap_variable_changed_field_type.run
+        redcap_project.reload
+        current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+        expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
+        expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
       end
     end
 

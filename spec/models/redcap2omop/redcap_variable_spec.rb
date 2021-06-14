@@ -30,7 +30,7 @@ module Redcap2omop
         expect(redcap_variable.normalize_field_type).to eq 'date'
 
         redcap_variable.text_validation_type = 'integer'
-        expect(redcap_variable.normalize_field_type).to eq 'number'
+        expect(redcap_variable.normalize_field_type).to eq 'integer'
 
         redcap_variable.text_validation_type = ''
         expect(redcap_variable.normalize_field_type).to eq 'text'
