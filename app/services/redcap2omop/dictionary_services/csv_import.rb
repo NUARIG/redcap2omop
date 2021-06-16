@@ -20,6 +20,7 @@ module Redcap2omop::DictionaryServices
 
           if !redcap_project.redcap_variable_exists_in_redcap_data_dictionary?(data_dictionary_variable['Variable / Field Name'])
             new_data_dictionary = true
+            redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_NEW_VARIABLE
           end
 
           redcap_variable.name                  = data_dictionary_variable['Variable / Field Name']                         #metadata_variable['field_name']
@@ -27,6 +28,7 @@ module Redcap2omop::DictionaryServices
 
           if redcap_project.redcap_variable_field_type_changed_in_redcap_data_dictionary?(data_dictionary_variable['Variable / Field Name'], data_dictionary_variable['Field Type'], data_dictionary_variable['Text Validation Type OR Show Slider Number'])
             new_data_dictionary = true
+            redcap_variable.curation_status =  Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_TYPE
           end
 
           redcap_variable.field_type            = data_dictionary_variable['Field Type']                                    #metadata_variable['field_type']

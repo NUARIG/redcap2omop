@@ -16,6 +16,15 @@ module Redcap2omop
     include_examples 'with soft_delete'
 
     describe 'methods' do
+      it 'defaults curation status if none is provided', focus: false do
+        expect(redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED
+      end
+
+      it 'does not default curation status if onee is provided', focus: false do
+        other_redcap_variable = FactoryBot.create(:redcap_variable, curation_status: Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_NEW_VARIABLE)
+        expect(other_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_NEW_VARIABLE
+      end
+
       it 'normalizes field type' do
         %w[radio checkbox dropdown].each do |field_type|
           redcap_variable.field_type = field_type

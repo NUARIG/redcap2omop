@@ -1,5 +1,9 @@
 module Redcap2omop::Methods::Models::RedcapVariable
   REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED = 'undetermined'
+  REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_NEW_VARIABLE = 'undetermined new variable'
+  REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_TYPE = 'undetermined updated variable type'
+  REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_LABEL = 'undetermined updated variable label'
+
   REDCAP_VARIABLE_CURATION_STATUS_SKIPPED = 'skipped'
   REDCAP_VARIABLE_CURATION_STATUS_MAPPED = 'mapped'
   REDCAP_VARIABLE_CURATION_STATUSES = [REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED, REDCAP_VARIABLE_CURATION_STATUS_SKIPPED, REDCAP_VARIABLE_CURATION_STATUS_MAPPED]
@@ -88,7 +92,7 @@ module Redcap2omop::Methods::Models::RedcapVariable
 
     private
       def set_defaults
-        if self.new_record?
+        if self.new_record? && self.curation_status.blank?
           self.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED
         end
       end

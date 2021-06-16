@@ -89,6 +89,8 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
         expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
         expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
+        new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'mri_coordinator2').first
+        expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_NEW_VARIABLE
       end
 
       it "does create a new data dictionary if a Redcap variable's type is changed", focus: false do
@@ -100,6 +102,8 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
         expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
         expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
+        new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'moca').first
+        expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_TYPE
       end
     end
 
