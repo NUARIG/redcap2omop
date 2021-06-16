@@ -34,6 +34,15 @@ module Redcap2omop::Methods::Models::RedcapDataDictionary
       changed
     end
 
+    def redcap_variable_field_label_changed?(redcap_variable_name, field_label)
+      changed = nil
+      redcap_variable = self.find_redcap_variable(redcap_variable_name)
+      if redcap_variable
+        changed = redcap_variable.field_label != field_label
+      end
+      changed
+    end
+
     private
       def find_redcap_variable(redcap_variable_name)
         self.redcap_variables.not_deleted.where(name: redcap_variable_name).first

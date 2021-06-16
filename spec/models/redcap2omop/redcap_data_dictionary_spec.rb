@@ -75,6 +75,15 @@ module Redcap2omop
       it 'checks if a Redcap variable has changed its field type (even if it does not exist)', focus: false do
         expect(redcap_data_dictionary.redcap_variable_field_type_changed?('moomin', 'dropdown', nil)).to be_nil
       end
+
+      it 'checks if a Redcap variable has changed its field label', focus: false do
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'moomin', field_label: 'Favorite Moomin?', field_type: 'slider', text_validation_type: nil)
+        expect(redcap_data_dictionary.redcap_variable_field_label_changed?('moomin', 'Best Moomin?')).to be_truthy
+      end
+
+      it 'checks if a Redcap variable has changed its field type (even if it does not exist)', focus: false do
+        expect(redcap_data_dictionary.redcap_variable_field_label_changed?('moomin', 'Best Moomin?')).to be_nil
+      end
     end
   end
 end

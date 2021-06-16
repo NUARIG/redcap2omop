@@ -60,7 +60,7 @@ module Redcap2omop
         expect(redcap_project.redcap_variable_exists_in_redcap_data_dictionary?('moomin')).to be_truthy
       end
 
-      it 'checks if a Redcap variable does not exist (because it has bedn deleted) if there is a prior Redcap dictionary', focus: false do
+      it 'checks if a Redcap variable does not exist (because it has been deleted) if there is a prior Redcap dictionary', focus: false do
         prior_redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
         redcap_variable = FactoryBot.create(:redcap_variable, redcap_data_dictionary: prior_redcap_data_dictionary, name: 'moomin')
         redcap_variable.destroy!
@@ -68,6 +68,27 @@ module Redcap2omop
         expect(redcap_project.redcap_variable_exists_in_redcap_data_dictionary?('moomin')).to be_falsey
       end
 
+      it 'checks if a Redcap variable has changed its field type if there is no Redcap dictionary', focus: false do
+        expect(redcap_project.redcap_variable_field_type_changed_in_redcap_data_dictionary?('moomin', 'dropdown', nil)).to be_falsey
+      end
+
+      it 'checks if a Redcap variable has changed its field type if there is a prior Redcap dictionary', focus: false do
+        prior_redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: prior_redcap_data_dictionary, name: 'moomin', field_type: 'dropdown', text_validation_type: nil)
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        expect(redcap_project.redcap_variable_field_type_changed_in_redcap_data_dictionary?('moomin', 'text', nil)).to be_truthy
+      end
+
+      it 'checks if a Redcap variable has changed its field label if there is no Redcap dictionary', focus: false do
+        expect(redcap_project.redcap_variable_field_label_changed_in_redcap_data_dictionary?('moomin', 'Favorite Moomin')).to be_falsey
+      end
+
+      it 'checks if a Redcap variable has changed its field label if there is a prior Redcap dictionary', focus: false do
+        prior_redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: prior_redcap_data_dictionary, name: 'moomin', field_label: 'Favorite Moomin?', field_type: 'dropdown', text_validation_type: nil)
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        expect(redcap_project.redcap_variable_field_label_changed_in_redcap_data_dictionary?('moomin', 'Best Moomin?')).to be_truthy
+      end
     end
 
     describe 'scopes' do

@@ -64,6 +64,12 @@ module Redcap2omop::Methods::Models::RedcapProject
         self.prior_redcap_data_dictionary.redcap_variable_field_type_changed?(redcap_variable_name, field_type, text_validation_type)
       end
     end
+
+    def redcap_variable_field_label_changed_in_redcap_data_dictionary?(redcap_variable_name, field_label)
+      if self.prior_redcap_data_dictionary
+        self.prior_redcap_data_dictionary.redcap_variable_field_label_changed?(redcap_variable_name, field_label)
+      end
+    end
   end
 
   module ClassMethods
