@@ -91,7 +91,7 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
       end
 
-      it "does create a new data dictionary if a Redcap variable's type is changed", focus: true do
+      it "does create a new data dictionary if a Redcap variable's type is changed", focus: false do
         import.run
         redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
         redcap_project.reload

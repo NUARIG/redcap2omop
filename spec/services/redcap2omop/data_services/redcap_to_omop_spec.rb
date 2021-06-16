@@ -1187,7 +1187,9 @@ RECORDS
           redcap_derived_date_diagnosis_cancer = Redcap2omop::RedcapDerivedDate.where(name: 'Cancer Diagnosis', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid_19, offset_redcap_variable: cancer_offset_redcap_variable).first_or_create
           @cancer_redcap_variable_choices.each do |k,v|
             redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: cancer_offset_redcap_variable.id, choice_description: k).first
-            redcap_derived_date_diagnosis_cancer.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
+            unless v.nil?
+              redcap_derived_date_diagnosis_cancer.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
+            end
           end
           redcap_derived_date_diagnosis_cancer.save!
 
