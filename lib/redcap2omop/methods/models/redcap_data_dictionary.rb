@@ -23,6 +23,11 @@ module Redcap2omop::Methods::Models::RedcapDataDictionary
       self.find_redcap_variable(redcap_variable_name)
     end
 
+    def redcap_variable_choice_exist?(redcap_variable_name, choice_code_raw)
+      redcap_variable = self.find_redcap_variable(redcap_variable_name)
+      redcap_variable.redcap_variable_chioce_exist?(choice_code_raw)
+    end
+
     def redcap_variable_field_type_changed?(redcap_variable_name, field_type, text_validation_type)
       changed = nil
       redcap_variable = self.find_redcap_variable(redcap_variable_name)
@@ -39,6 +44,15 @@ module Redcap2omop::Methods::Models::RedcapDataDictionary
       redcap_variable = self.find_redcap_variable(redcap_variable_name)
       if redcap_variable
         changed = redcap_variable.field_label != field_label
+      end
+      changed
+    end
+
+    def redcap_variable_choices_changed?(redcap_variable_name, choices)
+      changed = nil
+      redcap_variable = self.find_redcap_variable(redcap_variable_name)
+      if redcap_variable
+        changed = redcap_variable.choices != choices
       end
       changed
     end

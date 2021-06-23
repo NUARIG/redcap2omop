@@ -81,8 +81,17 @@ module Redcap2omop
         expect(redcap_data_dictionary.redcap_variable_field_label_changed?('moomin', 'Best Moomin?')).to be_truthy
       end
 
-      it 'checks if a Redcap variable has changed its field type (even if it does not exist)', focus: false do
+      it 'checks if a Redcap variable has changed its field label (even if it does not exist)', focus: false do
         expect(redcap_data_dictionary.redcap_variable_field_label_changed?('moomin', 'Best Moomin?')).to be_nil
+      end
+
+      it 'checks if a Redcap variable has changed its choices', focus: false do
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        expect(redcap_data_dictionary.redcap_variable_choices_changed?('clock_position_of_wound', "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock")).to be_truthy
+      end
+
+      it 'checks if a Redcap variable has changed its choices (even if it does not exist)', focus: false do
+        expect(redcap_data_dictionary.redcap_variable_choices_changed?('clock_position_of_wound', "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")).to be_nil
       end
     end
   end

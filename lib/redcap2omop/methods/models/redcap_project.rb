@@ -70,6 +70,19 @@ module Redcap2omop::Methods::Models::RedcapProject
         self.prior_redcap_data_dictionary.redcap_variable_field_label_changed?(redcap_variable_name, field_label)
       end
     end
+
+    def redcap_variable_choices_changed_in_redcap_data_dictionary?(redcap_variable_name, choices)
+      if self.prior_redcap_data_dictionary
+        self.prior_redcap_data_dictionary.redcap_variable_choices_changed?(redcap_variable_name, choices)
+      end
+    end
+
+    def redcap_variable_choice_exists_in_redcap_data_dictionary?(redcap_variable_name, choice_code_raw)
+      if self.prior_redcap_data_dictionary
+        self.prior_redcap_data_dictionary.redcap_variable_exist?(redcap_variable_name)
+      end
+    end
+
   end
 
   module ClassMethods
