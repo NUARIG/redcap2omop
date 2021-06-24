@@ -79,10 +79,9 @@ module Redcap2omop::Methods::Models::RedcapProject
 
     def redcap_variable_choice_exists_in_redcap_data_dictionary?(redcap_variable_name, choice_code_raw)
       if self.prior_redcap_data_dictionary
-        self.prior_redcap_data_dictionary.redcap_variable_exist?(redcap_variable_name)
+        self.prior_redcap_data_dictionary.redcap_variable_choice_exist?(redcap_variable_name, choice_code_raw)
       end
     end
-
   end
 
   module ClassMethods

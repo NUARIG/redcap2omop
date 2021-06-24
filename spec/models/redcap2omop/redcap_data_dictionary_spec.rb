@@ -55,7 +55,7 @@ module Redcap2omop
         expect(redcap_data_dictionary.redcap_variable_exist?('moomin')).to be_truthy
       end
 
-      it 'checks if a Redcap variable does not exist (because it has beend deleted)', focus: false do
+      it 'checks if a Redcap variable does not exist (because it has been deleted)', focus: false do
         redcap_variable = FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'moomin')
         expect(redcap_data_dictionary.redcap_variable_exist?('moomin')).to be_truthy
         redcap_variable.destroy!
@@ -92,6 +92,16 @@ module Redcap2omop
 
       it 'checks if a Redcap variable has changed its choices (even if it does not exist)', focus: false do
         expect(redcap_data_dictionary.redcap_variable_choices_changed?('clock_position_of_wound', "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")).to be_nil
+      end
+
+      it 'checks if a Redcap variable choice does not exist', focus: false do
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        expect(redcap_data_dictionary.redcap_variable_choice_exist?('clock_position_of_wound', '7')).to be_falsey
+      end
+
+      it 'checks if a Redcap variable does exist', focus: false do
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        expect(redcap_data_dictionary.redcap_variable_choice_exist?('clock_position_of_wound', '1')).to be_truthy
       end
     end
   end
