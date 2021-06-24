@@ -126,6 +126,24 @@ module Redcap2omop
         redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
         expect(redcap_project.redcap_variable_choice_exists_in_redcap_data_dictionary?('clock_position_of_wound', '7')).to be_falsey
       end
+
+      it 'checks if a Redcap variable choice has changed its description if there is no Redcap dictionary', focus: false do
+        expect(redcap_project.redcap_variable_choice_description_changed_in_redcap_data_dictionary?('clock_position_of_wound', '7', "9 o'clock")).to be_falsey
+      end
+
+      it 'checks if a Redcap variable choice has not changed its description if there is a prior Redcap dictionary', focus: false do
+        prior_redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: prior_redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        expect(redcap_project.redcap_variable_choice_description_changed_in_redcap_data_dictionary?('clock_position_of_wound', '6', "8 o'clock")).to be_falsey
+      end
+
+      it 'checks if a Redcap variable choice has changed its description if there is a prior Redcap dictionary', focus: false do
+        prior_redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: prior_redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        expect(redcap_project.redcap_variable_choice_description_changed_in_redcap_data_dictionary?('clock_position_of_wound', '6', "9 o'clock")).to be_truthy
+      end
     end
 
     describe 'scopes' do

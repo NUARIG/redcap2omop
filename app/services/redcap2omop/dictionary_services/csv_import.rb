@@ -64,6 +64,11 @@ module Redcap2omop::DictionaryServices
             redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED_NEW_CHOICE
             redcap_variable_choice.save!
           end
+
+          if redcap_project.redcap_variable_choice_description_changed_in_redcap_data_dictionary?(redcap_variable.name, redcap_variable_choice.choice_code_raw, redcap_variable_choice.choice_description)
+            redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED_UPDATED_DESCRIPTION
+            redcap_variable_choice.save!
+          end
         end
       end
 

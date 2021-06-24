@@ -95,6 +95,10 @@ module Redcap2omop::Methods::Models::RedcapVariable
       self.find_redcap_variable_choice(choice_code_raw)
     end
 
+    def find_redcap_variable_choice(choice_code_raw)
+      self.redcap_variable_choices.not_deleted.where(choice_code_raw: choice_code_raw).first
+    end
+
     private
       def set_defaults
         if self.new_record? && self.curation_status.blank?
@@ -114,10 +118,6 @@ module Redcap2omop::Methods::Models::RedcapVariable
             curation_status: Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
           )
         end
-      end
-
-      def find_redcap_variable_choice(choice_code_raw)
-        self.redcap_variable_choices.not_deleted.where(choice_code_raw: choice_code_raw).first
       end
   end
 

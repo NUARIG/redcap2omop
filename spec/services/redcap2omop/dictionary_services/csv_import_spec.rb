@@ -35,10 +35,18 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
       )
     }
 
-    let(:import_data_dictionary_with_redcap_variable_changed_choices) {
+    let(:import_data_dictionary_with_redcap_variable_add_choice) {
       Redcap2omop::DictionaryServices::CsvImport.new(
         redcap_project: redcap_project,
         csv_file: 'spec/support/data/test_dictionary_with_redcap_variable_add_choice.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
+    let(:import_data_dictionary_with_redcap_variable_changed_choice_descripiton) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_redcap_variable_change_choice_description.csv',
         csv_file_options: { headers: true, col_sep: ",", return_headers: false}
       )
     }
@@ -135,11 +143,11 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_LABEL
       end
 
-      it "does create a new data dictionary if a Redcap variable's choices changed", focus: false do
+      it "does create a new data dictionary if a Redcap variable has a choice added", focus: false do
         import.run
         redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
         redcap_project.reload
-        import_data_dictionary_with_redcap_variable_changed_choices.run
+        import_data_dictionary_with_redcap_variable_add_choice.run
         redcap_project.reload
         current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
         expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
@@ -148,6 +156,21 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_CHOICES
         new_redcap_varaible_choice = new_redcap_variable.redcap_variable_choices.where(choice_code_raw: '6').first
         expect(new_redcap_varaible_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED_NEW_CHOICE
+      end
+
+      it "does create a new data dictionary if a Redcap variable has a choice description changed", focus: false do
+        import.run
+        redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+        redcap_project.reload
+        import_data_dictionary_with_redcap_variable_changed_choice_descripiton.run
+        redcap_project.reload
+        current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+        expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
+        expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
+        new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'clock_position_of_wound').first
+        expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_CHOICES
+        new_redcap_varaible_choice = new_redcap_variable.redcap_variable_choices.where(choice_code_raw: '5').first
+        expect(new_redcap_varaible_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED_UPDATED_DESCRIPTION
       end
     end
 

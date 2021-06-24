@@ -103,6 +103,21 @@ module Redcap2omop
         FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
         expect(redcap_data_dictionary.redcap_variable_choice_exist?('clock_position_of_wound', '1')).to be_truthy
       end
+
+      it 'checks if a Redcap variable choice has changed its description if it does not exist', focus: false do
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        expect(redcap_data_dictionary.redcap_variable_choice_description_changed?('clock_position_of_wound', '7', "9 o'clock")).to be_falsey
+      end
+
+      it 'checks if a Redcap variable choice has not changed its description if it does exist', focus: false do
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        expect(redcap_data_dictionary.redcap_variable_choice_description_changed?('clock_position_of_wound', '6', "8 o'clock")).to be_falsey
+      end
+
+      it 'checks if a Redcap variable choice has changed its description if it does exist', focus: false do
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        expect(redcap_data_dictionary.redcap_variable_choice_description_changed?('clock_position_of_wound', '6', "8 o'clock moomin")).to be_truthy
+      end
     end
   end
 end

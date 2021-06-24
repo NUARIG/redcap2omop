@@ -19,6 +19,18 @@ module Redcap2omop::Methods::Models::RedcapDataDictionary
   end
 
   module InstanceMethods
+    def redcap_variable_choice_description_changed?(redcap_variable_name, choice_code_raw, choice_description)
+      changed = nil
+      redcap_variable = self.find_redcap_variable(redcap_variable_name)
+      if redcap_variable
+        redcap_variable_choice = redcap_variable.find_redcap_variable_choice(choice_code_raw)
+        if redcap_variable_choice
+          changed = redcap_variable_choice.choice_description != choice_description
+        end
+      end
+      changed
+    end
+
     def redcap_variable_exist?(redcap_variable_name)
       self.find_redcap_variable(redcap_variable_name)
     end
