@@ -52,23 +52,49 @@ module Redcap2omop::DictionaryServices
           redcap_variable.field_annotation      = data_dictionary_variable['Field Annotation']                              #metadata_variable['field_annotation']
           redcap_variable.save!
         end
+
+        redcap_variables = redcap_data_dictionary.redcap_variables.where(curation_status: Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_CHOICES)
+        redcap_variables.each do |redcap_variable|
+          redcap_variable.redcap_variable_choices.each do |redcap_variable_choice|
+            if !redcap_project.redcap_variable_choice_exists_in_redcap_data_dictionary?(redcap_variable, redcap_variable_choice.choice_code_raw)
+              redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED_NEW_CHOICE
+              redcap_variable_choice.save!
+              new_data_dictionary = true
+            end
+
+            if redcap_project.redcap_variable_choice_description_changed_in_redcap_data_dictionary?(redcap_variable.name, redcap_variable_choice.choice_code_raw, redcap_variable_choice.choice_description)
+              redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED_UPDATED_DESCRIPTION
+              redcap_variable_choice.save!
+              new_data_dictionary = true
+            end
+          end
+        end
+
+        if prior_redcap_data_dictionary
+          deleted_redcap_variables = Redcap2omop::RedcapVariable.where('redcap2omop_redcap_variables.redcap_data_dictionary_id = ? AND NOT EXISTS(SELECT 1 FROM redcap2omop_redcap_variables AS new_redcap2omop_redcap_variables WHERE new_redcap2omop_redcap_variables.redcap_data_dictionary_id = ? AND redcap2omop_redcap_variables.name = new_redcap2omop_redcap_variables.name)', prior_redcap_data_dictionary.id, redcap_data_dictionary.id)
+          deleted_redcap_variables.each do |deleted_redcap_variable|
+            deleted_redcap_variable.deleted_in_next_data_dictionary = true
+            deleted_redcap_variable.save!
+          end
+
+          if deleted_redcap_variables.size > 0
+            new_data_dictionary = true
+          end
+
+          deleted_redcap_variable_choices = Redcap2omop::RedcapVariableChoice.joins(:redcap_variable).where('redcap2omop_redcap_variables.redcap_data_dictionary_id = ? AND NOT EXISTS(SELECT 1 FROM redcap2omop_redcap_variables AS new_redcap2omop_redcap_variables JOIN redcap2omop_redcap_variable_choices AS new_redcap2omop_redcap_variable_choices ON new_redcap2omop_redcap_variables.id = new_redcap2omop_redcap_variable_choices.redcap_variable_id WHERE new_redcap2omop_redcap_variables.redcap_data_dictionary_id = ? AND redcap2omop_redcap_variables.name = new_redcap2omop_redcap_variables.name AND redcap2omop_redcap_variable_choices.choice_code_raw = new_redcap2omop_redcap_variable_choices.choice_code_raw)', prior_redcap_data_dictionary.id, redcap_data_dictionary.id)
+          deleted_redcap_variable_choices.each do |deleted_redcap_variable_choice|
+            deleted_redcap_variable_choice.deleted_in_next_data_dictionary = true
+            deleted_redcap_variable_choice.save!
+          end
+
+          if deleted_redcap_variable_choices.size > 0
+            new_data_dictionary = true
+          end
+
+        end
+
         if prior_redcap_data_dictionary && !new_data_dictionary
           redcap_data_dictionary.destroy!
-        end
-      end
-
-      redcap_variables = redcap_data_dictionary.redcap_variables.where(curation_status: Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_CHOICES)
-      redcap_variables.each do |redcap_variable|
-        redcap_variable.redcap_variable_choices.each do |redcap_variable_choice|
-          if !redcap_project.redcap_variable_choice_exists_in_redcap_data_dictionary?(redcap_variable, redcap_variable_choice.choice_code_raw)
-            redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED_NEW_CHOICE
-            redcap_variable_choice.save!
-          end
-
-          if redcap_project.redcap_variable_choice_description_changed_in_redcap_data_dictionary?(redcap_variable.name, redcap_variable_choice.choice_code_raw, redcap_variable_choice.choice_description)
-            redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED_UPDATED_DESCRIPTION
-            redcap_variable_choice.save!
-          end
         end
       end
 
