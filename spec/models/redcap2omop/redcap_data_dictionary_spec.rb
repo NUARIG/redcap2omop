@@ -118,6 +118,16 @@ module Redcap2omop
         FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
         expect(redcap_data_dictionary.redcap_variable_choice_description_changed?('clock_position_of_wound', '6', "8 o'clock moomin")).to be_truthy
       end
+
+      it 'can find a Redcap variable', focus: false do
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        expect(redcap_data_dictionary.find_redcap_variable('clock_position_of_wound')).to be_truthy
+      end
+
+      it 'does not find a Redcap variable if it does not eixit', focus: false do
+        FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        expect(redcap_data_dictionary.find_redcap_variable('clock_position_of_wound_moomin')).to be_falsey
+      end
     end
   end
 end

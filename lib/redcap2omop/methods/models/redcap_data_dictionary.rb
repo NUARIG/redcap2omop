@@ -71,11 +71,11 @@ module Redcap2omop::Methods::Models::RedcapDataDictionary
       changed
     end
 
-    private
-      def find_redcap_variable(redcap_variable_name)
-        self.redcap_variables.not_deleted.where(name: redcap_variable_name).first
-      end
+    def find_redcap_variable(redcap_variable_name)
+      self.redcap_variables.not_deleted.where(name: redcap_variable_name).first
+    end
 
+    private
       def set_version
         self.version = previous_version + 1
       end

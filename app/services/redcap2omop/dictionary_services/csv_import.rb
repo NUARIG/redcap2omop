@@ -17,8 +17,10 @@ module Redcap2omop::DictionaryServices
         redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
         prior_redcap_data_dictionary = redcap_project.prior_redcap_data_dictionary
         data_dictionary_variables = CSV.new(File.open(csv_file), **csv_file_options)
+        redcap_variables = []
         data_dictionary_variables.each do |data_dictionary_variable|
           redcap_variable = Redcap2omop::RedcapVariable.new(redcap_data_dictionary: redcap_data_dictionary)
+          redcap_variables << redcap_variable
 
           if !redcap_project.redcap_variable_exists_in_redcap_data_dictionary?(data_dictionary_variable['Variable / Field Name'])
             new_data_dictionary = true
@@ -53,8 +55,8 @@ module Redcap2omop::DictionaryServices
           redcap_variable.save!
         end
 
-        redcap_variables = redcap_data_dictionary.redcap_variables.where(curation_status: Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_CHOICES)
-        redcap_variables.each do |redcap_variable|
+        redcap_variables_updated_choices = redcap_data_dictionary.redcap_variables.where(curation_status: Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_CHOICES)
+        redcap_variables_updated_choices.each do |redcap_variable|
           redcap_variable.redcap_variable_choices.each do |redcap_variable_choice|
             if !redcap_project.redcap_variable_choice_exists_in_redcap_data_dictionary?(redcap_variable, redcap_variable_choice.choice_code_raw)
               redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED_NEW_CHOICE
@@ -90,11 +92,25 @@ module Redcap2omop::DictionaryServices
           if deleted_redcap_variable_choices.size > 0
             new_data_dictionary = true
           end
-
         end
 
         if prior_redcap_data_dictionary && !new_data_dictionary
           redcap_data_dictionary.destroy!
+        end
+
+        if new_data_dictionary && prior_redcap_data_dictionary
+          redcap_variables.each do |redcap_variable|
+            if redcap_variable.curation_status == Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED
+              prior_redcap_variable = prior_redcap_data_dictionary.find_redcap_variable(redcap_variable.name)
+              if prior_redcap_variable
+                redcap_variable.curation_status = prior_redcap_variable.curation_status
+                if prior_redcap_variable.redcap_variable_map
+                  redcap_variable.build_redcap_variable_map(concept_id: prior_redcap_variable.redcap_variable_map.concept_id, omop_column_id: prior_redcap_variable.redcap_variable_map.omop_column_id, map_type: prior_redcap_variable.redcap_variable_map.map_type)
+                end
+                redcap_variable.save!
+              end
+            end
+          end
         end
       end
 
