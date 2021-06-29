@@ -15,7 +15,9 @@ moca,visit_data,,text,"MOCA Score",,,integer,,,,,,,,,,
 mood,visit_data,,slider,Mood,"Sad | Meh | Happy",,,,,,,,RH,,,,
 test_calc,visit_data,,calc,"TEST CALC FIELD Added this because we will have many calc fields to pull",sum([moca]+[mood]),,,,,,,,,,,,
 clock_position_of_wound,visit_data,,dropdown,"Tunneling clock position of Wound","1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock",,,,,,,,,,,,
-wbc_range,visit_data,"CBC values at presentation",radio,"Total WBC count","LO, Low | WNL, Normal | HI, High | NT, Not tested | 99, Unknown",,,,,,"([covid_19_more] = '1' or [ccc19] = '1' ) and [labs] != '3'",,,,cbc,,
 m_d,mri_information,,text,"Date of MRI",,,date_ymd,,,,,,,,,,
 mri_coordinator,mri_information,,text,"MRI Tech",,,,,,,,,,,,,
 mri_assesment,mri_information,,text,"MRI Assessmen",,,,,,,,,,,,,
+ts_0,screening_form,,text,"Timestamp for the screening form",,,datetime_dmy,,,,,y,,,,," @HIDDEN @NOW_UTC"
+dx_year,screening_form,,radio,"What year was the patient diagnosed with COVID-19 in?","2019, 2019 | 2020, 2020 | 2021, 2021",,,,,,"[ccc19] = 1",y,,,,,
+covid_19_dx_interval,screening_form,,radio,"<div class=""rich-text-field-label""><p>How long ago was the patient's COVID-19 diagnosis (to the best of your knowledge)?</p></div>","1, Within the past week | 2, Within the past 1 to 2 weeks | 3, Within the past 2 to 4 weeks | 4, Within the past 4 to 8 weeks | 5, Within the past 8 to 12 weeks | 6, Within the past 3 to 6 months | 7, More than 6 months ago | 8, Within the past 6 to 9 months | 9, Within the past 9 to 12 months | 10, More than 12 months ago | 99, Unknown",,,,,,"[ccc19] = 1",y,,,,," @HIDECHOICE = '7'"

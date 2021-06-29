@@ -5,6 +5,7 @@ module Redcap2omop::Methods::Models::RedcapDerivedDate
 
   def self.included(base)
     # Associations
+    base.send :belongs_to, :redcap_data_dictionary, class_name: 'RedcapDataDictionary'
     base.send :belongs_to, :base_date_redcap_variable,  class_name: 'RedcapVariable',    foreign_key: 'base_date_redcap_variable_id',  optional: true
     base.send :belongs_to, :offset_redcap_variable,     class_name: 'RedcapVariable',    foreign_key: 'offset_redcap_variable_id'
     base.send :has_many, :redcap_derived_date_choice_offset_mappings

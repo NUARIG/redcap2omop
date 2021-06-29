@@ -10,6 +10,7 @@ module Redcap2omop::Methods::Models::RedcapDataDictionary
     base.send :belongs_to, :redcap_project
     base.send :has_many, :redcap_events
     base.send :has_many, :redcap_variables, dependent: :destroy
+    base.send :has_many, :redcap_derived_dates, dependent: :destroy
 
     # Hooks
     base.send :before_validation, :set_version, if: :new_record?

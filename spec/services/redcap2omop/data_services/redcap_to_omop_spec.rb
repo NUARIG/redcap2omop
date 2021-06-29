@@ -220,7 +220,7 @@ RSpec.describe Redcap2omop::DataServices::RedcapToOmop do
           @covid_19_redcap_variable_choices['Within the past 9 to 12 months'] = 315
           @covid_19_redcap_variable_choices['More than 12 months ago'] = 450
 
-          redcap_derived_date_diagnosis_covid_19 = Redcap2omop::RedcapDerivedDate.where(name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: covid_19_offset_redcap_variable).first_or_create
+          redcap_derived_date_diagnosis_covid_19 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: covid_19_offset_redcap_variable).first_or_create
 
           @covid_19_redcap_variable_choices.each do |k,v|
             redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: covid_19_offset_redcap_variable.id, choice_description: k).first
@@ -237,7 +237,7 @@ RSpec.describe Redcap2omop::DataServices::RedcapToOmop do
           redcap_variable.save!
 
           death_offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-          @redcap_derived_date_death = Redcap2omop::RedcapDerivedDate.where(name: 'Death', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid_19, offset_redcap_variable: death_offset_redcap_variable).first_or_create
+          @redcap_derived_date_death = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'Death', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid_19, offset_redcap_variable: death_offset_redcap_variable).first_or_create
 
           @days_to_death_2_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
           @death_type_concept = Redcap2omop::Concept.where(domain_id: 'Type Concept', vocabulary_id: 'Death Type', concept_code: 'OMOP4822229').first
@@ -908,7 +908,7 @@ RECORDS
         redcap_variable_choices['Within the past 9 to 12 months'] = 315
         redcap_variable_choices['More than 12 months ago'] = 450
 
-        redcap_derived_date_diagnosis_covid19 = Redcap2omop::RedcapDerivedDate.where(name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_diagnosis_covid19 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -1154,7 +1154,7 @@ RECORDS
           @covid_19_redcap_variable_choices['Within the past 9 to 12 months'] = 315
           @covid_19_redcap_variable_choices['More than 12 months ago'] = 450
 
-          redcap_derived_date_diagnosis_covid_19 = Redcap2omop::RedcapDerivedDate.where(name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: covid_19_offset_redcap_variable).first_or_create
+          redcap_derived_date_diagnosis_covid_19 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: covid_19_offset_redcap_variable).first_or_create
 
           @covid_19_redcap_variable_choices.each do |k,v|
             redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: covid_19_offset_redcap_variable.id, choice_description: k).first
@@ -1184,7 +1184,7 @@ RECORDS
           @cancer_redcap_variable_choices['Within the past 5 years'] = 913
           @cancer_redcap_variable_choices['Within the past year'] = 183
 
-          redcap_derived_date_diagnosis_cancer = Redcap2omop::RedcapDerivedDate.where(name: 'Cancer Diagnosis', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid_19, offset_redcap_variable: cancer_offset_redcap_variable).first_or_create
+          redcap_derived_date_diagnosis_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'Cancer Diagnosis', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid_19, offset_redcap_variable: cancer_offset_redcap_variable).first_or_create
           @cancer_redcap_variable_choices.each do |k,v|
             redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: cancer_offset_redcap_variable.id, choice_description: k).first
             unless v.nil?

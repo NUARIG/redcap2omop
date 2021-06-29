@@ -83,6 +83,22 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
       )
     }
 
+    let(:import_data_dictionary_with_redcap_derived_from_base_redcap_variable_and_redcap_variable_choice_offset) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_redcap_derived_from_base_redcap_variable_and_redcap_variable_choice_offset.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
+    let(:import_data_dictionary_with_redcap_derived_from_base_redcap_variable_and_redcap_variable_choice_offset_and_new_variable) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_redcap_derived_from_base_redcap_variable_and_redcap_variable_choice_offset_and_new_variable.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
     describe 'when import is successful' do
       it 'creates new dictionary', focus: false do
         expect{ import.run }.to change{ Redcap2omop::RedcapDataDictionary.count }.by(1)
@@ -291,7 +307,7 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
           expect(new_redcap_variable.redcap_variable_map.map_type).to eq Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN
         end
 
-        it "migrates an 'OMOP concept' variable map for an exisiting Redcap variable", focus: true do
+        it "migrates an 'OMOP concept' variable map for an exisiting Redcap variable", focus: false do
           import_data_dictionary_with_redcap_variable_mapped_to_omop_concept.run
           redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
           redcap_project.reload
@@ -361,6 +377,75 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
               new_redcap_variable_choice = new_redcap_variable.redcap_variable_choices.where(choice_code_raw: old_redcap_variable_choice.choice_code_raw).first
               expect(old_redcap_variable_choice.redcap_variable_choice_map.concept_id).to eq(new_redcap_variable_choice.redcap_variable_choice_map.concept_id)
               expect(old_redcap_variable_choice.redcap_variable_choice_map.map_type).to eq(new_redcap_variable_choice.redcap_variable_choice_map.map_type)
+            end
+          end
+        end
+
+        it 'migrates a Redcap child mapping to a Redcap derived date based on a base Redcap variable and a Redcap varaible choice offset', focus: false do
+          import_data_dictionary_with_redcap_derived_from_base_redcap_variable_and_redcap_variable_choice_offset.run
+          redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+          redcap_project.reload
+
+          base_date_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ts_0', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          base_date_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+          base_date_redcap_variable.save!
+
+          offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'covid_19_dx_interval', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          offset_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+          offset_redcap_variable.save!
+
+          redcap_variable_choices = {}
+          redcap_variable_choices['Within the past week'] = 4
+          redcap_variable_choices['Within the past 1 to 2 weeks'] = 11
+          redcap_variable_choices['Within the past 2 to 4 weeks'] = 21
+          redcap_variable_choices['Within the past 4 to 8 weeks'] = 42
+          redcap_variable_choices['Within the past 8 to 12 weeks'] = 70
+          redcap_variable_choices['Within the past 3 to 6 months'] = 135
+          redcap_variable_choices['More than 6 months ago'] = 270
+          redcap_variable_choices['Within the past 6 to 9 months'] = 225
+          redcap_variable_choices['Within the past 9 to 12 months'] = 315
+          redcap_variable_choices['More than 12 months ago'] = 450
+
+          redcap_derived_date_diagnosis_covid19 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: offset_redcap_variable).first_or_create
+
+          redcap_variable_choices.each do |k,v|
+            redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
+            redcap_derived_date_diagnosis_covid19.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
+          end
+          redcap_derived_date_diagnosis_covid19.save!
+
+          old_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'dx_year', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          covid_19_concept = Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '840539006').first
+          old_redcap_variable.build_redcap_variable_map(concept_id: covid_19_concept.concept_id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          old_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+          omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
+          old_redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
+          old_redcap_variable.save!
+
+          import_data_dictionary_with_redcap_derived_from_base_redcap_variable_and_redcap_variable_choice_offset_and_new_variable.run
+          redcap_project.reload
+          current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+          expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
+          expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
+          new_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'dx_year', redcap_data_dictionary_id: current_redcap_data_dictionary.id).first
+
+          expect(new_redcap_variable.id).to_not eq old_redcap_variable.id
+          expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+          expect(new_redcap_variable.redcap_variable_map.concept_id).to eq covid_19_concept.id
+          expect(new_redcap_variable.redcap_variable_map.omop_column_id).to be_nil
+          expect(new_redcap_variable.redcap_variable_map.map_type).to eq Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT
+
+          old_redcap_variable.redcap_variable_child_maps.each do |old_redcap_variable_child_map|
+            if old_redcap_variable_child_map.redcap_variable
+              new_child_map_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_variable_child_map.redcap_variable.name).first
+              new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_varaible_id: new_child_map_redcap_variable.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type)
+              expect(new_redcap_variable_child_map).to_not be_nil
+            end
+
+            if old_redcap_variable_child_map.redcap_derived_date
+              # new_child_map_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_variable_child_map.redcap_variable.name).first
+              # new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_varaible_id: new_child_map_redcap_variable.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type)
+              # expect(new_redcap_variable_child_map).to_not be_nil
             end
           end
         end
