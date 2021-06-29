@@ -67,6 +67,22 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
       )
     }
 
+    let(:import_data_dictionary_with_redcap_variable_mapped_to_omop_concept) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_redcap_variable_mapped_to_omop_concept.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
+    let(:import_data_dictionary_with_redcap_variable_mapped_to_omop_concept_and_new_variable) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_redcap_variable_mapped_to_omop_concept_and_new_variable.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
     describe 'when import is successful' do
       it 'creates new dictionary', focus: false do
         expect{ import.run }.to change{ Redcap2omop::RedcapDataDictionary.count }.by(1)
@@ -226,7 +242,7 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
           Redcap2omop::Setup.omop_tables
         end
 
-        it "migrates a 'OMOP column' variable map for an exisiting Redcap variable", focus: false do
+        it "migrates an 'OMOP column' variable map for an exisiting Redcap variable", focus: false do
           import.run
           redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
           redcap_project.reload
@@ -273,6 +289,80 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
           expect(new_redcap_variable.redcap_variable_map.omop_column_id).to eq omop_column.id
           expect(new_redcap_variable.redcap_variable_map.concept_id).to be_nil
           expect(new_redcap_variable.redcap_variable_map.map_type).to eq Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN
+        end
+
+        it "migrates an 'OMOP concept' variable map for an exisiting Redcap variable", focus: true do
+          import_data_dictionary_with_redcap_variable_mapped_to_omop_concept.run
+          redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+          redcap_project.reload
+
+          old_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'wbc_range', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          wbc_concept = Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'SNOMED', concept_code: '391558003').first
+          other_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'v_d').first
+          old_redcap_variable.build_redcap_variable_map(concept_id: wbc_concept.concept_id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
+          old_redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+          old_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+          old_redcap_variable.save!
+
+          redcap_variable_choice_1 = old_redcap_variable.redcap_variable_choices.where(choice_description: "High").first
+          wbc_range_concept_1 = Redcap2omop::Concept.where(domain_id: 'Meas Value', vocabulary_id: 'SNOMED', concept_code: '75540009').first
+          redcap_variable_choice_1.build_redcap_variable_choice_map(concept_id: wbc_range_concept_1.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_choice_1.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          redcap_variable_choice_1.save!
+
+          redcap_variable_choice_2 = old_redcap_variable.redcap_variable_choices.where(choice_description: "Low").first
+          wbc_range_concept_2 = Redcap2omop::Concept.where(domain_id: 'Meas Value', vocabulary_id: 'SNOMED', concept_code: '62482003').first
+          redcap_variable_choice_2.build_redcap_variable_choice_map(concept_id: wbc_range_concept_2.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_choice_2.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          redcap_variable_choice_2.save!
+
+          redcap_variable_choice_3 = old_redcap_variable.redcap_variable_choices.where(choice_description: "Normal").first
+          wbc_range_concept_3 = Redcap2omop::Concept.where(domain_id: 'Spec Disease Status', vocabulary_id: 'SNOMED', concept_code: '17621005').first
+          redcap_variable_choice_3.build_redcap_variable_choice_map(concept_id: wbc_range_concept_3.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_choice_3.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          redcap_variable_choice_3.save!
+
+          redcap_variable_choice_4 = old_redcap_variable.redcap_variable_choices.where(choice_description: "Not tested").first
+          redcap_variable_choice_4.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_choice_4.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          redcap_variable_choice_4.save!
+
+          redcap_variable_choice_5 = old_redcap_variable.redcap_variable_choices.where(choice_description: "Unknown").first
+          redcap_variable_choice_5.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_choice_5.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          redcap_variable_choice_5.save!
+
+          old_redcap_variable.save!
+
+          import_data_dictionary_with_redcap_variable_mapped_to_omop_concept_and_new_variable.run
+          redcap_project.reload
+          current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+          expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
+          expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
+          new_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'wbc_range', redcap_data_dictionary_id: current_redcap_data_dictionary.id).first
+
+          expect(new_redcap_variable.id).to_not eq old_redcap_variable.id
+          expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+          expect(new_redcap_variable.redcap_variable_map.concept_id).to eq wbc_concept.id
+          expect(new_redcap_variable.redcap_variable_map.omop_column_id).to be_nil
+          expect(new_redcap_variable.redcap_variable_map.map_type).to eq Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT
+
+          old_redcap_variable.redcap_variable_child_maps.each do |old_redcap_variable_child_map|
+            if old_redcap_variable_child_map.redcap_variable
+              new_child_map_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_variable_child_map.redcap_variable.name).first
+              new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_varaible_id: new_child_map_redcap_variable.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type)
+              expect(new_redcap_variable_child_map).to_not be_nil
+            end
+          end
+
+          old_redcap_variable.redcap_variable_choices.each do |old_redcap_variable_choice|
+            if old_redcap_variable_choice.redcap_variable_choice_map
+              new_redcap_variable_choice = new_redcap_variable.redcap_variable_choices.where(choice_code_raw: old_redcap_variable_choice.choice_code_raw).first
+              expect(old_redcap_variable_choice.redcap_variable_choice_map.concept_id).to eq(new_redcap_variable_choice.redcap_variable_choice_map.concept_id)
+              expect(old_redcap_variable_choice.redcap_variable_choice_map.map_type).to eq(new_redcap_variable_choice.redcap_variable_choice_map.map_type)
+            end
+          end
         end
       end
     end

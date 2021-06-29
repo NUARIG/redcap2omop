@@ -107,6 +107,27 @@ module Redcap2omop::DictionaryServices
                 if prior_redcap_variable.redcap_variable_map
                   redcap_variable.build_redcap_variable_map(concept_id: prior_redcap_variable.redcap_variable_map.concept_id, omop_column_id: prior_redcap_variable.redcap_variable_map.omop_column_id, map_type: prior_redcap_variable.redcap_variable_map.map_type)
                 end
+
+                if prior_redcap_variable.redcap_variable_child_maps.any?
+                  prior_redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
+                    if redcap_variable_child_map.redcap_variable
+                      redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_data_dictionary.redcap_variables.where(name: redcap_variable_child_map.redcap_variable.name).first, omop_column: redcap_variable_child_map.omop_column, map_type: redcap_variable_child_map.map_type)
+                    end
+                  end
+                end
+
+                if prior_redcap_variable.redcap_variable_choices.any?
+                  prior_redcap_variable.redcap_variable_choices.each do |prior_redcap_variable_choice|
+                    if prior_redcap_variable_choice.redcap_variable_choice_map
+                      redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_code_raw: prior_redcap_variable_choice.choice_code_raw).first
+                      if redcap_variable_choice
+                        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: prior_redcap_variable_choice.redcap_variable_choice_map.concept_id, map_type: prior_redcap_variable_choice.redcap_variable_choice_map.map_type)
+                      end
+                      redcap_variable_choice.save!
+                    end
+                  end
+                end
+
                 redcap_variable.save!
               end
             end
