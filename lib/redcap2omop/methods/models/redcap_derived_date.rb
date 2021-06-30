@@ -13,6 +13,7 @@ module Redcap2omop::Methods::Models::RedcapDerivedDate
 
     # Validations
     base.send :validates_presence_of, :offset_redcap_variable_id, :name
+    base.send :validates_uniqueness_of, :name, scope: :redcap_data_dictionary_id
 
     base.send :include, InstanceMethods
     base.extend(ClassMethods)

@@ -99,6 +99,13 @@ module Redcap2omop::DictionaryServices
         end
 
         if new_data_dictionary && prior_redcap_data_dictionary
+          prior_redcap_data_dictionary.redcap_derived_dates.where('base_date_redcap_variable_id IS NOT NULL AND offset_redcap_variable_id IS NOT NULL').each do |old_redcap_derived_date|
+            new_base_date_redcap_variable = redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.base_date_redcap_variable.name).first
+            new_offset_redcap_variable = redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
+            new_redcap_derived_date = Redcap2omop::RedcapDerivedDate.new(redcap_data_dictionary: redcap_data_dictionary, name: old_redcap_derived_date.name, base_date_redcap_variable: new_base_date_redcap_variable, offset_redcap_variable: new_offset_redcap_variable, offset_interval_days: old_redcap_derived_date.offset_interval_days, offset_interval_direction: old_redcap_derived_date.offset_interval_direction)
+            new_redcap_derived_date.save!
+          end
+
           redcap_variables.each do |redcap_variable|
             if redcap_variable.curation_status == Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED
               prior_redcap_variable = prior_redcap_data_dictionary.find_redcap_variable(redcap_variable.name)
@@ -112,6 +119,11 @@ module Redcap2omop::DictionaryServices
                   prior_redcap_variable.redcap_variable_child_maps.each do |redcap_variable_child_map|
                     if redcap_variable_child_map.redcap_variable
                       redcap_variable.redcap_variable_child_maps.build(redcap_variable: redcap_data_dictionary.redcap_variables.where(name: redcap_variable_child_map.redcap_variable.name).first, omop_column: redcap_variable_child_map.omop_column, map_type: redcap_variable_child_map.map_type)
+                    end
+
+                    if redcap_variable_child_map.redcap_derived_date_id
+                      new_redcap_derived_date = redcap_data_dictionary.redcap_derived_dates.where(name: redcap_variable_child_map.redcap_derived_date.name).first
+                      redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: new_redcap_derived_date, omop_column: redcap_variable_child_map.omop_column, map_type: redcap_variable_child_map.map_type)
                     end
                   end
                 end

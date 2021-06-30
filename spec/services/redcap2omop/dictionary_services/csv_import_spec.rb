@@ -438,14 +438,17 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
           old_redcap_variable.redcap_variable_child_maps.each do |old_redcap_variable_child_map|
             if old_redcap_variable_child_map.redcap_variable
               new_child_map_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_variable_child_map.redcap_variable.name).first
-              new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_varaible_id: new_child_map_redcap_variable.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type)
+              new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_varaible_id: new_child_map_redcap_variable.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
               expect(new_redcap_variable_child_map).to_not be_nil
             end
 
             if old_redcap_variable_child_map.redcap_derived_date
-              # new_child_map_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_variable_child_map.redcap_variable.name).first
-              # new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_varaible_id: new_child_map_redcap_variable.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type)
-              # expect(new_redcap_variable_child_map).to_not be_nil
+              old_redcap_derived_date = Redcap2omop::RedcapDerivedDate.find(old_redcap_variable_child_map.redcap_derived_date_id)
+              new_base_date_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.base_date_redcap_variable.name).first
+              new_offset_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
+              new_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.name, base_date_redcap_variable_id: new_base_date_redcap_variable.id, offset_redcap_variable_id: new_offset_redcap_variable.id).first
+              new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_derived_date_id: new_redcap_derived_date.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+              expect(new_redcap_variable_child_map).to_not be_nil
             end
           end
         end
