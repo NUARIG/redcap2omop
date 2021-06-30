@@ -15,7 +15,7 @@ moca,visit_data,,text,"MOCA Score",,,integer,,,,,,,,,,
 mood,visit_data,,slider,Mood,"Sad | Meh | Happy",,,,,,,,RH,,,,
 test_calc,visit_data,,calc,"TEST CALC FIELD Added this because we will have many calc fields to pull",sum([moca]+[mood]),,,,,,,,,,,,
 clock_position_of_wound,visit_data,,dropdown,"Tunneling clock position of Wound","1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock",,,,,,,,,,,,
-wbc_range,visit_data,"CBC values at presentation",radio,"Total WBC count","LO, Low | WNL, Normal | HI, High | NT, Not tested | 99, Unknown",,,,,,"([covid_19_more] = '1' or [ccc19] = '1' ) and [labs] != '3'",,,,cbc,,
 m_d,mri_information,,text,"Date of MRI",,,date_ymd,,,,,,,,,,
 mri_coordinator,mri_information,,text,"MRI Tech",,,,,,,,,,,,,
-mri_assesment,mri_information,,text,"MRI Assessment",,,,,,,,,,,,,
+c19_complications_systemic,covid19_details,Complications,checkbox,"<div class=""rich-text-field-label""><p>Systemic complications occurring during the COVID-19 illness. <span style=""font-weight: normal; color: #236fa1;"">Check all that apply. If there were no systemic complications, please check ""None"".</span></p></div>","50960005, Bleeding | 67406007, Disseminated intravascular coagulation (DIC) | 57653000, Multiorgan failure | 91302008, Sepsis | 238147009, Other | NONE, None | UNK, Unknown",,,,,,,y,,,,,"Terminology: SNOMED
+@NONEOFTHEABOVE='NONE'"

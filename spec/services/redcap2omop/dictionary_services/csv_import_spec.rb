@@ -115,6 +115,22 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
       )
     }
 
+    let(:import_data_dictionary_with_redcap_variable_choice_mapped_to_omop_concept) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_redcap_variable_choice_mapped_to_omop_concept.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
+    let(:import_data_dictionary_with_redcap_variable_choice_mapped_to_omop_concept_and_new_variable) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_redcap_variable_choice_mapped_to_omop_concept_and_new_variable.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
     describe 'when import is successful' do
       it 'creates new dictionary', focus: false do
         expect{ import.run }.to change{ Redcap2omop::RedcapDataDictionary.count }.by(1)
@@ -397,6 +413,79 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
           end
         end
 
+        it "migrates an 'OMOP concept' variable choice map for existing Redcap variable choices", focus: false do
+          import_data_dictionary_with_redcap_variable_choice_mapped_to_omop_concept.run
+          redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+          redcap_project.reload
+
+          old_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'c19_complications_systemic', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          other_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'v_d').first
+          old_redcap_variable.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
+          old_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+          old_redcap_variable.save!
+
+          omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
+
+          old_redcap_variable_choice_1 = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Bleeding').first
+          concept_c19_complications_systemic_1 = Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '43364001').first
+          old_redcap_variable_choice_1.build_redcap_variable_choice_map(concept_id: concept_c19_complications_systemic_1.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          old_redcap_variable_choice_1.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+          old_redcap_variable_choice_1.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          old_redcap_variable_choice_1.save!
+
+          old_redcap_variable_choice_2 = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Disseminated intravascular coagulation (DIC)').first
+          concept_c19_complications_systemic_2 = Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '67406007').first
+          old_redcap_variable_choice_2.build_redcap_variable_choice_map(concept_id: concept_c19_complications_systemic_2.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          old_redcap_variable_choice_2.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+          old_redcap_variable_choice_2.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          old_redcap_variable_choice_2.save!
+
+          old_redcap_variable_choice_3 = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Multiorgan failure').first
+          concept_c19_complications_systemic_3 = Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '57653000').first
+          old_redcap_variable_choice_3.build_redcap_variable_choice_map(concept_id: concept_c19_complications_systemic_3.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          old_redcap_variable_choice_3.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+          old_redcap_variable_choice_3.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          old_redcap_variable_choice_3.save!
+
+          old_redcap_variable_choice_4 = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Sepsis').first
+          concept_c19_complications_systemic_4 = Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '91302008').first
+          old_redcap_variable_choice_4.build_redcap_variable_choice_map(concept_id: concept_c19_complications_systemic_4.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          old_redcap_variable_choice_4.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+          old_redcap_variable_choice_4.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          old_redcap_variable_choice_4.save!
+
+          old_redcap_variable_choice_5 = old_redcap_variable.redcap_variable_choices.where(choice_description: 'None').first
+          old_redcap_variable_choice_5.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          old_redcap_variable_choice_5.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          old_redcap_variable_choice_5.save!
+
+          old_redcap_variable_choice_6 = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Other').first
+          old_redcap_variable_choice_6.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          old_redcap_variable_choice_6.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          old_redcap_variable_choice_6.save!
+
+          old_redcap_variable_choice_7 = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Unknown').first
+          old_redcap_variable_choice_7.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          old_redcap_variable_choice_7.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          old_redcap_variable_choice_7.save!
+
+          import_data_dictionary_with_redcap_variable_choice_mapped_to_omop_concept_and_new_variable.run
+          redcap_project.reload
+          current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+          expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
+          expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
+          new_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'c19_complications_systemic', redcap_data_dictionary_id: current_redcap_data_dictionary.id).first
+
+          expect(new_redcap_variable.id).to_not eq old_redcap_variable.id
+          expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+          expect(new_redcap_variable.redcap_variable_map.concept_id).to be_nil
+          expect(new_redcap_variable.redcap_variable_map.omop_column_id).to be_nil
+          expect(new_redcap_variable.redcap_variable_map.map_type).to eq Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE
+          expect(new_redcap_variable.redcap_variable_child_maps.size).to eq(0)
+
+          test_migration_of_redcap_variable_choice_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
+        end
+
         it 'migrates a Redcap child mapping to a Redcap derived date based on a base Redcap variable and a Redcap varaible choice offset', focus: false do
           import_data_dictionary_with_redcap_derived_from_base_redcap_variable_and_redcap_variable_choice_offset.run
           redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
@@ -452,10 +541,10 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
           expect(new_redcap_variable.redcap_variable_map.map_type).to eq Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT
 
           expect(new_redcap_variable.redcap_variable_child_maps.size).to eq(1)
-          test_migration_of_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
+          test_migration_of_redcap_variable_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
         end
 
-        it 'migrated a Redcap child mapping to an OMOP concept', focus: false do
+        it 'migrates a Redcap child mapping to an OMOP concept', focus: false do
           import_data_dictionary_with_redcap_variable_with_child_mapped_to_an_omop_concept.run
           redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
           redcap_project.reload
@@ -486,7 +575,7 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
           expect(new_redcap_variable.redcap_variable_map.map_type).to eq Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT
 
           expect(new_redcap_variable.redcap_variable_child_maps.size).to eq(2)
-          test_migration_of_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
+          test_migration_of_redcap_variable_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
         end
       end
     end
@@ -514,7 +603,7 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
   end
 end
 
-def test_migration_of_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
+def test_migration_of_redcap_variable_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
   old_redcap_variable.redcap_variable_child_maps.each do |old_redcap_variable_child_map|
     if old_redcap_variable_child_map.redcap_variable
       new_child_map_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_variable_child_map.redcap_variable.name).first
@@ -534,6 +623,35 @@ def test_migration_of_redcap_variable_child_maps(old_redcap_variable, new_redcap
     if old_redcap_variable_child_map.concept_id
       new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(concept_id: old_redcap_variable_child_map.concept_id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
       expect(new_redcap_variable_child_map).to_not be_nil
+    end
+  end
+end
+
+def test_migration_of_redcap_variable_choice_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
+  old_redcap_variable.redcap_variable_choices.each do |old_redcap_variable_choice|
+    new_redcap_variable_choice = new_redcap_variable.redcap_variable_choices.where(choice_code_raw: old_redcap_variable_choice.choice_code_raw).first
+    expect(new_redcap_variable_choice.redcap_variable_choice_map.concept_id).to eq(old_redcap_variable_choice.redcap_variable_choice_map.concept_id)
+    expect(new_redcap_variable_choice.redcap_variable_choice_map.map_type).to eq(old_redcap_variable_choice.redcap_variable_choice_map.map_type)
+    old_redcap_variable_choice.redcap_variable_child_maps.each do |old_redcap_variable_child_map|
+      if old_redcap_variable_child_map.redcap_variable
+        new_child_map_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_variable_child_map.redcap_variable.name).first
+        new_redcap_variable_child_map = new_redcap_variable_choice.redcap_variable_child_maps.where(redcap_variable_id: new_child_map_redcap_variable.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+        expect(new_redcap_variable_child_map).to_not be_nil
+      end
+
+      if old_redcap_variable_child_map.redcap_derived_date
+        old_redcap_derived_date = Redcap2omop::RedcapDerivedDate.find(old_redcap_variable_child_map.redcap_derived_date_id)
+        new_base_date_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.base_date_redcap_variable.name).first
+        new_offset_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
+        new_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.name, base_date_redcap_variable_id: new_base_date_redcap_variable.id, offset_redcap_variable_id: new_offset_redcap_variable.id).first
+        new_redcap_variable_child_map = new_redcap_variable_choice.redcap_variable_child_maps.where(redcap_derived_date_id: new_redcap_derived_date.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+        expect(new_redcap_variable_child_map).to_not be_nil
+      end
+
+      if old_redcap_variable_child_map.concept_id
+        new_redcap_variable_child_map = new_redcap_variable_choice.redcap_variable_child_maps.where(concept_id: old_redcap_variable_child_map.concept_id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+        expect(new_redcap_variable_child_map).to_not be_nil
+      end
     end
   end
 end

@@ -134,13 +134,31 @@ module Redcap2omop::DictionaryServices
 
                 if prior_redcap_variable.redcap_variable_choices.any?
                   prior_redcap_variable.redcap_variable_choices.each do |prior_redcap_variable_choice|
+                    redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_code_raw: prior_redcap_variable_choice.choice_code_raw).first
                     if prior_redcap_variable_choice.redcap_variable_choice_map
-                      redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_code_raw: prior_redcap_variable_choice.choice_code_raw).first
                       if redcap_variable_choice
                         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: prior_redcap_variable_choice.redcap_variable_choice_map.concept_id, map_type: prior_redcap_variable_choice.redcap_variable_choice_map.map_type)
                       end
-                      redcap_variable_choice.save!
+
                     end
+
+                    if prior_redcap_variable_choice.redcap_variable_child_maps.any?
+                      prior_redcap_variable_choice.redcap_variable_child_maps.each do |redcap_variable_child_map|
+                        if redcap_variable_child_map.redcap_variable
+                          redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_data_dictionary.redcap_variables.where(name: redcap_variable_child_map.redcap_variable.name).first, omop_column: redcap_variable_child_map.omop_column, map_type: redcap_variable_child_map.map_type)
+                        end
+
+                        if redcap_variable_child_map.redcap_derived_date_id
+                          new_redcap_derived_date = redcap_data_dictionary.redcap_derived_dates.where(name: redcap_variable_child_map.redcap_derived_date.name).first
+                          redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: new_redcap_derived_date, omop_column: redcap_variable_child_map.omop_column, map_type: redcap_variable_child_map.map_type)
+                        end
+
+                        if redcap_variable_child_map.concept_id
+                          redcap_variable_choice.redcap_variable_child_maps.build(concept_id: redcap_variable_child_map.concept_id, omop_column: redcap_variable_child_map.omop_column, map_type: redcap_variable_child_map.map_type)
+                        end
+                      end
+                    end
+                    redcap_variable_choice.save!
                   end
                 end
 
