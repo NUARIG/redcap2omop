@@ -99,6 +99,22 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
       )
     }
 
+    let(:import_data_dictionary_with_redcap_variable_with_child_mapped_to_an_omop_concept) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_redcap_variable_with_child_mapped_to_an_omop_concept.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
+    let(:import_data_dictionary_with_redcap_variable_with_child_mapped_to_an_omop_concept_and_new_variable) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_redcap_variable_with_child_mapped_to_an_omop_concept_and_new_variable.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
     describe 'when import is successful' do
       it 'creates new dictionary', focus: false do
         expect{ import.run }.to change{ Redcap2omop::RedcapDataDictionary.count }.by(1)
@@ -367,7 +383,7 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
           old_redcap_variable.redcap_variable_child_maps.each do |old_redcap_variable_child_map|
             if old_redcap_variable_child_map.redcap_variable
               new_child_map_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_variable_child_map.redcap_variable.name).first
-              new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_varaible_id: new_child_map_redcap_variable.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type)
+              new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_variable_id: new_child_map_redcap_variable.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type)
               expect(new_redcap_variable_child_map).to_not be_nil
             end
           end
@@ -435,22 +451,42 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
           expect(new_redcap_variable.redcap_variable_map.omop_column_id).to be_nil
           expect(new_redcap_variable.redcap_variable_map.map_type).to eq Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT
 
-          old_redcap_variable.redcap_variable_child_maps.each do |old_redcap_variable_child_map|
-            if old_redcap_variable_child_map.redcap_variable
-              new_child_map_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_variable_child_map.redcap_variable.name).first
-              new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_varaible_id: new_child_map_redcap_variable.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
-              expect(new_redcap_variable_child_map).to_not be_nil
-            end
+          expect(new_redcap_variable.redcap_variable_child_maps.size).to eq(1)
+          test_migration_of_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
+        end
 
-            if old_redcap_variable_child_map.redcap_derived_date
-              old_redcap_derived_date = Redcap2omop::RedcapDerivedDate.find(old_redcap_variable_child_map.redcap_derived_date_id)
-              new_base_date_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.base_date_redcap_variable.name).first
-              new_offset_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
-              new_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.name, base_date_redcap_variable_id: new_base_date_redcap_variable.id, offset_redcap_variable_id: new_offset_redcap_variable.id).first
-              new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_derived_date_id: new_redcap_derived_date.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
-              expect(new_redcap_variable_child_map).to_not be_nil
-            end
-          end
+        it 'migrated a Redcap child mapping to an OMOP concept', focus: false do
+          import_data_dictionary_with_redcap_variable_with_child_mapped_to_an_omop_concept.run
+          redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+          redcap_project.reload
+
+          old_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'hiv_vl', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          other_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'v_d').first
+          omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
+          omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'unit_concept_id'").first
+          hiv_vl_concept = Redcap2omop::Concept.where(domain_id: 'Measurement', concept_code: '413789001').first
+          old_redcap_variable.build_redcap_variable_map(concept_id: hiv_vl_concept.concept_id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          old_redcap_variable.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+          unit_concept = Redcap2omop::Concept.where(domain_id: 'Unit', concept_code: '{copies}/mL').first
+          old_redcap_variable.redcap_variable_child_maps.build(concept_id: unit_concept.concept_id, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT)
+          old_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+          old_redcap_variable.save!
+
+          import_data_dictionary_with_redcap_variable_with_child_mapped_to_an_omop_concept_and_new_variable.run
+          redcap_project.reload
+          current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+          expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
+          expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
+          new_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'hiv_vl', redcap_data_dictionary_id: current_redcap_data_dictionary.id).first
+
+          expect(new_redcap_variable.id).to_not eq old_redcap_variable.id
+          expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+          expect(new_redcap_variable.redcap_variable_map.concept_id).to eq hiv_vl_concept.id
+          expect(new_redcap_variable.redcap_variable_map.omop_column_id).to be_nil
+          expect(new_redcap_variable.redcap_variable_map.map_type).to eq Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT
+
+          expect(new_redcap_variable.redcap_variable_child_maps.size).to eq(2)
+          test_migration_of_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
         end
       end
     end
@@ -474,6 +510,30 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         expect(result.message).not_to be_blank
         expect(result.backtrace).not_to be_blank
       end
+    end
+  end
+end
+
+def test_migration_of_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
+  old_redcap_variable.redcap_variable_child_maps.each do |old_redcap_variable_child_map|
+    if old_redcap_variable_child_map.redcap_variable
+      new_child_map_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_variable_child_map.redcap_variable.name).first
+      new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_variable_id: new_child_map_redcap_variable.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+      expect(new_redcap_variable_child_map).to_not be_nil
+    end
+
+    if old_redcap_variable_child_map.redcap_derived_date
+      old_redcap_derived_date = Redcap2omop::RedcapDerivedDate.find(old_redcap_variable_child_map.redcap_derived_date_id)
+      new_base_date_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.base_date_redcap_variable.name).first
+      new_offset_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
+      new_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.name, base_date_redcap_variable_id: new_base_date_redcap_variable.id, offset_redcap_variable_id: new_offset_redcap_variable.id).first
+      new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_derived_date_id: new_redcap_derived_date.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+      expect(new_redcap_variable_child_map).to_not be_nil
+    end
+
+    if old_redcap_variable_child_map.concept_id
+      new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(concept_id: old_redcap_variable_child_map.concept_id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+      expect(new_redcap_variable_child_map).to_not be_nil
     end
   end
 end

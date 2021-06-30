@@ -125,6 +125,10 @@ module Redcap2omop::DictionaryServices
                       new_redcap_derived_date = redcap_data_dictionary.redcap_derived_dates.where(name: redcap_variable_child_map.redcap_derived_date.name).first
                       redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: new_redcap_derived_date, omop_column: redcap_variable_child_map.omop_column, map_type: redcap_variable_child_map.map_type)
                     end
+
+                    if redcap_variable_child_map.concept_id
+                      redcap_variable.redcap_variable_child_maps.build(concept_id: redcap_variable_child_map.concept_id, omop_column: redcap_variable_child_map.omop_column, map_type: redcap_variable_child_map.map_type)
+                    end
                   end
                 end
 
