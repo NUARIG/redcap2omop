@@ -1194,28 +1194,28 @@ RECORDS
           redcap_derived_date_diagnosis_cancer.save!
 
           #redcap_variable
-          redcap_variable_caner_type = Redcap2omop::RedcapVariable.where(name: 'cancer_type', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-          redcap_variable_caner_type.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
-          redcap_variable_caner_type.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
-          redcap_variable_caner_type.save!
+          redcap_variable_cancer_type = Redcap2omop::RedcapVariable.where(name: 'cancer_type', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          redcap_variable_cancer_type.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
+          redcap_variable_cancer_type.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+          redcap_variable_cancer_type.save!
 
           omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
-          redcap_variable_cancer_type_choice_1 = redcap_variable_caner_type.redcap_variable_choices.where(choice_description: 'AL amyloidosis').first
+          redcap_variable_cancer_type_choice_1 = redcap_variable_cancer_type.redcap_variable_choices.where(choice_description: 'AL amyloidosis').first
           @cancer_concept_1 = Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '23132008').first
           redcap_variable_cancer_type_choice_1.build_redcap_variable_choice_map(concept_id: @cancer_concept_1.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
           redcap_variable_cancer_type_choice_1.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
           redcap_variable_cancer_type_choice_1.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
           redcap_variable_cancer_type_choice_1.save!
 
-          redcap_variable_cancer_type_choice_2 = redcap_variable_caner_type.redcap_variable_choices.where(choice_description: 'Acute Leukemia').first
+          redcap_variable_cancer_type_choice_2 = redcap_variable_cancer_type.redcap_variable_choices.where(choice_description: 'Acute Leukemia').first
           @cancer_concept_2 = Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '91855006').first
           redcap_variable_cancer_type_choice_2.build_redcap_variable_choice_map(concept_id: @cancer_concept_2.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
           redcap_variable_cancer_type_choice_2.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
           redcap_variable_cancer_type_choice_2.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
           redcap_variable_cancer_type_choice_2.save!
 
-          redcap_variable_cancer_type_choice_3 = redcap_variable_caner_type.redcap_variable_choices.where(choice_description: 'Acute lymphoblastic leukemia (ALL)').first
+          redcap_variable_cancer_type_choice_3 = redcap_variable_cancer_type.redcap_variable_choices.where(choice_description: 'Acute lymphoblastic leukemia (ALL)').first
           @cancer_concept_3 = Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '91857003').first
           redcap_variable_cancer_type_choice_3.build_redcap_variable_choice_map(concept_id: @cancer_concept_3.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
           redcap_variable_cancer_type_choice_3.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)

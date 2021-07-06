@@ -131,6 +131,22 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
       )
     }
 
+    let(:import_data_dictionary_with_redcap_variable_choice_mapped_to_omop_concept_and_complex_redcap_child_variables) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_redcap_variable_choice_mapped_to_omop_concept_and_complex_redcap_child_variables.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
+    let(:import_data_dictionary_with_redcap_variable_choice_mapped_to_omop_concept_and_complex_redcap_child_variables_and_new_variable) {
+      Redcap2omop::DictionaryServices::CsvImport.new(
+        redcap_project: redcap_project,
+        csv_file: 'spec/support/data/test_dictionary_with_redcap_variable_choice_mapped_to_omop_concept_and_complex_redcap_child_variables_and_new_variable.csv',
+        csv_file_options: { headers: true, col_sep: ",", return_headers: false}
+      )
+    }
+
     describe 'when import is successful' do
       it 'creates new dictionary', focus: false do
         expect{ import.run }.to change{ Redcap2omop::RedcapDataDictionary.count }.by(1)
@@ -486,6 +502,124 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
           test_migration_of_redcap_variable_choice_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
         end
 
+        it "migrates an 'OMOP concept' variable choice map for existing Redcap variable choices (including Redcap variable child maps to Redcap derived dates and OMOP concepts)", focus: false do
+          import_data_dictionary_with_redcap_variable_choice_mapped_to_omop_concept_and_complex_redcap_child_variables.run
+          redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+          redcap_project.reload
+
+          base_date_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'ts_0', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          base_date_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+          base_date_redcap_variable.save!
+
+          covid_19_offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'covid_19_dx_interval', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          covid_19_offset_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+          covid_19_offset_redcap_variable.save!
+
+          covid_19_redcap_variable_choices = {}
+          covid_19_redcap_variable_choices['Within the past week'] = 4
+          covid_19_redcap_variable_choices['Within the past 1 to 2 weeks'] = 11
+          covid_19_redcap_variable_choices['Within the past 2 to 4 weeks'] = 21
+          covid_19_redcap_variable_choices['Within the past 4 to 8 weeks'] = 42
+          covid_19_redcap_variable_choices['Within the past 8 to 12 weeks'] = 70
+          covid_19_redcap_variable_choices['Within the past 3 to 6 months'] = 135
+          covid_19_redcap_variable_choices['More than 6 months ago'] = 270
+          covid_19_redcap_variable_choices['Within the past 6 to 9 months'] = 225
+          covid_19_redcap_variable_choices['Within the past 9 to 12 months'] = 315
+          covid_19_redcap_variable_choices['More than 12 months ago'] = 450
+
+          redcap_derived_date_diagnosis_covid_19 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: covid_19_offset_redcap_variable).first_or_create
+
+          covid_19_redcap_variable_choices.each do |k,v|
+            redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: covid_19_offset_redcap_variable.id, choice_description: k).first
+            redcap_derived_date_diagnosis_covid_19.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
+          end
+          redcap_derived_date_diagnosis_covid_19.save!
+
+          cancer_offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'cancer_timing', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          cancer_offset_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+          cancer_offset_redcap_variable.save!
+
+          #Assume 30 days per month
+          #Assume 365 days per year
+          cancer_redcap_variable_choices = {}
+          cancer_redcap_variable_choices['AFTER the COVID-19 diagnosis'] = -30
+          cancer_redcap_variable_choices['At the same time as COVID-19'] = 0
+          cancer_redcap_variable_choices['More than 5 years ago'] = 1825
+          cancer_redcap_variable_choices['Unknown'] = nil
+          cancer_redcap_variable_choices['Within the past 5 years'] = 913
+          cancer_redcap_variable_choices['Within the past year'] = 183
+
+          redcap_derived_date_diagnosis_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'Cancer Diagnosis', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid_19, offset_redcap_variable: cancer_offset_redcap_variable).first_or_create
+          cancer_redcap_variable_choices.each do |k,v|
+            redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: cancer_offset_redcap_variable.id, choice_description: k).first
+            unless v.nil?
+              redcap_derived_date_diagnosis_cancer.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
+            end
+          end
+          redcap_derived_date_diagnosis_cancer.save!
+
+          old_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'covid_19_lab_type', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          old_redcap_variable.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
+          old_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+          old_redcap_variable.save!
+
+          omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
+          omop_column_2 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'value_as_concept_id'").first
+
+          redcap_variable_covid_19_lab_type_choice_1 = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Antigen test (ELISA)').first
+          covid_19_lab_type_concept_1 = Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'LOINC', concept_code: '94558-4').first
+          postive_concept = Redcap2omop::Concept.where(domain_id: 'Meas Value', vocabulary_id: 'LOINC', concept_code: 'LA6576-8').first
+          redcap_variable_covid_19_lab_type_choice_1.build_redcap_variable_choice_map(concept_id: covid_19_lab_type_concept_1.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_covid_19_lab_type_choice_1.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+          redcap_variable_covid_19_lab_type_choice_1.redcap_variable_child_maps.build(concept_id: postive_concept.concept_id, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_covid_19_lab_type_choice_1.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          redcap_variable_covid_19_lab_type_choice_1.save!
+
+          redcap_variable_covid_19_lab_type_choice_2 = old_redcap_variable.redcap_variable_choices.where(choice_description: 'PCR').first
+          covid_19_lab_type_concept_2 = Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'LOINC', concept_code: '94746-5').first
+          redcap_variable_covid_19_lab_type_choice_2.build_redcap_variable_choice_map(concept_id: covid_19_lab_type_concept_2.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_covid_19_lab_type_choice_2.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+          redcap_variable_covid_19_lab_type_choice_2.redcap_variable_child_maps.build(concept_id: postive_concept.concept_id, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_covid_19_lab_type_choice_2.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          redcap_variable_covid_19_lab_type_choice_2.save!
+
+          redcap_variable_covid_19_lab_type_choice_3 = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Serology (antibodies to SARS-CoV-2)').first
+          covid_19_lab_type_concept_3 = Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'LOINC', concept_code: '94762-2').first
+          redcap_variable_covid_19_lab_type_choice_3.build_redcap_variable_choice_map(concept_id: covid_19_lab_type_concept_3.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_covid_19_lab_type_choice_3.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+          redcap_variable_covid_19_lab_type_choice_3.redcap_variable_child_maps.build(concept_id: postive_concept.concept_id, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_covid_19_lab_type_choice_3.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          redcap_variable_covid_19_lab_type_choice_3.save!
+
+          redcap_variable_covid_19_lab_type_choice_4 = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Other').first
+          covid_19_lab_type_concept_4 = Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'OMOP Extension', concept_code: 'OMOP4873969').first
+          redcap_variable_covid_19_lab_type_choice_4.build_redcap_variable_choice_map(concept_id: covid_19_lab_type_concept_4.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_covid_19_lab_type_choice_4.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+          redcap_variable_covid_19_lab_type_choice_4.redcap_variable_child_maps.build(concept_id: postive_concept.concept_id, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_covid_19_lab_type_choice_4.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          redcap_variable_covid_19_lab_type_choice_4.save!
+
+          redcap_variable_covid_19_lab_type_choice_5 = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Unknown').first
+          redcap_variable_covid_19_lab_type_choice_5.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+          redcap_variable_covid_19_lab_type_choice_5.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+          redcap_variable_covid_19_lab_type_choice_5.save!
+
+          import_data_dictionary_with_redcap_variable_choice_mapped_to_omop_concept_and_complex_redcap_child_variables_and_new_variable.run
+          redcap_project.reload
+          current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+          expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
+          expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
+          new_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'covid_19_lab_type', redcap_data_dictionary_id: current_redcap_data_dictionary.id).first
+          expect(new_redcap_variable.id).to_not eq old_redcap_variable.id
+          expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+          expect(new_redcap_variable.redcap_variable_map.concept_id).to be_nil
+          expect(new_redcap_variable.redcap_variable_map.omop_column_id).to be_nil
+          expect(new_redcap_variable.redcap_variable_map.map_type).to eq Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE
+
+          expect(new_redcap_variable.redcap_variable_child_maps.size).to eq(0)
+          test_migration_of_redcap_variable_choice_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
+        end
+
         it 'migrates a Redcap child mapping to a Redcap derived date based on a base Redcap variable and a Redcap varaible choice offset', focus: false do
           import_data_dictionary_with_redcap_derived_from_base_redcap_variable_and_redcap_variable_choice_offset.run
           redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
@@ -613,11 +747,29 @@ def test_migration_of_redcap_variable_redcap_variable_child_maps(old_redcap_vari
 
     if old_redcap_variable_child_map.redcap_derived_date
       old_redcap_derived_date = Redcap2omop::RedcapDerivedDate.find(old_redcap_variable_child_map.redcap_derived_date_id)
-      new_base_date_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.base_date_redcap_variable.name).first
-      new_offset_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
-      new_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.name, base_date_redcap_variable_id: new_base_date_redcap_variable.id, offset_redcap_variable_id: new_offset_redcap_variable.id).first
-      new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_derived_date_id: new_redcap_derived_date.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
-      expect(new_redcap_variable_child_map).to_not be_nil
+      if old_redcap_derived_date.base_date_redcap_variable
+        old_redcap_derived_date = Redcap2omop::RedcapDerivedDate.find(old_redcap_variable_child_map.redcap_derived_date_id)
+        new_base_date_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.base_date_redcap_variable.name).first
+        new_offset_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
+        new_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.name, base_date_redcap_variable_id: new_base_date_redcap_variable.id, offset_redcap_variable_id: new_offset_redcap_variable.id).first
+        new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_derived_date_id: new_redcap_derived_date.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+        expect(new_redcap_variable_child_map).to_not be_nil
+      end
+
+      if old_redcap_derived_date.parent_redcap_derived_date
+        new_parent_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.parent_redcap_derived_date.name).first
+        new_offset_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
+        new_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.name, parent_redcap_derived_date_id: new_parent_redcap_derived_date.id, offset_redcap_variable_id: new_offset_redcap_variable.id).first
+        new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(redcap_derived_date_id: new_redcap_derived_date.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+        expect(new_redcap_variable_child_map).to_not be_nil
+      end
+
+      expect(new_redcap_derived_date.redcap_derived_date_choice_offset_mappings.size).to eq(old_redcap_derived_date.redcap_derived_date_choice_offset_mappings.size)
+      old_redcap_derived_date.redcap_derived_date_choice_offset_mappings.each do |old_redcap_derived_date_choice_offset_mapping|
+        new_redcap_variable_choice = new_offset_redcap_variable.redcap_variable_choices.where(choice_code_raw: old_redcap_derived_date_choice_offset_mapping.redcap_variable_choice.choice_code_raw).first
+        new_redcap_derived_date_choice_offset_mapping = new_redcap_derived_date.redcap_derived_date_choice_offset_mappings.where(redcap_variable_choice_id: new_redcap_variable_choice.id, offset_days: old_redcap_derived_date_choice_offset_mapping.offset_days).first
+        expect(new_redcap_derived_date_choice_offset_mapping).to_not be_nil
+      end
     end
 
     if old_redcap_variable_child_map.concept_id
@@ -641,11 +793,29 @@ def test_migration_of_redcap_variable_choice_redcap_variable_child_maps(old_redc
 
       if old_redcap_variable_child_map.redcap_derived_date
         old_redcap_derived_date = Redcap2omop::RedcapDerivedDate.find(old_redcap_variable_child_map.redcap_derived_date_id)
-        new_base_date_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.base_date_redcap_variable.name).first
-        new_offset_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
-        new_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.name, base_date_redcap_variable_id: new_base_date_redcap_variable.id, offset_redcap_variable_id: new_offset_redcap_variable.id).first
-        new_redcap_variable_child_map = new_redcap_variable_choice.redcap_variable_child_maps.where(redcap_derived_date_id: new_redcap_derived_date.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
-        expect(new_redcap_variable_child_map).to_not be_nil
+
+        if old_redcap_derived_date.base_date_redcap_variable
+          new_base_date_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.base_date_redcap_variable.name).first
+          new_offset_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
+          new_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.name, base_date_redcap_variable_id: new_base_date_redcap_variable.id, offset_redcap_variable_id: new_offset_redcap_variable.id).first
+          new_redcap_variable_child_map = new_redcap_variable_choice.redcap_variable_child_maps.where(redcap_derived_date_id: new_redcap_derived_date.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+          expect(new_redcap_variable_child_map).to_not be_nil
+        end
+
+        if old_redcap_derived_date.parent_redcap_derived_date
+          new_parent_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.parent_redcap_derived_date.name).first
+          new_offset_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
+          new_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.name, parent_redcap_derived_date_id: new_parent_redcap_derived_date.id, offset_redcap_variable_id: new_offset_redcap_variable.id).first
+          new_redcap_variable_child_map = new_redcap_variable_choice.redcap_variable_child_maps.where(redcap_derived_date_id: new_redcap_derived_date.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+          expect(new_redcap_variable_child_map).to_not be_nil
+        end
+
+        expect(new_redcap_derived_date.redcap_derived_date_choice_offset_mappings.size).to eq(old_redcap_derived_date.redcap_derived_date_choice_offset_mappings.size)
+        old_redcap_derived_date.redcap_derived_date_choice_offset_mappings.each do |old_redcap_derived_date_choice_offset_mapping|
+          new_redcap_variable_choice_for_choice_offset_mapping = new_offset_redcap_variable.redcap_variable_choices.where(choice_code_raw: old_redcap_derived_date_choice_offset_mapping.redcap_variable_choice.choice_code_raw).first
+          new_redcap_derived_date_choice_offset_mapping = new_redcap_derived_date.redcap_derived_date_choice_offset_mappings.where(redcap_variable_choice_id: new_redcap_variable_choice_for_choice_offset_mapping.id, offset_days: old_redcap_derived_date_choice_offset_mapping.offset_days).first
+          expect(new_redcap_derived_date_choice_offset_mapping).to_not be_nil
+        end
       end
 
       if old_redcap_variable_child_map.concept_id
