@@ -782,6 +782,7 @@ end
 def test_migration_of_redcap_variable_choice_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
   old_redcap_variable.redcap_variable_choices.each do |old_redcap_variable_choice|
     new_redcap_variable_choice = new_redcap_variable.redcap_variable_choices.where(choice_code_raw: old_redcap_variable_choice.choice_code_raw).first
+    expect(new_redcap_variable_choice.curation_status).to eq(old_redcap_variable_choice.curation_status)
     expect(new_redcap_variable_choice.redcap_variable_choice_map.concept_id).to eq(old_redcap_variable_choice.redcap_variable_choice_map.concept_id)
     expect(new_redcap_variable_choice.redcap_variable_choice_map.map_type).to eq(old_redcap_variable_choice.redcap_variable_choice_map.map_type)
     old_redcap_variable_choice.redcap_variable_child_maps.each do |old_redcap_variable_child_map|
