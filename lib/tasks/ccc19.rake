@@ -51,7 +51,7 @@ namespace :redcap2omop do
         redcap_variable_choices['More than 12 months ago'] = 450
 
         # name: 'COVID-19 Diagnosis'
-        redcap_derived_date_diagnosis_covid19 = Redcap2omop::RedcapDerivedDate.where(name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_diagnosis_covid19 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -2033,7 +2033,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: 'Death'
-        redcap_derived_date_death = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_death = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -2661,7 +2661,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: 'Death 2'
-        redcap_derived_date_death = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_death = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -2907,7 +2907,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'mortality', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: '30 Day Survival'
-        redcap_derived_date_30_day_survival = Redcap2omop::RedcapDerivedDate.where(name: '30 Day Survival', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_30_day_survival = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: '30 Day Survival', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         redcap_variable_choices['Yes'] = 30
@@ -2951,7 +2951,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'mortality_90', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: '90 Day Survival'
-        redcap_derived_date_90_day_survival = Redcap2omop::RedcapDerivedDate.where(name: '90 Day Survival', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_90_day_survival = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: '90 Day Survival', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         redcap_variable_choices['Yes'] = 90
@@ -2995,7 +2995,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'mortality_180', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: '180 Day Survival'
-        redcap_derived_date_180_day_survival = Redcap2omop::RedcapDerivedDate.where(name: '180 Day Survival', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_180_day_survival = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: '180 Day Survival', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         redcap_variable_choices['Yes'] = 180
@@ -4584,7 +4584,7 @@ namespace :redcap2omop do
         redcap_variable_choices['Within the past year'] = 183
 
         # name: 'Cancer Diagnosis'
-        redcap_derived_date_diagnosis_cancer = Redcap2omop::RedcapDerivedDate.where(name: 'Cancer Diagnosis', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_diagnosis_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: 'Cancer Diagnosis', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -5379,7 +5379,7 @@ namespace :redcap2omop do
         redcap_variable_choices['Within the month to 3 months prior to COVID-19 diagnosis'] = 60
 
         # name: 'Cancer Treatment'
-        redcap_derived_date_treatment_cancer = Redcap2omop::RedcapDerivedDate.where(name: 'Cancer Treatment', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_treatment_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: 'Cancer Treatment', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -5735,7 +5735,7 @@ namespace :redcap2omop do
         # redcap_variable_choices['Unknown'] = nil
 
         # name: 'Cancer Stem Cell Treatment'
-        redcap_derived_date_treatment_cancer = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_treatment_cancer, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_treatment_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, parent_redcap_derived_date: redcap_derived_date_treatment_cancer, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -5784,7 +5784,7 @@ namespace :redcap2omop do
         # redcap_variable_choices['Unknown'] = nil
 
         # name: 'Orchiectomy Treatment'
-        redcap_derived_date_treatment_orchiectomy_cancer = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_treatment_orchiectomy_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -5834,7 +5834,7 @@ namespace :redcap2omop do
         # redcap_variable_choices['Unknown'] = nil
 
         # name: 'ADT Treatment'
-        redcap_derived_date_treatment_adt_cancer = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_treatment_adt_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -6359,7 +6359,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'fu_weeks', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: 'Followup 1'
-        redcap_derived_date_followup_1 = Redcap2omop::RedcapDerivedDate.where(name: 'Followup 1', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_followup_1 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: 'Followup 1', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         # come back
@@ -6376,7 +6376,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'd30_vital_status', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: '30 Day Vital Status'
-        redcap_derived_date_30_day_vital_status = Redcap2omop::RedcapDerivedDate.where(name: '30 Day Vital Status', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_30_day_vital_status = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: '30 Day Vital Status', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         redcap_variable_choices['Patient was deceased within 30 days of COVID-19 diagnosis'] = 15
@@ -6421,7 +6421,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'd90_vital_status', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: '90 Day Vital Status'
-        redcap_derived_date_90_day_vital_status = Redcap2omop::RedcapDerivedDate.where(name: '90 Day Vital Status', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_90_day_vital_status = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: '90 Day Vital Status', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         redcap_variable_choices['Patient was deceased within 90 days of COVID-19 diagnosis'] = 30
@@ -6465,7 +6465,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'd180_vital_status', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: '180 Day Vital Status'
-        redcap_derived_date_180_day_vital_status = Redcap2omop::RedcapDerivedDate.where(name: '180 Day Vital Status', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_180_day_vital_status = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: '180 Day Vital Status', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         redcap_variable_choices['Patient was deceased within 180 days of COVID-19 diagnosis'] = 90
@@ -6526,7 +6526,7 @@ namespace :redcap2omop do
         offset_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         offset_redcap_variable.save!
         # name: 'Followup 2'
-        redcap_derived_date_followup_2 = Redcap2omop::RedcapDerivedDate.where(name: 'Followup 2', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable, offset_redcap_variable_numeric_interval_days: 7).first_or_create
+        redcap_derived_date_followup_2 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: 'Followup 2', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable, offset_interval_days: 7).first_or_create
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'covid_19_status_fu', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -6569,7 +6569,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_fu_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: 'Death 2'
-        redcap_derived_date_death_2 = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable, offset_redcap_variable_numeric_interval_days: 1).first_or_create
+        redcap_derived_date_death_2 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable, offset_interval_days: 1).first_or_create
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_fu_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first

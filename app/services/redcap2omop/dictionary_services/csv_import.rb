@@ -102,7 +102,7 @@ module Redcap2omop::DictionaryServices
           prior_redcap_data_dictionary.redcap_derived_dates.where('base_date_redcap_variable_id IS NOT NULL AND offset_redcap_variable_id IS NOT NULL').each do |old_redcap_derived_date|
             new_base_date_redcap_variable = redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.base_date_redcap_variable.name).first
             new_offset_redcap_variable = redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
-            new_redcap_derived_date = Redcap2omop::RedcapDerivedDate.new(redcap_data_dictionary: redcap_data_dictionary, name: old_redcap_derived_date.name, base_date_redcap_variable_id: new_base_date_redcap_variable.id, offset_redcap_variable_id: new_offset_redcap_variable.id, offset_interval_days: old_redcap_derived_date.offset_interval_days, offset_interval_direction: old_redcap_derived_date.offset_interval_direction)
+            new_redcap_derived_date = Redcap2omop::RedcapDerivedDate.new(redcap_data_dictionary: redcap_data_dictionary, name: old_redcap_derived_date.name, base_date_redcap_variable_id: new_base_date_redcap_variable.id, offset_redcap_variable_id: new_offset_redcap_variable.id,  offset_interval_days: old_redcap_derived_date.offset_interval_days, offset_interval_direction: old_redcap_derived_date.offset_interval_direction)
             build_redcap_derived_date_choice_offset_mappings(new_redcap_derived_date, old_redcap_derived_date, new_offset_redcap_variable)
             new_redcap_derived_date.save!
           end
@@ -187,7 +187,9 @@ module Redcap2omop::DictionaryServices
       def build_redcap_derived_date_choice_offset_mappings(new_redcap_derived_date, old_redcap_derived_date, new_offset_redcap_variable)
         old_redcap_derived_date.redcap_derived_date_choice_offset_mappings.each do |old_redcap_derived_date_choice_offset_mapping|
           new_redcap_variable_choice = new_offset_redcap_variable.redcap_variable_choices.where(choice_code_raw: old_redcap_derived_date_choice_offset_mapping.redcap_variable_choice.choice_code_raw).first
-          new_redcap_derived_date.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: new_redcap_variable_choice, offset_days: old_redcap_derived_date_choice_offset_mapping.offset_days)
+          if new_redcap_variable_choice
+            new_redcap_derived_date.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: new_redcap_variable_choice, offset_days: old_redcap_derived_date_choice_offset_mapping.offset_days)
+          end
         end
       end
   end
