@@ -355,6 +355,56 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
           expect(new_redcap_variable.redcap_variable_map.map_type).to eq Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN
         end
 
+        it "migrates the 'skipped' curation status of a Redcap variable and leaves the curation status of Redcap variable choices alone", focus: false do
+          import.run
+          redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+          redcap_project.reload
+          old_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'gender', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          old_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+          old_redcap_variable.save!
+
+          redcap_variable_choice = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Cis Female').first
+          expect(redcap_variable_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
+
+          redcap_variable_choice = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Cis Male').first
+          expect(redcap_variable_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
+
+          redcap_variable_choice = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Trans Female').first
+          expect(redcap_variable_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
+
+          redcap_variable_choice = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Transe Male').first
+          expect(redcap_variable_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
+
+          redcap_variable_choice = old_redcap_variable.redcap_variable_choices.where(choice_description: 'Non-binary').first
+          expect(redcap_variable_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
+
+          import_data_dictionary_with_new_redcap_variable.run
+          redcap_project.reload
+          current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
+          expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
+          expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
+          new_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'gender', redcap_data_dictionary_id: current_redcap_data_dictionary.id).first
+
+          expect(new_redcap_variable.id).to_not eq old_redcap_variable.id
+          expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+          expect(new_redcap_variable.redcap_variable_map).to be_nil
+
+          redcap_variable_choice = new_redcap_variable.redcap_variable_choices.where(choice_description: 'Cis Female').first
+          expect(redcap_variable_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
+
+          redcap_variable_choice = new_redcap_variable.redcap_variable_choices.where(choice_description: 'Cis Male').first
+          expect(redcap_variable_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
+
+          redcap_variable_choice = new_redcap_variable.redcap_variable_choices.where(choice_description: 'Trans Female').first
+          expect(redcap_variable_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
+
+          redcap_variable_choice = new_redcap_variable.redcap_variable_choices.where(choice_description: 'Transe Male').first
+          expect(redcap_variable_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
+
+          redcap_variable_choice = new_redcap_variable.redcap_variable_choices.where(choice_description: 'Non-binary').first
+          expect(redcap_variable_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED
+        end
+
         it "migrates an 'OMOP concept' variable map for an exisiting Redcap variable", focus: false do
           import_data_dictionary_with_redcap_variable_mapped_to_omop_concept.run
           redcap_data_dictionary = redcap_project.current_redcap_data_dictionary

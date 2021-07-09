@@ -57,11 +57,11 @@ module Redcap2omop::DictionaryServices
           redcap_variable.save!
         end
 
-        # Determine the curation status each Redcap variable choice
+        # Determine the curation status of each Redcap variable choice
         redcap_variables_updated_choices = redcap_data_dictionary.redcap_variables.where(curation_status: Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_CHOICES)
         redcap_variables_updated_choices.each do |redcap_variable|
           redcap_variable.redcap_variable_choices.each do |redcap_variable_choice|
-            if !redcap_project.redcap_variable_choice_exists_in_redcap_data_dictionary?(redcap_variable, redcap_variable_choice.choice_code_raw)
+            if !redcap_project.redcap_variable_choice_exists_in_redcap_data_dictionary?(redcap_variable.name, redcap_variable_choice.choice_code_raw)
               redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED_NEW_CHOICE
               redcap_variable_choice.save!
               new_data_dictionary = true
@@ -98,7 +98,7 @@ module Redcap2omop::DictionaryServices
           end
         end
 
-        #Delete the current Redcap data dictionary if nothing has changed
+        # Delete the current Redcap data dictionary if nothing has changed
         if prior_redcap_data_dictionary && !new_data_dictionary
           redcap_data_dictionary.destroy!
         end
@@ -130,6 +130,10 @@ module Redcap2omop::DictionaryServices
                   redcap_variable.curation_status = prior_redcap_variable.curation_status
                 end
 
+                if prior_redcap_variable.curation_status == Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+                  redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+                end
+
                 if prior_redcap_variable.redcap_variable_map
                   redcap_variable.build_redcap_variable_map(concept_id: prior_redcap_variable.redcap_variable_map.concept_id, omop_column_id: prior_redcap_variable.redcap_variable_map.omop_column_id, map_type: prior_redcap_variable.redcap_variable_map.map_type)
                 end
@@ -151,7 +155,7 @@ module Redcap2omop::DictionaryServices
                   end
                 end
 
-                if prior_redcap_variable.redcap_variable_choices.any?
+                if prior_redcap_variable.redcap_variable_choices.any? && prior_redcap_variable.curation_status == Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
                   prior_redcap_variable.redcap_variable_choices.each do |prior_redcap_variable_choice|
                     redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_code_raw: prior_redcap_variable_choice.choice_code_raw).first
                     if redcap_variable_choice
