@@ -18,9 +18,9 @@ RSpec.describe Redcap2omop::DictionaryServices::RedcapImport do
         expect(Redcap2omop::RedcapDataDictionary.last.redcap_project).to eq project
       end
 
-      it 'creates redcap variables' do
+      it 'creates redcap variables', focus: false do
         expect(Redcap2omop::RedcapVariable.count).to eq 0
-        expect{ service.run }.to change{ Redcap2omop::RedcapVariable.count }.by(18)
+        expect{ service.run }.to change{ Redcap2omop::RedcapVariable.count }.by(39)
         Redcap2omop::RedcapVariable.all.each do |redcap_variable|
           expect(redcap_variable.redcap_data_dictionary.redcap_project).to eq project
         end

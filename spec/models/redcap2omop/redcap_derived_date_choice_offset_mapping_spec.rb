@@ -10,7 +10,7 @@ module Redcap2omop
       it { is_expected.to belong_to(:redcap_variable_choice) }
     end
 
-    describe 'validations' do
+    describe 'validations', focus: false do
       it { is_expected.to validate_presence_of(:offset_days) }
     end
   end

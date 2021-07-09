@@ -17,12 +17,12 @@ module Redcap2omop
     end
 
     describe 'methods' do
-      it 'sets birth fields' do
+      it 'sets birth fields', focus: false do
         person = FactoryBot.build(:person, year_of_birth: nil, month_of_birth: nil, day_of_birth: nil )
         expect(person.year_of_birth).to be_blank
         expect(person.month_of_birth).to be_blank
         expect(person.day_of_birth).to be_blank
-        new_datetime = DateTime.now
+        new_datetime = DateTime.parse('1/1/2021')
         person.birth_datetime = new_datetime
         person.set_birth_fields
         expect(person.year_of_birth).to eq(new_datetime.year)

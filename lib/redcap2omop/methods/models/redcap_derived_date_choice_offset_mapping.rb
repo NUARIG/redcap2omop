@@ -5,6 +5,7 @@ module Redcap2omop::Methods::Models::RedcapDerivedDateChoiceOffsetMapping
     base.send :belongs_to, :redcap_variable_choice
 
     # Validations
+    base.send :validates, :offset_days, presence: true
 
     base.send :include, InstanceMethods
     base.extend(ClassMethods)

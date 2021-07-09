@@ -17,7 +17,7 @@ RSpec.describe Redcap2omop::DataServices::RedcapImport do
         ActiveRecord::Base.connection.execute "DROP TABLE IF EXISTS #{project.export_table_name}"
       end
 
-      it 'creates new table for redcap import data if does not exist' do
+      it 'creates new table for redcap import data if does not exist', focus: false do
         sql = "SELECT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='#{project.export_table_name}');"
         result = ActiveRecord::Base.connection.select_all(sql).first
         expect(result['exists']).to eq false

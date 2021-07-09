@@ -5,7 +5,8 @@ namespace :redcap2omop do
       task project: :environment do  |t, args|
         redcap_project = Redcap2omop::RedcapProject.where(project_id: 0 , name: 'CCC19', api_import: false).first_or_create
         file_name = 'CCC19_DataDictionary.csv'
-        file_location = "#{Rails.root}/lib/setup/data/data_dictionaries/"
+        # file_location = "#{Rails.root}/lib/setup/data/data_dictionaries/"
+        file_location = "#{Redcap2omop::Engine.root}/lib/setup/data/data_dictionaries/"
         data_dictionary = File.read("#{file_location}#{file_name}")
         data_dictionary[0]=''
         File.write("#{file_location}CCC19_DataDictionary_clean.csv", data_dictionary)
@@ -50,7 +51,7 @@ namespace :redcap2omop do
         redcap_variable_choices['More than 12 months ago'] = 450
 
         # name: 'COVID-19 Diagnosis'
-        redcap_derived_date_diagnosis_covid19 = Redcap2omop::RedcapDerivedDate.where(name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_diagnosis_covid19 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -60,6 +61,11 @@ namespace :redcap2omop do
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'inclusion_yn', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'exclude', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         redcap_variable.save!
 
@@ -437,6 +443,11 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'No ECOG PS recorded within the 3 months prior to COVID-19 diagnosis').first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
+
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Unknown').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
@@ -490,6 +501,11 @@ namespace :redcap2omop do
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Never smoker').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Observation', vocabulary_id: 'SNOMED', concept_code: '8392000').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: other_redcap_variable, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
+
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Unknown').first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
@@ -574,6 +590,16 @@ namespace :redcap2omop do
         # come back
         # need to setup a derived date
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'recent_surgery', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'surgery_timing', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'details_surgery', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         redcap_variable.save!
 
@@ -1072,6 +1098,11 @@ namespace :redcap2omop do
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'sars_vax_other', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'sars_vax_when', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -1909,18 +1940,21 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes - admitted to floor').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes - admitted to floor and then transferred to the ICU').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OMOP4822460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "No").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -1944,6 +1978,11 @@ namespace :redcap2omop do
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'code_status_change_what', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'code_status_change_why', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         redcap_variable.save!
 
@@ -1981,48 +2020,56 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'ER - new COVID-19 diagnosis').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'ER').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Hospitalized (non-ICU)  - continued').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Hospitalized (non-ICU) - new admit').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'ICU - continued').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OMOP4822460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'ICU - new admit').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OMOP4822460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - follow up').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - new COVID-19 diagnosis').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "None - patient is deceased").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2032,7 +2079,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: 'Death'
-        redcap_derived_date_death = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_death = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -2428,6 +2475,11 @@ namespace :redcap2omop do
         redcap_variable.save!
 
         #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'c19_comp_pulm_specify', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
+
+        #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'c19_complications_card', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
@@ -2445,61 +2497,73 @@ namespace :redcap2omop do
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '85898001').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Cerebrovascular accident (CVA; stroke)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '230690007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Congestive heart failure (CHF)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '42343007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Deep venous thrombosis (DVT)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '128053003').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Hypotension').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '45007003').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Myocardial infarction').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '22298006').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Other cardiac arrhythmia').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '698247007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Other cardiac ischemia').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '414545008').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Pulmonary embolism (PE)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '59282003').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Superficial venous thrombosis (SVT)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '275517008').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Thrombosis, NOS').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '414086009').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Ventricular fibrillation').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '71908006').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'None').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2606,6 +2670,11 @@ namespace :redcap2omop do
         redcap_variable_choice.save!
 
         #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'c19_comp_gi_specify', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save
+
+        #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'c19_complications_other', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
@@ -2660,7 +2729,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: 'Death 2'
-        redcap_derived_date_death = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_death = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -2703,7 +2772,7 @@ namespace :redcap2omop do
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'cause_of_death_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'death' AND redcap2omop_omop_columns.name = 'cause_concept_id'").first
         redcap_variable.build_redcap_variable_map(omop_column_id: omop_column.id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_COLUMN)
-        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Both').first
@@ -2732,6 +2801,11 @@ namespace :redcap2omop do
         redcap_variable_choice.save!
 
         #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'deceased_reason_retro', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
+
+        #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'current_status_clinical', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
@@ -2746,54 +2820,63 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Critical (ICU) - Severely ill, not requiring ventilator support').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OMOP4822460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Inpatient - Moderately ill').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Inpatient - Near Recovery').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Inpatient - Severely ill').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - Mild symptoms').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - Moderate symptoms').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - No symptoms').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - Severe symptoms').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Other").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2804,6 +2887,11 @@ namespace :redcap2omop do
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'current_status_clinical_specify', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'worst_status_clinical', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -2820,48 +2908,56 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Critical (ICU) - Severely ill, did not require ventilator support').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OMOP4822460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_variable: redcap_variable_date, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Inpatient - Moderately ill').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Inpatient - Severely ill').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - Mild symptoms').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - Moderate symptoms').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - No symptoms').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - Severe symptoms').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Other").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2872,6 +2968,11 @@ namespace :redcap2omop do
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'worst_status_clinical_specify', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'complications_severity', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -2906,7 +3007,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'mortality', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: '30 Day Survival'
-        redcap_derived_date_30_day_survival = Redcap2omop::RedcapDerivedDate.where(name: '30 Day Survival', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_30_day_survival = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: '30 Day Survival', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         redcap_variable_choices['Yes'] = 30
@@ -2931,6 +3032,7 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_30_day_survival, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_30_day_survival, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "N/A - it has been fewer than 30 days since COVID-19 diagnosis").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2950,7 +3052,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'mortality_90', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: '90 Day Survival'
-        redcap_derived_date_90_day_survival = Redcap2omop::RedcapDerivedDate.where(name: '90 Day Survival', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_90_day_survival = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: '90 Day Survival', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         redcap_variable_choices['Yes'] = 90
@@ -2975,6 +3077,7 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_90_day_survival, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_90_day_survival, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "N/A - it has been fewer than 90 days since COVID-19 diagnosis").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -2994,7 +3097,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'mortality_180', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: '180 Day Survival'
-        redcap_derived_date_180_day_survival = Redcap2omop::RedcapDerivedDate.where(name: '180 Day Survival', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_180_day_survival = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: '180 Day Survival', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         redcap_variable_choices['Yes'] = 180
@@ -3019,6 +3122,7 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_180_day_survival, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_180_day_survival, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "N/A - it has been fewer than 180 days since COVID-19 diagnosis").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -3120,6 +3224,41 @@ namespace :redcap2omop do
         # redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'anc_range', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.build_redcap_variable_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'SNOMED', concept_code: '30630007').first.concept_id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+        redcap_variable.save!
+
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "High").first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Meas Value', vocabulary_id: 'SNOMED', concept_code: '75540009').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
+
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Low").first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Meas Value', vocabulary_id: 'SNOMED', concept_code: '62482003').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
+
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Normal").first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Spec Disease Status', vocabulary_id: 'SNOMED', concept_code: '17621005').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
+
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Not tested").first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
+
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Unknown").first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
+
+        omop_column = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'measurement' AND redcap2omop_omop_columns.name = 'measurement_date'").first
+        redcap_variable.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
+        redcap_variable.save!
+
+        # redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'aec_range', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.build_redcap_variable_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Measurement', vocabulary_id: 'SNOMED', concept_code: '71960002').first.concept_id, map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
         redcap_variable.save!
 
@@ -4400,6 +4539,11 @@ namespace :redcap2omop do
         redcap_variable.save!
 
         #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'covid_19_treatment_trial', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
+
+        #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'covid_19_trial_tx', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
@@ -4583,7 +4727,7 @@ namespace :redcap2omop do
         redcap_variable_choices['Within the past year'] = 183
 
         # name: 'Cancer Diagnosis'
-        redcap_derived_date_diagnosis_cancer = Redcap2omop::RedcapDerivedDate.where(name: 'Cancer Diagnosis', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_diagnosis_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: 'Cancer Diagnosis', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -5219,6 +5363,11 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Unknown').first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save
+
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'bcg_intraves_ever', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
@@ -5318,6 +5467,11 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Not documented in medical record or Gleason Score not assessed or unknown if assessed').first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
+
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'gleason_source', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
@@ -5345,6 +5499,7 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "No").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -5355,6 +5510,11 @@ namespace :redcap2omop do
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'on_treatment', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'recent_treatment', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -5378,7 +5538,7 @@ namespace :redcap2omop do
         redcap_variable_choices['Within the month to 3 months prior to COVID-19 diagnosis'] = 60
 
         # name: 'Cancer Treatment'
-        redcap_derived_date_treatment_cancer = Redcap2omop::RedcapDerivedDate.where(name: 'Cancer Treatment', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_treatment_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: 'Cancer Treatment', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -5614,11 +5774,18 @@ namespace :redcap2omop do
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '205237003').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Likely').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '205237003').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
+
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Possible').first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'No').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -5734,7 +5901,7 @@ namespace :redcap2omop do
         # redcap_variable_choices['Unknown'] = nil
 
         # name: 'Cancer Stem Cell Treatment'
-        redcap_derived_date_treatment_cancer = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_treatment_cancer, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_treatment_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, parent_redcap_derived_date: redcap_derived_date_treatment_cancer, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -5783,7 +5950,7 @@ namespace :redcap2omop do
         # redcap_variable_choices['Unknown'] = nil
 
         # name: 'Orchiectomy Treatment'
-        redcap_derived_date_treatment_orchiectomy_cancer = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_treatment_orchiectomy_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -5833,7 +6000,7 @@ namespace :redcap2omop do
         # redcap_variable_choices['Unknown'] = nil
 
         # name: 'ADT Treatment'
-        redcap_derived_date_treatment_adt_cancer = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_treatment_adt_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -5890,77 +6057,83 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Bicalutamide (Casodex)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '83008').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Cabazitaxel (Jevtana)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '996051').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Carboplatin').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '40048').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Darolutamide (Nubeqa)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '2180325').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Docetaxel (Taxotere)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '72962').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Enzalutamide (Xtandi)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '1307298').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Flutamide').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '4508').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Nilutamide').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '31805').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Olaparib').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '1597582').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Pembrolizumab').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '1547545').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
-
-        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Pembrolizumab').first
-        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Drug', vocabulary_id: 'RxNorm', concept_code: '1547545').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
-        redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
-        redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_treatment_cancer, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
-        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Radium-223').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Procedure', vocabulary_id: 'SNOMED', concept_code: '700357007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_covid19, omop_column: omop_column_3, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Clinical trial').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6355,10 +6528,15 @@ namespace :redcap2omop do
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         redcap_variable.save!
 
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'fu_weeks', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
+
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'fu_weeks', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: 'Followup 1'
-        redcap_derived_date_followup_1 = Redcap2omop::RedcapDerivedDate.where(name: 'Followup 1', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_followup_1 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: 'Followup 1', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         # come back
@@ -6375,7 +6553,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'd30_vital_status', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: '30 Day Vital Status'
-        redcap_derived_date_30_day_vital_status = Redcap2omop::RedcapDerivedDate.where(name: '30 Day Vital Status', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_30_day_vital_status = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: '30 Day Vital Status', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         redcap_variable_choices['Patient was deceased within 30 days of COVID-19 diagnosis'] = 15
@@ -6411,6 +6589,7 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_30_day_vital_status, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_30_day_vital_status, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Unknown").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6420,7 +6599,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'd90_vital_status', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: '90 Day Vital Status'
-        redcap_derived_date_90_day_vital_status = Redcap2omop::RedcapDerivedDate.where(name: '90 Day Vital Status', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_90_day_vital_status = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: '90 Day Vital Status', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         redcap_variable_choices['Patient was deceased within 90 days of COVID-19 diagnosis'] = 30
@@ -6455,6 +6634,7 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_90_day_vital_status, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_90_day_vital_status, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Unknown").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6464,7 +6644,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'd180_vital_status', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: '180 Day Vital Status'
-        redcap_derived_date_180_day_vital_status = Redcap2omop::RedcapDerivedDate.where(name: '180 Day Vital Status', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_180_day_vital_status = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: '180 Day Vital Status', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices = {}
         redcap_variable_choices['Patient was deceased within 180 days of COVID-19 diagnosis'] = 90
@@ -6499,6 +6679,7 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_180_day_vital_status, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_180_day_vital_status, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Unknown").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6525,7 +6706,7 @@ namespace :redcap2omop do
         offset_redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         offset_redcap_variable.save!
         # name: 'Followup 2'
-        redcap_derived_date_followup_2 = Redcap2omop::RedcapDerivedDate.where(name: 'Followup 2', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable, offset_redcap_variable_numeric_interval_days: 7).first_or_create
+        redcap_derived_date_followup_2 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, name: 'Followup 2', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable, offset_interval_days: 7).first_or_create
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'covid_19_status_fu', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -6568,7 +6749,7 @@ namespace :redcap2omop do
         # redcap_derived_date
         offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_fu_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         # name: 'Death 2'
-        redcap_derived_date_death_2 = Redcap2omop::RedcapDerivedDate.where(parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable, offset_redcap_variable_numeric_interval_days: 1).first_or_create
+        redcap_derived_date_death_2 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary_id: redcap_data_dictionary.id, parent_redcap_derived_date: redcap_derived_date_diagnosis_covid19, offset_redcap_variable: offset_redcap_variable, offset_interval_days: 1).first_or_create
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_fu_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -6616,6 +6797,11 @@ namespace :redcap2omop do
         redcap_variable.save!
 
         #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'c19_complications_systemic_fu', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
+
+        #redcap_variable
         # come back
         # can't find a map
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'who_ordinal_scale', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -6641,54 +6827,63 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Critical (ICU) - Severely ill, not requiring ventilator support').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OMOP4822460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Inpatient - Moderately ill').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Inpatient - Near Recovery').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Inpatient - Severely ill').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - Mild symptoms').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - Moderate symptoms').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - No symptoms').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - Severe symptoms').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "Other").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6756,6 +6951,7 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_VARIABLE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "No").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6786,24 +6982,28 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes - admitted directly to the ICU').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OMOP4822460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes - admitted to floor and then transferred to the ICU').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OMOP4822460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Yes - admitted to floor for the duration of the illness').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "No").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6864,36 +7064,42 @@ namespace :redcap2omop do
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Hospitalized (non-ICU)  - continued').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Hospitalized (non-ICU) - new admit').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'IP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'ICU - continued').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OMOP4822460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'ICU - new admit').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OMOP4822460').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Outpatient - follow up').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Visit', vocabulary_id: 'Visit', concept_code: 'OP').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_2, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: "None - patient is deceased").first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -6904,6 +7110,16 @@ namespace :redcap2omop do
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_fu', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'deceased_reason_fu', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'c19_bleeding_fu', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -7042,6 +7258,11 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'No additional pulmonary events').first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
+
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Other').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
@@ -7135,61 +7356,73 @@ namespace :redcap2omop do
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '85898001').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Cerebrovascular accident (CVA; stroke)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '230690007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Congestive heart failure (CHF)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '42343007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Deep venous thrombosis (DVT)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '128053003').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Hypotension').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '45007003').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Myocardial infarction').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '22298006').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Other cardiac arrhythmia').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '698247007').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Other cardiac ischemia').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '414545008').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Pulmonary embolism (PE)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '59282003').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Superficial venous thrombosis (SVT)').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '275517008').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Thrombosis, NOS').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '414086009').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Ventricular fibrillation').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '71908006').first.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_followup_2, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Other').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
@@ -7197,6 +7430,11 @@ namespace :redcap2omop do
         redcap_variable_choice.save!
 
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Unknown').first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
+
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'No additional cardiovascular events').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
@@ -7276,6 +7514,11 @@ namespace :redcap2omop do
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
 
+        redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'No additional gastrointestinal events').first
+        redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
+        redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
+        redcap_variable_choice.save!
+
         redcap_variable_choice = redcap_variable.redcap_variable_choices.where(choice_description: 'Other').first
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
@@ -7285,6 +7528,16 @@ namespace :redcap2omop do
         redcap_variable_choice.build_redcap_variable_choice_map(concept_id: 0, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
         redcap_variable_choice.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
         redcap_variable_choice.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'c19_comp_gi_specify_fu', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'c19_complications_other_fu', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'c19_complications_oth_specify_fu', redcap_data_dictionary_id: redcap_data_dictionary.id).first
@@ -8176,6 +8429,11 @@ namespace :redcap2omop do
 
         #redcap_variable
         redcap_variable = Redcap2omop::RedcapVariable.where(name: 'covid_19_trial_more_fu', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+        redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
+        redcap_variable.save!
+
+        #redcap_variable
+        redcap_variable = Redcap2omop::RedcapVariable.where(name: 'fu_info', redcap_data_dictionary_id: redcap_data_dictionary.id).first
         redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_SKIPPED
         redcap_variable.save!
 

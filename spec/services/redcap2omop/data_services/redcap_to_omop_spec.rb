@@ -220,7 +220,7 @@ RSpec.describe Redcap2omop::DataServices::RedcapToOmop do
           @covid_19_redcap_variable_choices['Within the past 9 to 12 months'] = 315
           @covid_19_redcap_variable_choices['More than 12 months ago'] = 450
 
-          redcap_derived_date_diagnosis_covid_19 = Redcap2omop::RedcapDerivedDate.where(name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: covid_19_offset_redcap_variable).first_or_create
+          redcap_derived_date_diagnosis_covid_19 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: covid_19_offset_redcap_variable).first_or_create
 
           @covid_19_redcap_variable_choices.each do |k,v|
             redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: covid_19_offset_redcap_variable.id, choice_description: k).first
@@ -237,7 +237,7 @@ RSpec.describe Redcap2omop::DataServices::RedcapToOmop do
           redcap_variable.save!
 
           death_offset_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-          @redcap_derived_date_death = Redcap2omop::RedcapDerivedDate.where(name: 'Death', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid_19, offset_redcap_variable: death_offset_redcap_variable).first_or_create
+          @redcap_derived_date_death = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'Death', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid_19, offset_redcap_variable: death_offset_redcap_variable).first_or_create
 
           @days_to_death_2_redcap_variable = Redcap2omop::RedcapVariable.where(name: 'days_to_death_2', redcap_data_dictionary_id: redcap_data_dictionary.id).first
           @death_type_concept = Redcap2omop::Concept.where(domain_id: 'Type Concept', vocabulary_id: 'Death Type', concept_code: 'OMOP4822229').first
@@ -908,7 +908,7 @@ RECORDS
         redcap_variable_choices['Within the past 9 to 12 months'] = 315
         redcap_variable_choices['More than 12 months ago'] = 450
 
-        redcap_derived_date_diagnosis_covid19 = Redcap2omop::RedcapDerivedDate.where(name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: offset_redcap_variable).first_or_create
+        redcap_derived_date_diagnosis_covid19 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: offset_redcap_variable).first_or_create
 
         redcap_variable_choices.each do |k,v|
           redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: offset_redcap_variable.id, choice_description: k).first
@@ -1154,7 +1154,7 @@ RECORDS
           @covid_19_redcap_variable_choices['Within the past 9 to 12 months'] = 315
           @covid_19_redcap_variable_choices['More than 12 months ago'] = 450
 
-          redcap_derived_date_diagnosis_covid_19 = Redcap2omop::RedcapDerivedDate.where(name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: covid_19_offset_redcap_variable).first_or_create
+          redcap_derived_date_diagnosis_covid_19 = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'COVID-19 Diagnosis', base_date_redcap_variable: base_date_redcap_variable, offset_redcap_variable: covid_19_offset_redcap_variable).first_or_create
 
           @covid_19_redcap_variable_choices.each do |k,v|
             redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: covid_19_offset_redcap_variable.id, choice_description: k).first
@@ -1184,36 +1184,38 @@ RECORDS
           @cancer_redcap_variable_choices['Within the past 5 years'] = 913
           @cancer_redcap_variable_choices['Within the past year'] = 183
 
-          redcap_derived_date_diagnosis_cancer = Redcap2omop::RedcapDerivedDate.where(name: 'Cancer Diagnosis', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid_19, offset_redcap_variable: cancer_offset_redcap_variable).first_or_create
+          redcap_derived_date_diagnosis_cancer = Redcap2omop::RedcapDerivedDate.where(redcap_data_dictionary: redcap_data_dictionary, name: 'Cancer Diagnosis', parent_redcap_derived_date: redcap_derived_date_diagnosis_covid_19, offset_redcap_variable: cancer_offset_redcap_variable).first_or_create
           @cancer_redcap_variable_choices.each do |k,v|
             redcap_variable_choice = Redcap2omop::RedcapVariableChoice.where(redcap_variable_id: cancer_offset_redcap_variable.id, choice_description: k).first
-            redcap_derived_date_diagnosis_cancer.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
+            unless v.nil?
+              redcap_derived_date_diagnosis_cancer.redcap_derived_date_choice_offset_mappings.build(redcap_variable_choice: redcap_variable_choice,  offset_days: v)
+            end
           end
           redcap_derived_date_diagnosis_cancer.save!
 
           #redcap_variable
-          redcap_variable_caner_type = Redcap2omop::RedcapVariable.where(name: 'cancer_type', redcap_data_dictionary_id: redcap_data_dictionary.id).first
-          redcap_variable_caner_type.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
-          redcap_variable_caner_type.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
-          redcap_variable_caner_type.save!
+          redcap_variable_cancer_type = Redcap2omop::RedcapVariable.where(name: 'cancer_type', redcap_data_dictionary_id: redcap_data_dictionary.id).first
+          redcap_variable_cancer_type.build_redcap_variable_map(map_type: Redcap2omop::RedcapVariableMap::REDCAP_VARIABLE_MAP_MAP_TYPE_OMOP_CONCEPT_CHOICE)
+          redcap_variable_cancer_type.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_MAPPED
+          redcap_variable_cancer_type.save!
 
           omop_column_1 = Redcap2omop::OmopColumn.joins(:omop_table).where("redcap2omop_omop_tables.name = 'condition_occurrence' AND redcap2omop_omop_columns.name = 'condition_start_date'").first
 
-          redcap_variable_cancer_type_choice_1 = redcap_variable_caner_type.redcap_variable_choices.where(choice_description: 'AL amyloidosis').first
+          redcap_variable_cancer_type_choice_1 = redcap_variable_cancer_type.redcap_variable_choices.where(choice_description: 'AL amyloidosis').first
           @cancer_concept_1 = Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '23132008').first
           redcap_variable_cancer_type_choice_1.build_redcap_variable_choice_map(concept_id: @cancer_concept_1.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
           redcap_variable_cancer_type_choice_1.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
           redcap_variable_cancer_type_choice_1.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
           redcap_variable_cancer_type_choice_1.save!
 
-          redcap_variable_cancer_type_choice_2 = redcap_variable_caner_type.redcap_variable_choices.where(choice_description: 'Acute Leukemia').first
+          redcap_variable_cancer_type_choice_2 = redcap_variable_cancer_type.redcap_variable_choices.where(choice_description: 'Acute Leukemia').first
           @cancer_concept_2 = Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '91855006').first
           redcap_variable_cancer_type_choice_2.build_redcap_variable_choice_map(concept_id: @cancer_concept_2.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
           redcap_variable_cancer_type_choice_2.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
           redcap_variable_cancer_type_choice_2.curation_status = Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_MAPPED
           redcap_variable_cancer_type_choice_2.save!
 
-          redcap_variable_cancer_type_choice_3 = redcap_variable_caner_type.redcap_variable_choices.where(choice_description: 'Acute lymphoblastic leukemia (ALL)').first
+          redcap_variable_cancer_type_choice_3 = redcap_variable_cancer_type.redcap_variable_choices.where(choice_description: 'Acute lymphoblastic leukemia (ALL)').first
           @cancer_concept_3 = Redcap2omop::Concept.where(domain_id: 'Condition', vocabulary_id: 'SNOMED', concept_code: '91857003').first
           redcap_variable_cancer_type_choice_3.build_redcap_variable_choice_map(concept_id: @cancer_concept_3.concept_id, map_type: Redcap2omop::RedcapVariableChoiceMap::REDCAP_VARIABLE_CHOICE_MAP_MAP_TYPE_OMOP_CONCEPT)
           redcap_variable_cancer_type_choice_3.redcap_variable_child_maps.build(redcap_derived_date: redcap_derived_date_diagnosis_cancer, omop_column: omop_column_1, map_type: Redcap2omop::RedcapVariableChildMap::REDCAP_VARIABLE_CHILD_MAP_MAP_TYPE_REDCAP_DERIVED_DATE)
