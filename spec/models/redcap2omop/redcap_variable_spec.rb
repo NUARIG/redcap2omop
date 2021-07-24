@@ -16,6 +16,15 @@ module Redcap2omop
     include_examples 'with soft_delete'
 
     describe 'methods' do
+      it 'defaults curation status if none is provided', focus: false do
+        expect(redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED
+      end
+
+      it 'does not default curation status if onee is provided', focus: false do
+        other_redcap_variable = FactoryBot.create(:redcap_variable, curation_status: Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_NEW_VARIABLE)
+        expect(other_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_NEW_VARIABLE
+      end
+
       it 'normalizes field type' do
         %w[radio checkbox dropdown].each do |field_type|
           redcap_variable.field_type = field_type
@@ -30,7 +39,7 @@ module Redcap2omop
         expect(redcap_variable.normalize_field_type).to eq 'date'
 
         redcap_variable.text_validation_type = 'integer'
-        expect(redcap_variable.normalize_field_type).to eq 'number'
+        expect(redcap_variable.normalize_field_type).to eq 'integer'
 
         redcap_variable.text_validation_type = ''
         expect(redcap_variable.normalize_field_type).to eq 'text'
@@ -186,6 +195,34 @@ module Redcap2omop
           }.not_to change{ Redcap2omop::RedcapVariableChoice.count }
         end
 
+      end
+
+      it 'checks if a choice does not exist', focus: false do
+        redcap_project = FactoryBot.create(:redcap_project)
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        redcap_variable = FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        expect(redcap_variable.redcap_variable_choice_exist?('7')).to be_falsey
+      end
+
+      it 'checks if a choice does exist', focus: false do
+        redcap_project = FactoryBot.create(:redcap_project)
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        redcap_variable = FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        expect(redcap_variable.redcap_variable_choice_exist?('1')).to be_truthy
+      end
+
+      it 'can find a choice if it exists', focus: false do
+        redcap_project = FactoryBot.create(:redcap_project)
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        redcap_variable = FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        expect(redcap_variable.find_redcap_variable_choice('1')).to be_truthy
+      end
+
+      it 'does not find a choice if it does not exist', focus: false do
+        redcap_project = FactoryBot.create(:redcap_project)
+        redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
+        redcap_variable = FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
+        expect(redcap_variable.find_redcap_variable_choice('7')).to be_falsey
       end
     end
 

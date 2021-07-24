@@ -15,6 +15,7 @@ namespace :redcap2omop do
         Redcap2omop::RedcapVariableMap.delete_all
         Redcap2omop::RedcapSourceLink.delete_all
         Redcap2omop::RedcapVariable.delete_all
+        Redcap2omop::RedcapDerivedDate.delete_all
       end
 
       desc 'Import data dictionary from CSV'
