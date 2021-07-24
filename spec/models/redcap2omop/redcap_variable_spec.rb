@@ -201,14 +201,14 @@ module Redcap2omop
         redcap_project = FactoryBot.create(:redcap_project)
         redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
         redcap_variable = FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
-        expect(redcap_variable.redcap_variable_chioce_exist?('7')).to be_falsey
+        expect(redcap_variable.redcap_variable_choice_exist?('7')).to be_falsey
       end
 
       it 'checks if a choice does exist', focus: false do
         redcap_project = FactoryBot.create(:redcap_project)
         redcap_data_dictionary = redcap_project.redcap_data_dictionaries.create
         redcap_variable = FactoryBot.create(:redcap_variable, redcap_data_dictionary: redcap_data_dictionary, name: 'clock_position_of_wound', field_label: 'Tunneling clock position of Wound', field_type: 'dropdown', text_validation_type: nil, choices: "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock| 6, 8 o'clock")
-        expect(redcap_variable.redcap_variable_chioce_exist?('1')).to be_truthy
+        expect(redcap_variable.redcap_variable_choice_exist?('1')).to be_truthy
       end
 
       it 'can find a choice if it exists', focus: false do

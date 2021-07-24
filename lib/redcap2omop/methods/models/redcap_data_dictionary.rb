@@ -39,7 +39,7 @@ module Redcap2omop::Methods::Models::RedcapDataDictionary
     def redcap_variable_choice_exist?(redcap_variable_name, choice_code_raw)
       redcap_variable = self.find_redcap_variable(redcap_variable_name)
       if redcap_variable
-        redcap_variable.redcap_variable_chioce_exist?(choice_code_raw)
+        redcap_variable.redcap_variable_choice_exist?(choice_code_raw)
       end
     end
 

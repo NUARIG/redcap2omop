@@ -91,7 +91,7 @@ module Redcap2omop::Methods::Models::RedcapVariable
       end
     end
 
-    def redcap_variable_chioce_exist?(choice_code_raw)
+    def redcap_variable_choice_exist?(choice_code_raw)
       self.find_redcap_variable_choice(choice_code_raw)
     end
 
