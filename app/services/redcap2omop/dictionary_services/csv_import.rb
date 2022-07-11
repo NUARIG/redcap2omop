@@ -8,7 +8,7 @@ module Redcap2omop::DictionaryServices
       @csv_file         = csv_file
       @csv_file_options = csv_file_options || {}
     end
-
+# -----
     def run
       prior_redcap_data_dictionary = nil
       redcap_data_dictionary = nil
@@ -23,17 +23,18 @@ module Redcap2omop::DictionaryServices
         data_dictionary_variables.each do |data_dictionary_variable|
           redcap_variable = Redcap2omop::RedcapVariable.new(redcap_data_dictionary: redcap_data_dictionary)
           redcap_variables << redcap_variable
-
+# start here
           if !redcap_project.redcap_variable_exists_in_redcap_data_dictionary?(data_dictionary_variable['Variable / Field Name'])
             new_data_dictionary = true
             redcap_variable.curation_status = Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_NEW_VARIABLE
           end
-
+# ---
           redcap_variable.name                  = data_dictionary_variable['Variable / Field Name']                         #metadata_variable['field_name']
           redcap_variable.form_name             = data_dictionary_variable['Form Name']                                     #metadata_variable['form_name']
 
           if redcap_project.redcap_variable_field_type_changed_in_redcap_data_dictionary?(data_dictionary_variable['Variable / Field Name'], data_dictionary_variable['Field Type'], data_dictionary_variable['Text Validation Type OR Show Slider Number'])
-            new_data_dictionary = true
+          #if redcap_project.redcap_variable_field_type_changed_in_redcap_data_dictionary?('moca', 'text', 'text')
+          new_data_dictionary = true
             redcap_variable.curation_status =  Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_TYPE
           end
 
@@ -97,7 +98,7 @@ module Redcap2omop::DictionaryServices
             new_data_dictionary = true
           end
         end
-
+# here 
         # Delete the current Redcap data dictionary if nothing has changed
         if prior_redcap_data_dictionary && !new_data_dictionary
           redcap_data_dictionary.destroy!

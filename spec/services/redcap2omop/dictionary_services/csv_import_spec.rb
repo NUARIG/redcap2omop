@@ -16,7 +16,7 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         redcap_project: redcap_project,
         csv_file: 'spec/support/data/test_dictionary_with_new_redcap_variable.csv',
         csv_file_options: { headers: true, col_sep: ",", return_headers: false}
-      )
+      ) 
     }
 
     let(:import_data_dictionary_with_redcap_variable_changed_field_type) {
@@ -199,7 +199,7 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         redcap_project.reload
         expect(redcap_project.current_redcap_data_dictionary).to eq redcap_data_dictionary
       end
-
+# start here
       it 'does create a new data dictionary if new Redcap variable is added', focus: false do
         import.run
         redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
@@ -209,7 +209,14 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
         expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
         expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
+       # puts redcap_project
+        #puts redcap_project.current_redcap_data_dictionary
+       # puts redcap_project.current_redcap_data_dictionary.redcap_variables
         new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'mri_coordinator2').first
+        # why does the test pass if mri_coordinator2 is switched to mri_coordinator?
+        #new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'mri_coordinator').first
+        
+        # puts new_redcap_variable
         expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_NEW_VARIABLE
       end
 
@@ -223,6 +230,9 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
         expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
         new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'moca').first
+        puts new_redcap_variable.name
+        puts new_redcap_variable.field_type
+        puts new_redcap_variable.text_validation_type
         expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_TYPE
       end
 
@@ -238,7 +248,7 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'mri_coordinator').first
         expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_LABEL
       end
-
+# run only this usit test: focus: false to focus: true
       it "does create a new data dictionary if a Redcap variable has a choice added", focus: false do
         import.run
         redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
@@ -249,6 +259,9 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
         expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
         new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'clock_position_of_wound').first
+        puts new_redcap_variable.name
+        puts new_redcap_variable.choices   
+
         expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_CHOICES
         new_redcap_varaible_choice = new_redcap_variable.redcap_variable_choices.where(choice_code_raw: '6').first
         expect(new_redcap_varaible_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED_NEW_CHOICE
