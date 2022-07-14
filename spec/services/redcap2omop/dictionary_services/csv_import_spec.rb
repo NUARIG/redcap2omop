@@ -199,7 +199,7 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         redcap_project.reload
         expect(redcap_project.current_redcap_data_dictionary).to eq redcap_data_dictionary
       end
-# start here
+
       it 'does create a new data dictionary if new Redcap variable is added', focus: false do
         import.run
         redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
@@ -209,14 +209,7 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         current_redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
         expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
         expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
-       # puts redcap_project
-        #puts redcap_project.current_redcap_data_dictionary
-       # puts redcap_project.current_redcap_data_dictionary.redcap_variables
         new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'mri_coordinator2').first
-        # why does the test pass if mri_coordinator2 is switched to mri_coordinator?
-        #new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'mri_coordinator').first
-        
-        # puts new_redcap_variable
         expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_NEW_VARIABLE
       end
 
@@ -230,9 +223,6 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
         expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
         new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'moca').first
-        puts new_redcap_variable.name
-        puts new_redcap_variable.field_type
-        puts new_redcap_variable.text_validation_type
         expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_TYPE
       end
 
@@ -248,7 +238,6 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'mri_coordinator').first
         expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_LABEL
       end
-# run only this usit test: focus: false to focus: true
       it "does create a new data dictionary if a Redcap variable has a choice added", focus: false do
         import.run
         redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
@@ -259,9 +248,6 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
         expect(redcap_project.current_redcap_data_dictionary).to_not be_nil
         expect(redcap_project.current_redcap_data_dictionary).to_not eq redcap_data_dictionary
         new_redcap_variable = redcap_project.current_redcap_data_dictionary.redcap_variables.where(name: 'clock_position_of_wound').first
-        puts new_redcap_variable.name
-        puts new_redcap_variable.choices   
-
         expect(new_redcap_variable.curation_status).to eq Redcap2omop::RedcapVariable::REDCAP_VARIABLE_CURATION_STATUS_UNDETERMINED_UPDATED_VARIABLE_CHOICES
         new_redcap_varaible_choice = new_redcap_variable.redcap_variable_choices.where(choice_code_raw: '6').first
         expect(new_redcap_varaible_choice.curation_status).to eq Redcap2omop::RedcapVariableChoice::REDCAP_VARIABLE_CHOICE_CURATION_STATUS_UNDETERMINED_NEW_CHOICE
@@ -482,7 +468,6 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
               expect(new_redcap_variable_child_map).to_not be_nil
             end
           end
-
           old_redcap_variable.redcap_variable_choices.each do |old_redcap_variable_choice|
             if old_redcap_variable_choice.redcap_variable_choice_map
               new_redcap_variable_choice = new_redcap_variable.redcap_variable_choices.where(choice_code_raw: old_redcap_variable_choice.choice_code_raw).first
@@ -491,7 +476,6 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
             end
           end
         end
-
         it "migrates an 'OMOP concept' variable choice map for existing Redcap variable choices", focus: false do
           import_data_dictionary_with_redcap_variable_choice_mapped_to_omop_concept.run
           redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
@@ -564,7 +548,6 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
 
           test_migration_of_redcap_variable_choice_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
         end
-
         it "migrates an 'OMOP concept' variable choice map for existing Redcap variable choices (including Redcap variable child maps to Redcap derived dates and OMOP concepts)", focus: false do
           import_data_dictionary_with_redcap_variable_choice_mapped_to_omop_concept_and_complex_redcap_child_variables.run
           redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
@@ -682,7 +665,6 @@ RSpec.describe Redcap2omop::DictionaryServices::CsvImport do
           expect(new_redcap_variable.redcap_variable_child_maps.size).to eq(0)
           test_migration_of_redcap_variable_choice_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
         end
-
         it 'migrates a Redcap child mapping to a Redcap derived date based on a base Redcap variable and a Redcap varaible choice offset', focus: false do
           import_data_dictionary_with_redcap_derived_from_base_redcap_variable_and_redcap_variable_choice_offset.run
           redcap_data_dictionary = redcap_project.current_redcap_data_dictionary
@@ -838,6 +820,54 @@ def test_migration_of_redcap_variable_redcap_variable_child_maps(old_redcap_vari
     if old_redcap_variable_child_map.concept_id
       new_redcap_variable_child_map = new_redcap_variable.redcap_variable_child_maps.where(concept_id: old_redcap_variable_child_map.concept_id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
       expect(new_redcap_variable_child_map).to_not be_nil
+    end
+  end
+end
+
+def test_migration_of_redcap_variable_choice_redcap_variable_child_maps(old_redcap_variable, new_redcap_variable, current_redcap_data_dictionary)
+  old_redcap_variable.redcap_variable_choices.each do |old_redcap_variable_choice|
+    new_redcap_variable_choice = new_redcap_variable.redcap_variable_choices.where(choice_code_raw: old_redcap_variable_choice.choice_code_raw).first
+    expect(new_redcap_variable_choice.curation_status).to eq(old_redcap_variable_choice.curation_status)
+    expect(new_redcap_variable_choice.redcap_variable_choice_map.concept_id).to eq(old_redcap_variable_choice.redcap_variable_choice_map.concept_id)
+    expect(new_redcap_variable_choice.redcap_variable_choice_map.map_type).to eq(old_redcap_variable_choice.redcap_variable_choice_map.map_type)
+    old_redcap_variable_choice.redcap_variable_child_maps.each do |old_redcap_variable_child_map|
+      if old_redcap_variable_child_map.redcap_variable
+        new_child_map_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_variable_child_map.redcap_variable.name).first
+        new_redcap_variable_child_map = new_redcap_variable_choice.redcap_variable_child_maps.where(redcap_variable_id: new_child_map_redcap_variable.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+        expect(new_redcap_variable_child_map).to_not be_nil
+      end
+
+      if old_redcap_variable_child_map.redcap_derived_date
+        old_redcap_derived_date = Redcap2omop::RedcapDerivedDate.find(old_redcap_variable_child_map.redcap_derived_date_id)
+
+        if old_redcap_derived_date.base_date_redcap_variable
+          new_base_date_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.base_date_redcap_variable.name).first
+          new_offset_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
+          new_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.name, base_date_redcap_variable_id: new_base_date_redcap_variable.id, offset_redcap_variable_id: new_offset_redcap_variable.id).first
+          new_redcap_variable_child_map = new_redcap_variable_choice.redcap_variable_child_maps.where(redcap_derived_date_id: new_redcap_derived_date.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+          expect(new_redcap_variable_child_map).to_not be_nil
+        end
+
+        if old_redcap_derived_date.parent_redcap_derived_date
+          new_parent_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.parent_redcap_derived_date.name).first
+          new_offset_redcap_variable = current_redcap_data_dictionary.redcap_variables.where(name: old_redcap_derived_date.offset_redcap_variable.name).first
+          new_redcap_derived_date = current_redcap_data_dictionary.redcap_derived_dates.where(name: old_redcap_derived_date.name, parent_redcap_derived_date_id: new_parent_redcap_derived_date.id, offset_redcap_variable_id: new_offset_redcap_variable.id).first
+          new_redcap_variable_child_map = new_redcap_variable_choice.redcap_variable_child_maps.where(redcap_derived_date_id: new_redcap_derived_date.id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+          expect(new_redcap_variable_child_map).to_not be_nil
+        end
+
+        expect(new_redcap_derived_date.redcap_derived_date_choice_offset_mappings.size).to eq(old_redcap_derived_date.redcap_derived_date_choice_offset_mappings.size)
+        old_redcap_derived_date.redcap_derived_date_choice_offset_mappings.each do |old_redcap_derived_date_choice_offset_mapping|
+          new_redcap_variable_choice_for_choice_offset_mapping = new_offset_redcap_variable.redcap_variable_choices.where(choice_code_raw: old_redcap_derived_date_choice_offset_mapping.redcap_variable_choice.choice_code_raw).first
+          new_redcap_derived_date_choice_offset_mapping = new_redcap_derived_date.redcap_derived_date_choice_offset_mappings.where(redcap_variable_choice_id: new_redcap_variable_choice_for_choice_offset_mapping.id, offset_days: old_redcap_derived_date_choice_offset_mapping.offset_days).first
+          expect(new_redcap_derived_date_choice_offset_mapping).to_not be_nil
+        end
+      end
+
+      if old_redcap_variable_child_map.concept_id
+        new_redcap_variable_child_map = new_redcap_variable_choice.redcap_variable_child_maps.where(concept_id: old_redcap_variable_child_map.concept_id, omop_column_id: old_redcap_variable_child_map.omop_column_id, map_type: old_redcap_variable_child_map.map_type).first
+        expect(new_redcap_variable_child_map).to_not be_nil
+      end
     end
   end
 end

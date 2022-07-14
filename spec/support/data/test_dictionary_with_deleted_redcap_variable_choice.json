@@ -725,7 +725,7 @@
       "section_header": "",
       "field_type": "dropdown",
       "field_label": "Tunneling clock position of Wound",
-      "select_choices_or_calculations": "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock | 5, 1 o'clock | 6, 8 o'clock",
+      "select_choices_or_calculations": "1, 12 o'clock | 2, 3 o'clock | 3, 6 o'clock | 4, 11 o'clock",
       "field_note": "",
       "text_validation_type_or_show_slider_number": "",
       "text_validation_min": "",
