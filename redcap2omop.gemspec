@@ -33,7 +33,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'redis'
   spec.add_dependency 'tzinfo-data'
 
-  spec.add_development_dependency 'pg', '~> 1.2.3'
+  #spec.add_development_dependency 'pg', '~> 1.2.3'
+  spec.add_development_dependency 'pg', '~> 1.3.0'
   spec.add_development_dependency 'rspec-rails', '~> 5.0.0'
   spec.add_development_dependency 'factory_bot_rails', '~> 6.1.0'
   spec.add_development_dependency 'faker', '~> 2.17.0'
@@ -41,3 +42,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'webmock', '~> 3.12.1'
   spec.add_development_dependency 'puma', '~> 5.2.0'
 end
+
