@@ -69,7 +69,8 @@ RSpec.describe Redcap2omop::DataServices::RedcapToOmop do
           expect(Redcap2omop::Observation.count).to eq 0
           result = service.run
           expect(result.success).to eq false
-          expect(result.message).to match("PG::NotNullViolation: ERROR:  null value in column \"observation_date\" violates not-null constraint")
+          expect(result.message).to match('PG::NotNullViolation: ERROR:  null value in column "observation_date" of relation "observation" violates not-null constraint')
+                                           
 
           redcap_data_dictionary = project.redcap_data_dictionaries.last
           redcap_variable = Redcap2omop::RedcapVariable.where(name: 'clock_position_of_wound', redcap_data_dictionary_id: redcap_data_dictionary.id).first
